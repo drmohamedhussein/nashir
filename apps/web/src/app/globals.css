@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #12211c;
+  --ink-soft: #2c4038;
+  --paper: #f4efe6;
+  --paper-deep: #e7dfd1;
+  --gold: #b8863b;
+  --gold-deep: #8f6528;
+  --leaf: #1f6f5b;
+  --danger: #9b3a2f;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-deep);
+  --color-leaf: var(--leaf);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-arabic);
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: #d7c49a;
+}

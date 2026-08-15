@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  workspace    Workspace?
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String   @unique
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sites     Site[]
+}
+
+model Site {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name           String
+  url            String
+  restUrl        String
+  wpVersion      String?
+  apiKeyHash     String
+  signingSecret  String
+  status         String        @default("connected")
+  lastSeenAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  posts          EditorialPost[]
+  jobs           ScheduleJob[]
+  pairings       PairingCode[]
+
+  @@unique([workspaceId, url])
+}
+
+model PairingCode {
+  id          String    @id @default(cuid())
+  workspaceId String
+  siteId      String?
+  site        Site?     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  code        String    @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model EditorialPost {
+  id          String        @id @default(cuid())
+  siteId      String
+  site        Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  wpPostId    Int
+  title       String
+  status      String
+  postType    String        @default("post")
+  permalink   String?
+  scheduledAt DateTime?
+  publishedAt DateTime?
+  syncedAt    DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  jobs        ScheduleJob[]
+
+  @@unique([siteId, wpPostId])
+  @@index([siteId, scheduledAt])
+}
+
+model ScheduleJob {
+  id        String          @id @default(cuid())
+  siteId    String
+  site      Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  postId    String?
+  post      EditorialPost?  @relation(fields: [postId], references: [id], onDelete: SetNull)
+  wpPostId  Int
+  action    String          @default("publish")
+  runAt     DateTime
+  status    String          @default("pending")
+  attempts  Int             @default(0)
+  lastError String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([status, runAt])
+}
