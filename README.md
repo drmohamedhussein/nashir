@@ -19,9 +19,11 @@ npm run dev
 
 ## الإنتاج
 
-- تطبيق الويب على Vercel
-- قاعدة بيانات Postgres عبر `DATABASE_URL`
+المستودع العام: https://github.com/drmohamedhussein/nashir
+
+- تطبيق الويب: Next.js (Vercel أو مستضيف Node)
+- قاعدة البيانات: Postgres عبر `DATABASE_URL`
 - الإضافة: `apps/web/public/downloads/nashir.zip`
-- الجدولة: نبضة من ووردبريس كل دقيقة + cron يومي احتياطي `/api/cron/tick`
+- الجدولة: نبضة من ووردبريس كل دقيقة + cron يومي `/api/cron/tick`
 
 متغيرات البيئة: `DATABASE_URL` و`AUTH_SECRET` و`CRON_SECRET` و`APP_URL`.
