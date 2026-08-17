@@ -1,3 +1,5 @@
+"use client";
+
 type CalendarPost = {
   id: string;
   title: string;
@@ -33,8 +35,19 @@ export function CalendarMonth({ posts }: { posts: CalendarPost[] }) {
     return date;
   });
 
+  async function onDrop(date: Date, postId: string) {
+    const datetime = new Date(date);
+    datetime.setHours(9, 0, 0, 0);
+    await fetch(`/api/v1/posts/${postId}/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "schedule", datetime: datetime.toISOString() }),
+    });
+    window.location.reload();
+  }
+
   return (
-    <div className="mt-8 overflow-hidden rounded-2xl border border-ink/10 bg-white">
+    <div className="mt-8 overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
       <div className="grid grid-cols-7 border-b border-ink/10 bg-paper-deep text-center text-xs font-medium">
         {WEEKDAYS.map((day) => (
           <div key={day} className="px-2 py-3">
@@ -50,14 +63,24 @@ export function CalendarMonth({ posts }: { posts: CalendarPost[] }) {
           return (
             <div
               key={key}
-              className={`min-h-28 border-b border-l border-ink/5 p-2 ${inMonth ? "" : "bg-paper/50 text-ink-soft"}`}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                const id = event.dataTransfer.getData("text/plain");
+                if (id) {
+                  void onDrop(date, id);
+                }
+              }}
+              className={`min-h-28 border-b border-s border-ink/5 p-2 ${inMonth ? "" : "bg-paper/50 text-ink-soft"}`}
             >
               <div className="text-xs">{date.getDate()}</div>
               <div className="mt-1 space-y-1">
                 {items.map((post) => (
                   <div
                     key={post.id}
-                    className={`rounded-md px-1.5 py-1 text-[11px] leading-4 ${
+                    draggable
+                    onDragStart={(event) => event.dataTransfer.setData("text/plain", post.id)}
+                    className={`cursor-grab rounded-md px-1.5 py-1 text-[11px] leading-4 ${
                       post.status === "future"
                         ? "bg-gold/15 text-gold-deep"
                         : post.status === "publish"

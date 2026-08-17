@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { createSession } from "@/lib/auth";
 import { hashPassword } from "@/lib/crypto";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
+import { PLANS, trialEnd } from "@/lib/plans";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -22,7 +23,17 @@ export async function POST(request: Request) {
   }
 
   const email = parsed.data.email.toLowerCase();
-  const exists = await prisma.user.findUnique({ where: { email } });
+
+  let exists;
+  try {
+    exists = await prisma.user.findUnique({ where: { email } });
+  } catch {
+    return NextResponse.json(
+      { error: "قاعدة البيانات غير متاحة. تحقق من DATABASE_URL ثم أعد تشغيل التطبيق." },
+      { status: 503 },
+    );
+  }
+
   if (exists) {
     return NextResponse.json({ error: "هذا البريد مسجّل مسبقاً." }, { status: 409 });
   }
@@ -44,6 +55,16 @@ export async function POST(request: Request) {
     name: user.name,
     email: user.email,
     workspaceId: user.workspace!.id,
+  });
+
+  await prisma.subscription.create({
+    data: {
+      workspaceId: user.workspace!.id,
+      interval: PLANS.monthly.interval,
+      status: "trial",
+      priceCents: PLANS.monthly.priceCents,
+      currentPeriodEnd: trialEnd(),
+    },
   });
 
   return NextResponse.json({ ok: true });

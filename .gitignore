@@ -37,3 +37,5 @@ apps/plugin/**/.DS_Store
 # Misc
 .vercel
 *.tsbuildinfo
+.cache/
+.tmp-rankpublish-design/

@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: nashir
+      POSTGRES_PASSWORD: nashir
+      POSTGRES_DB: nashir
+    ports:
+      - "5433:5432"
+    volumes:
+      - nashir_pg:/var/lib/postgresql/data
+
+volumes:
+  nashir_pg:

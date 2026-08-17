@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client", "bcryptjs"],
+  transpilePackages: ["three", "@react-three/fiber", "@react-three/drei"],
   async headers() {
     return [
       {

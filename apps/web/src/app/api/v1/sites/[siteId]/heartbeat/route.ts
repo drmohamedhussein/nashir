@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { verifyPayload } from "@/lib/crypto";
+import { verifyPayload, readSignedHeaders } from "@/lib/crypto";
 import { processDueJobs, refreshSitePosts } from "@/lib/scheduler";
 
 type Params = { params: Promise<{ siteId: string }> };
@@ -13,8 +13,7 @@ export async function POST(request: Request, { params }: Params) {
   }
 
   const body = await request.text();
-  const timestamp = request.headers.get("x-nashir-timestamp") ?? "";
-  const signature = request.headers.get("x-nashir-signature") ?? "";
+  const { timestamp, signature } = readSignedHeaders(request);
   if (!verifyPayload(site.signingSecret, timestamp, body || "{}", signature)) {
     return NextResponse.json({ error: "توقيع غير صالح." }, { status: 401 });
   }

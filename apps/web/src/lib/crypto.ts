@@ -45,6 +45,19 @@ export function verifyPayload(
   return timingSafeEqual(a, b);
 }
 
+export function readSignedHeaders(request: Request): { timestamp: string; signature: string } {
+  return {
+    timestamp:
+      request.headers.get("x-rankpublish-timestamp") ??
+      request.headers.get("x-nashir-timestamp") ??
+      "",
+    signature:
+      request.headers.get("x-rankpublish-signature") ??
+      request.headers.get("x-nashir-signature") ??
+      "",
+  };
+}
+
 export function hashSecret(value: string): string {
   return createHmac("sha256", "nashir-api-key").update(value).digest("hex");
 }

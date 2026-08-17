@@ -1,30 +1,44 @@
-import { PairingPanel } from "@/components/pairing-panel";
+﻿import { PairingPanel } from "@/components/pairing-panel";
 import { SiteCard } from "@/components/site-card";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getLocale } from "@/lib/locale";
+import { t } from "@/lib/i18n";
+import { publicAppUrl } from "@/lib/environments";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function AppHomePage() {
   const session = await getSession();
   if (!session) {
     redirect("/login");
   }
+  const locale = await getLocale();
+  const copy = t(locale);
+  const cloudAppUrl = publicAppUrl();
 
   const sites = await prisma.site.findMany({
     where: { workspaceId: session.workspaceId },
+    include: { subscription: true },
     orderBy: { createdAt: "desc" },
   });
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
+      {sites.length === 0 ? (
+        <div className="lg:col-span-2 rounded-2xl border border-brand/20 bg-brand/5 px-5 py-4 text-sm">
+          {copy.appWelcomeBanner}{" "}
+          <Link href="/app/getting-started" className="font-semibold text-brand hover:underline">
+            {copy.appWelcomeLink}
+          </Link>
+        </div>
+      ) : null}
       <section>
-        <h1 className="text-2xl font-bold">المواقع المرتبطة</h1>
-        <p className="mt-2 text-sm text-ink-soft">كل موقع يظهر هنا بعد لصق رمز الربط في ووردبريس.</p>
+        <h1 className="text-2xl font-bold">{copy.sites}</h1>
+        <p className="mt-2 text-sm text-ink-soft">{copy.sitesHint}</p>
         <div className="mt-6 space-y-3">
           {sites.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-ink/15 p-8 text-sm text-ink-soft">
-              لا يوجد موقع بعد. أنشئ رمزاً من العمود الأيسر.
-            </p>
+            <p className="rounded-2xl border border-dashed border-ink/15 p-8 text-sm text-ink-soft">{copy.noSites}</p>
           ) : (
             sites.map((site) => (
               <SiteCard
@@ -34,19 +48,21 @@ export default async function AppHomePage() {
                 url={site.url}
                 status={site.status}
                 wpVersion={site.wpVersion}
-                lastSeen={site.lastSeenAt ? site.lastSeenAt.toLocaleString("ar") : null}
+                lastSeen={site.lastSeenAt ? site.lastSeenAt.toLocaleString(locale) : null}
+                subscriptionId={site.subscription?.id}
+                locale={locale}
               />
             ))
           )}
         </div>
       </section>
       <div className="space-y-4">
-        <PairingPanel />
-        <a
-          href="/downloads/nashir.zip"
-          className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm text-ink-soft"
-        >
-          تنزيل إضافة ووردبريس
+        <Link href="/app/billing" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
+          {copy.billingTeaser}
+        </Link>
+        <PairingPanel locale={locale} appUrl={cloudAppUrl} />
+        <a href="/downloads/nashir.zip" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm text-ink-soft shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
+          {copy.download}
         </a>
       </div>
     </div>

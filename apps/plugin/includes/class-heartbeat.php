@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 /**
  * Minute heartbeat so Nashir can publish even when WP-Cron is quiet.
  *
- * @package Nashir
+ * @package PublisherWP
  */
 
 declare(strict_types=1);
@@ -29,7 +29,7 @@ final class Nashir_Heartbeat {
 	public function schedules( array $schedules ): array {
 		$schedules['nashir_minute'] = array(
 			'interval' => 60,
-			'display'  => __( 'كل دقيقة (ناشر)', 'nashir' ),
+			'display'  => __( 'كل دقيقة (PublisherWP)', 'nashir' ),
 		);
 		return $schedules;
 	}
@@ -52,7 +52,11 @@ final class Nashir_Heartbeat {
 	}
 
 	public function maybe_run(): void {
-		if ( ! get_option( 'nashir_site_id' ) ) {
+		if ( ! Nashir_Plugin::connected() ) {
+			return;
+		}
+		$app = (string) get_option( 'nashir_app_url', '' );
+		if ( false !== strpos( $app, '127.0.0.1' ) || false !== strpos( $app, 'localhost' ) ) {
 			return;
 		}
 		if ( get_transient( 'nashir_heartbeat_lock' ) ) {

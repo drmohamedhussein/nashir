@@ -1,0 +1,89 @@
+{
+  "auditedAt": "2026-08-17T08:04:22.571Z",
+  "modules": {
+    "schedule": {
+      "label": "SchedulePress",
+      "basename": "wp-scheduled-posts/wp-scheduled-posts.php",
+      "stagingVersion": "5.3.3",
+      "mergedPath": "rankpublish/modules/schedule",
+      "status": "ok_hooks",
+      "summary": {
+        "same": 711,
+        "expected_diff": 4,
+        "unexpected": 0,
+        "added_merged": 1,
+        "removed_merged": 1
+      },
+      "expected_diff": [
+        "includes/Admin.php",
+        "includes/Admin/Menu.php",
+        "includes/Admin/Settings/Assets.php",
+        "includes/Installer.php"
+      ],
+      "unexpected": []
+    },
+    "schedule-pro": {
+      "label": "SchedulePress Pro",
+      "basename": "wp-scheduled-posts-pro/wp-scheduled-posts-pro.php",
+      "stagingVersion": "5.3.2",
+      "mergedPath": "rankpublish/modules/schedule-pro",
+      "status": "ok_hooks",
+      "summary": {
+        "same": 82,
+        "expected_diff": 6,
+        "unexpected": 0,
+        "added_merged": 1,
+        "removed_merged": 0
+      },
+      "expected_diff": [
+        "assets/images/wpps-icon.svg",
+        "assets/images/wpsp-dark.svg",
+        "includes/Admin.php",
+        "includes/Dependencies/WPDeveloper/Licensing/Manager.php",
+        "includes/Installer.php",
+        "includes/functions.php"
+      ],
+      "unexpected": []
+    },
+    "seo": {
+      "label": "ThinkRank",
+      "basename": "thinkrank/thinkrank.php",
+      "stagingVersion": "1.31.0",
+      "mergedPath": "rankpublish/modules/seo",
+      "status": "ok_hooks",
+      "summary": {
+        "same": 377,
+        "expected_diff": 4,
+        "unexpected": 0,
+        "added_merged": 1,
+        "removed_merged": 0
+      },
+      "expected_diff": [
+        "includes/admin/class-manager.php",
+        "includes/admin/class-setup-wizard.php",
+        "includes/core/class-usage-tracker-manager.php",
+        "includes/frontend/class-seo-manager.php"
+      ],
+      "unexpected": []
+    },
+    "seo-pro": {
+      "label": "ThinkRank Pro",
+      "basename": "thinkrank-pro/thinkrank-pro.php",
+      "stagingVersion": "2.0.2",
+      "mergedPath": "rankpublish/modules/seo-pro",
+      "status": "ok_hooks",
+      "summary": {
+        "same": 148,
+        "expected_diff": 2,
+        "unexpected": 0,
+        "added_merged": 1,
+        "removed_merged": 0
+      },
+      "expected_diff": [
+        "includes/Dependencies/WPDeveloper/Licensing/Manager.php",
+        "includes/admin/class-manager.php"
+      ],
+      "unexpected": []
+    }
+  }
+}

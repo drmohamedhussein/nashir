@@ -1,18 +1,19 @@
 .nashir-wrap {
-	max-width: 640px;
+	max-width: 1120px;
 }
 
 .nashir-card {
 	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 8px;
-	padding: 20px 24px;
+	border: 1px solid #dce4f5;
+	border-radius: 16px;
+	padding: 22px 26px;
 	margin-top: 16px;
+	box-shadow: 0 10px 30px rgba(47, 91, 255, 0.08);
 }
 
 .nashir-status.is-connected {
-	color: #1f6f5b;
-	font-weight: 600;
+	color: #1e46d6;
+	font-weight: 700;
 }
 
 .nashir-form label {
@@ -21,7 +22,67 @@
 	font-weight: 600;
 }
 
-.nashir-form input[type="text"] {
-	letter-spacing: 0.2em;
-	text-transform: uppercase;
+.nashir-cal-head,
+.nashir-cal-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+}
+
+.nashir-cal-head {
+	font-weight: 700;
+	text-align: center;
+	margin-top: 16px;
+	color: #4a5570;
+}
+
+.nashir-cal-day {
+	min-height: 118px;
+	border: 1px solid #e8edf8;
+	padding: 8px;
+	background: #fff;
+}
+
+.nashir-cal-num {
+	font-size: 12px;
+	color: #4a5570;
+}
+
+.nashir-cal-item {
+	display: block;
+	margin-top: 6px;
+	padding: 5px 7px;
+	border-radius: 8px;
+	font-size: 12px;
+	text-decoration: none;
+	background: #f5f7fc;
+	cursor: grab;
+}
+
+.nashir-cal-item.status-future {
+	background: #e8eeff;
+	color: #1e46d6;
+}
+
+.nashir-cal-item.status-publish {
+	background: #e7f9ee;
+	color: #15803d;
+}
+
+.nashir-dash-list {
+	margin: 0;
+	padding-inline-start: 18px;
+}
+
+.nashir-wrap h1 {
+	color: #0b1638;
+}
+
+.nashir-card .button-primary {
+	background: #2f5bff;
+	border-color: #2f5bff;
+}
+
+.nashir-card .button-primary:hover {
+	background: #1e46d6;
+	border-color: #1e46d6;
 }

@@ -20,6 +20,8 @@ export async function callWordPress<T>(request: SignedRequest): Promise<T> {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "X-RankPublish-Timestamp": timestamp,
+      "X-RankPublish-Signature": signature,
       "X-Nashir-Timestamp": timestamp,
       "X-Nashir-Signature": signature,
     },

@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, Manrope } from "next/font/google";
+import { getLocale } from "@/lib/locale";
+import { publicAppUrl } from "@/lib/environments";
 import "./globals.css";
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+});
 
 const arabic = IBM_Plex_Sans_Arabic({
   variable: "--font-arabic",
@@ -9,26 +16,29 @@ const arabic = IBM_Plex_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
-  title: "ناشر — جدولة المحتوى لووردبريس",
-  description:
-    "حساب واحد لتقويمك التحريري. تابع المقالات وانشر في موعدها من موقعك أو من لوحة ناشر.",
-  openGraph: {
-    title: "ناشر",
-    description: "تقويم تحريري سحابي لمواقع ووردبريس.",
-    locale: "ar_AR",
-    type: "website",
-  },
+  metadataBase: new URL(publicAppUrl()),
+  title: "RankPublish — Publish on time for WordPress",
+  description: "Cloud editorial calendar, SEO, scheduling, and social sharing for WordPress.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const fontClass =
+    locale === "ar"
+      ? "font-[family-name:var(--font-arabic)]"
+      : "font-[family-name:var(--font-manrope)]";
+
   return (
-    <html lang="ar" dir="rtl" className={`${arabic.variable} h-full antialiased`}>
-      <body className="min-h-full bg-paper font-sans text-ink">{children}</body>
+    <html
+      lang={locale}
+      dir={locale === "ar" ? "rtl" : "ltr"}
+      className={`${manrope.variable} ${arabic.variable} h-full antialiased`}
+    >
+      <body className={`min-h-full bg-background text-foreground ${fontClass}`}>{children}</body>
     </html>
   );
 }

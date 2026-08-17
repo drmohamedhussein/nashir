@@ -8,42 +8,54 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  workspace    Workspace?
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  passwordHash   String
+  locale         String         @default("ar")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  workspace      Workspace?
 }
 
 model Workspace {
-  id        String   @id @default(cuid())
-  name      String
-  ownerId   String   @unique
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  sites     Site[]
+  id            String         @id @default(cuid())
+  name          String
+  ownerId       String         @unique
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  sites         Site[]
+  subscriptions Subscription[]
 }
 
 model Site {
-  id             String        @id @default(cuid())
-  workspaceId    String
-  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  name           String
-  url            String
-  restUrl        String
-  wpVersion      String?
-  apiKeyHash     String
-  signingSecret  String
-  status         String        @default("connected")
-  lastSeenAt     DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  posts          EditorialPost[]
-  jobs           ScheduleJob[]
-  pairings       PairingCode[]
+  id              String           @id @default(cuid())
+  workspaceId     String
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name            String
+  url             String
+  restUrl         String
+  wpVersion       String?
+  apiKeyHash      String
+  signingSecret   String
+  status          String           @default("connected")
+  lastSeenAt      DateTime?
+  integrationsJson String          @default("[]")
+  capabilitiesJson String          @default("[]")
+  schedulerMode   String           @default("manual")
+  autoIntervalMin Int              @default(60)
+  weekSlots       String           @default("{}")
+  allowedTypes    String           @default("post,page")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  posts           EditorialPost[]
+  jobs            ScheduleJob[]
+  pairings        PairingCode[]
+  subscription    Subscription?
+  socialAccounts  SocialAccount[]
+  socialTemplates SocialTemplate[]
+  shareJobs       SocialShareJob[]
 
   @@unique([workspaceId, url])
 }
@@ -59,39 +71,100 @@ model PairingCode {
   createdAt   DateTime  @default(now())
 }
 
+model Subscription {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  siteId           String?   @unique
+  site             Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  interval         String
+  status           String    @default("trial")
+  priceCents       Int
+  currency         String    @default("USD")
+  currentPeriodEnd DateTime
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
 model EditorialPost {
-  id          String        @id @default(cuid())
-  siteId      String
-  site        Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  wpPostId    Int
-  title       String
-  status      String
-  postType    String        @default("post")
-  permalink   String?
-  scheduledAt DateTime?
-  publishedAt DateTime?
-  syncedAt    DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  jobs        ScheduleJob[]
+  id             String        @id @default(cuid())
+  siteId         String
+  site           Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  wpPostId       Int
+  title          String
+  status         String
+  postType       String        @default("post")
+  permalink      String?
+  scheduledAt    DateTime?
+  publishedAt    DateTime?
+  unpublishAt    DateTime?
+  republishAt    DateTime?
+  advancedAt     DateTime?
+  syncedAt       DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  jobs           ScheduleJob[]
+  shareJobs      SocialShareJob[]
 
   @@unique([siteId, wpPostId])
   @@index([siteId, scheduledAt])
 }
 
 model ScheduleJob {
-  id        String          @id @default(cuid())
+  id        String         @id @default(cuid())
   siteId    String
-  site      Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site      Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
   postId    String?
-  post      EditorialPost?  @relation(fields: [postId], references: [id], onDelete: SetNull)
+  post      EditorialPost? @relation(fields: [postId], references: [id], onDelete: SetNull)
   wpPostId  Int
-  action    String          @default("publish")
+  action    String         @default("publish")
   runAt     DateTime
-  status    String          @default("pending")
-  attempts  Int             @default(0)
+  status    String         @default("pending")
+  attempts  Int            @default(0)
   lastError String?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 
   @@index([status, runAt])
+}
+
+model SocialAccount {
+  id           String   @id @default(cuid())
+  siteId       String
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  platform     String
+  label        String
+  accessToken  String   @default("")
+  refreshToken String   @default("")
+  meta         String   @default("{}")
+  connected    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([siteId, platform, label])
+}
+
+model SocialTemplate {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  platform  String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([siteId, platform])
+}
+
+model SocialShareJob {
+  id        String         @id @default(cuid())
+  siteId    String
+  site      Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  postId    String?
+  post      EditorialPost? @relation(fields: [postId], references: [id], onDelete: SetNull)
+  platform  String
+  message   String
+  status    String         @default("pending")
+  lastError String?
+  runAt     DateTime       @default(now())
+  createdAt DateTime       @default(now())
 }

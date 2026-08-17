@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 /**
  * HMAC helpers for signed requests between Nashir cloud and this site.
  *
- * @package Nashir
+ * @package PublisherWP
  */
 
 declare(strict_types=1);

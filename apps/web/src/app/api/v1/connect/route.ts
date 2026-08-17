@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { hashSecret, randomToken } from "@/lib/crypto";
+import { isSubscriptionLive, PLANS, trialEnd } from "@/lib/plans";
 
 const schema = z.object({
   code: z.string().trim().min(6).max(6),
@@ -66,9 +67,37 @@ export async function POST(request: Request) {
     data: { usedAt: new Date(), siteId: site.id },
   });
 
+  const subscriptions = await prisma.subscription.findMany({ where: { workspaceId: pairing.workspaceId } });
+  let seat =
+    subscriptions.find((row) => row.siteId === site.id && isSubscriptionLive(row.status, row.currentPeriodEnd)) ??
+    subscriptions.find((row) => !row.siteId && isSubscriptionLive(row.status, row.currentPeriodEnd)) ??
+    null;
+  if (!seat && subscriptions.length === 0) {
+    seat = await prisma.subscription.create({
+      data: {
+        workspaceId: pairing.workspaceId,
+        interval: PLANS.monthly.interval,
+        status: "trial",
+        priceCents: PLANS.monthly.priceCents,
+        currentPeriodEnd: trialEnd(),
+      },
+    });
+  }
+  if (seat) {
+    await prisma.subscription.update({ where: { id: seat.id }, data: { siteId: site.id } });
+  }
+
   return NextResponse.json({
     site_id: site.id,
     api_key: apiKey,
     signing_secret: signingSecret,
+    plan: seat
+      ? {
+          interval: seat.interval,
+          status: seat.status,
+          current_period_end: seat.currentPeriodEnd.toISOString(),
+          price_cents: seat.priceCents,
+        }
+      : null,
   });
 }

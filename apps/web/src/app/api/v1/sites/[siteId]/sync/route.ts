@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { verifyPayload } from "@/lib/crypto";
+import { verifyPayload, readSignedHeaders } from "@/lib/crypto";
 import { upsertPosts } from "@/lib/scheduler";
 
 const postSchema = z.object({
@@ -12,6 +12,9 @@ const postSchema = z.object({
   permalink: z.string().nullable().optional(),
   scheduled_at: z.string().nullable().optional(),
   published_at: z.string().nullable().optional(),
+  unpublish_at: z.string().nullable().optional(),
+  republish_at: z.string().nullable().optional(),
+  advanced_at: z.string().nullable().optional(),
 });
 
 const schema = z.object({
@@ -28,8 +31,7 @@ export async function POST(request: Request, { params }: Params) {
   }
 
   const body = await request.text();
-  const timestamp = request.headers.get("x-nashir-timestamp") ?? "";
-  const signature = request.headers.get("x-nashir-signature") ?? "";
+  const { timestamp, signature } = readSignedHeaders(request);
 
   if (!verifyPayload(site.signingSecret, timestamp, body, signature)) {
     return NextResponse.json({ error: "توقيع غير صالح." }, { status: 401 });
@@ -50,6 +52,9 @@ export async function POST(request: Request, { params }: Params) {
       permalink: post.permalink ?? null,
       scheduled_at: post.scheduled_at ?? null,
       published_at: post.published_at ?? null,
+      unpublish_at: post.unpublish_at ?? null,
+      republish_at: post.republish_at ?? null,
+      advanced_at: post.advanced_at ?? null,
     })),
   );
 

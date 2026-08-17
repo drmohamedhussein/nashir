@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 /**
  * Push post changes to Nashir so the cloud calendar stays current.
  *
- * @package Nashir
+ * @package PublisherWP
  */
 
 declare(strict_types=1);
@@ -27,7 +27,7 @@ final class Nashir_Sync {
 			return;
 		}
 
-		if ( ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
+		if ( ! in_array( $post->post_type, Nashir_Plugin::allowed_types(), true ) ) {
 			return;
 		}
 
@@ -53,21 +53,10 @@ final class Nashir_Sync {
 			return;
 		}
 
-		$gmt = get_post_datetime( $post, 'date', 'gmt' );
-
+		$rest = new Nashir_REST();
 		Nashir_Client::sync(
 			array(
-				'posts' => array(
-					array(
-						'wp_post_id'   => (int) $post->ID,
-						'title'        => get_the_title( $post ),
-						'status'       => $post->post_status,
-						'post_type'    => $post->post_type,
-						'permalink'    => get_permalink( $post ),
-						'scheduled_at' => 'future' === $post->post_status && $gmt ? $gmt->format( DATE_ATOM ) : null,
-						'published_at' => 'publish' === $post->post_status && $gmt ? $gmt->format( DATE_ATOM ) : null,
-					),
-				),
+				'posts' => array( $rest->serialize_post( $post ) ),
 			)
 		);
 	}

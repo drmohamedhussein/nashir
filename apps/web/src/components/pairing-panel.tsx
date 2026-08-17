@@ -1,41 +1,65 @@
 "use client";
 
 import { useState } from "react";
+import { t, type Locale } from "@/lib/i18n";
 
-export function PairingPanel() {
+export function PairingPanel({ locale, appUrl }: { locale: Locale; appUrl: string }) {
+  const copy = t(locale);
   const [code, setCode] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function createCode() {
     setPending(true);
     setError("");
+    setCopied(false);
     const response = await fetch("/api/v1/pairing", { method: "POST" });
     const data = (await response.json()) as { code?: string; error?: string };
     setPending(false);
     if (!response.ok || !data.code) {
-      setError(data.error ?? "تعذر إنشاء الرمز.");
+      setError(data.error ?? copy.pairingError);
       return;
     }
     setCode(data.code);
   }
 
+  async function copyCode() {
+    if (!code) {
+      return;
+    }
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+  }
+
   return (
     <div className="rounded-2xl border border-ink/10 bg-white p-6">
-      <h2 className="text-lg font-semibold">ربط موقع ووردبريس</h2>
-      <p className="mt-2 text-sm leading-7 text-ink-soft">
-        أنشئ رمزاً صالحاً لربع ساعة، ثم الصقه في إضافة ناشر داخل لوحة ووردبريس.
-      </p>
+      <h2 className="text-lg font-semibold">{copy.pairingTitle}</h2>
+      <p className="mt-2 text-sm leading-7 text-ink-soft">{copy.pairingHint}</p>
+      <ol className="mt-4 list-decimal space-y-2 ps-5 text-sm text-ink-soft">
+        <li>{copy.pairingStep1}</li>
+        <li>{copy.pairingStep2.replace("{url}", appUrl)}</li>
+        <li>{copy.pairingStep3}</li>
+      </ol>
       <button
         type="button"
         onClick={createCode}
         disabled={pending}
         className="mt-4 rounded-full bg-ink px-4 py-2 text-sm text-paper disabled:opacity-60"
       >
-        {pending ? "جارٍ..." : "إنشاء رمز ربط"}
+        {pending ? copy.pending : copy.pairingCreate}
       </button>
       {code ? (
-        <p className="mt-4 font-mono text-3xl tracking-[0.4em] text-leaf">{code}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <p className="font-mono text-3xl tracking-[0.4em] text-leaf">{code}</p>
+          <button
+            type="button"
+            onClick={copyCode}
+            className="rounded-full border border-ink/15 px-3 py-1 text-xs hover:border-brand hover:text-brand"
+          >
+            {copied ? copy.pairingCopied : copy.pairingCopy}
+          </button>
+        </div>
       ) : null}
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
     </div>

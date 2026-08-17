@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-export function LogoutButton({ name }: { name: string }) {
+export function LogoutButton({ name, label }: { name: string; label: string }) {
   const router = useRouter();
 
   async function logout() {
@@ -12,8 +12,13 @@ export function LogoutButton({ name }: { name: string }) {
   }
 
   return (
-    <button className="text-sm text-ink-soft" type="button" onClick={logout}>
-      {name} · خروج
+    <button
+      className="text-left text-sm text-slate-400 hover:text-sky-200"
+      type="button"
+      onClick={logout}
+    >
+      <span className="block truncate font-medium text-white">{name}</span>
+      <span className="text-xs font-semibold text-sky-300">{label}</span>
     </button>
   );
 }

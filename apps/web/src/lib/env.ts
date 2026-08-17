@@ -1,5 +1,7 @@
+import { ENV_URLS, publicAppUrl } from "./environments";
+
 export function appUrl(): string {
-  return process.env.APP_URL?.replace(/\/+$/, "") || "http://localhost:3000";
+  return publicAppUrl();
 }
 
 export function cronSecret(): string {

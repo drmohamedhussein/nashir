@@ -1,0 +1,55 @@
+{
+  "auditedAt": "2026-08-17T07:22:52.217Z",
+  "stagingVersion": "1.31.0",
+  "mergedBaseline": "1.31.0",
+  "summary": {
+    "vsMerged": {
+      "added": 2,
+      "removed": 1,
+      "changed": 4,
+      "same": 377
+    },
+    "vsLocal": {
+      "added": 0,
+      "removed": 0,
+      "changed": 1,
+      "same": 381
+    }
+  },
+  "changedVsMerged": [
+    {
+      "rel": "includes/admin/class-manager.php",
+      "staging": "c85925898a08",
+      "merged": "3e034f969d06"
+    },
+    {
+      "rel": "includes/admin/class-setup-wizard.php",
+      "staging": "4c94654cb826",
+      "merged": "7a5f816a6558"
+    },
+    {
+      "rel": "includes/core/class-usage-tracker-manager.php",
+      "staging": "ae5013bc340c",
+      "merged": "1ba278fa5941"
+    },
+    {
+      "rel": "includes/frontend/class-seo-manager.php",
+      "staging": "690695d13dac",
+      "merged": "52586869341f"
+    }
+  ],
+  "addedVsMerged": [
+    "ATTRIBUTION.md",
+    "bootstrap.php"
+  ],
+  "removedVsMerged": [
+    "thinkrank.php"
+  ],
+  "changedVsLocal": [
+    {
+      "rel": "includes/admin/class-manager.php",
+      "staging": "c85925898a08",
+      "local": "3f9de0d8ea34"
+    }
+  ]
+}

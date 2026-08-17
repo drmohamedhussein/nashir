@@ -1,26 +1,25 @@
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { getLocale } from "@/lib/locale";
+import { t } from "@/lib/i18n";
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const locale = await getLocale();
+  const copy = t(locale);
   return (
-    <div className="min-h-full">
-      <SiteHeader />
+    <div className="min-h-full bg-white">
+      <SiteHeader locale={locale} />
+      <div className="hero-gradient py-14">
+        <div className="mx-auto max-w-2xl px-6">
+          <h1 className="text-4xl font-bold">{copy.privacy}</h1>
+          <p className="mt-3 text-ink-soft">15 Aug 2026</p>
+        </div>
+      </div>
       <main className="mx-auto max-w-2xl px-6 py-16 leading-8">
-        <h1 className="text-3xl font-bold">سياسة الخصوصية</h1>
-        <p className="mt-6 text-ink-soft">آخر تحديث: 15 أغسطس 2026</p>
-        <p className="mt-6">
-          ناشر يجمع البريد والاسم لإنشاء الحساب، وبيانات المواقع المرتبطة (الرابط، إصدار ووردبريس،
-          عناوين المقالات وحالتها ومواعيد النشر) لتشغيل التقويم ومحرك النشر.
-        </p>
-        <p className="mt-4">
-          أسرار التوقيع تُحفظ لربط الموقع بالتطبيق. لا نبيع بياناتك. يمكنك فصل الموقع أو حذف الحساب
-          بطلب إلى مشغّل الخدمة.
-        </p>
-        <p className="mt-4">
-          الاتصال بين السحابة وووردبريس يتم عبر طلبات REST موقّعة. لا نخزّن محتوى المقال الكامل في
-          هذا الإصدار، بل البيانات اللازمة للجدولة.
-        </p>
+        <article className="rounded-[20px] bg-white p-6 shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
+          <p>{copy.privacyBody}</p>
+        </article>
       </main>
-      <SiteFooter />
+      <SiteFooter locale={locale} />
     </div>
   );
 }
