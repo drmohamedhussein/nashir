@@ -68,4 +68,22 @@ node deploy/local/test-pairing-e2e.cjs --site rankpublish-test
 
 Login: `http://rankpublish-test.local/wp-admin/` — user `admin`.
 
+### Database connection error
+
+If you see **"Error establishing a database connection"**:
+
+1. **Start the site** in Local (green "Running" state).
+2. Run the fix script from repo root (Windows):
+
+```powershell
+node deploy/local/fix-wp-db.cjs --site rankpublish-test
+```
+
+| Site | Expected `DB_NAME` | Notes |
+|------|-------------------|--------|
+| `rankpublish.local` | `rankpublish_saas` | Shared WP + SaaS (`wp_*` + `rp_*`) |
+| `rankpublish-test.local` | `local` | Standalone customer test WP only |
+
+**Do not** point `rankpublish-test` at `rankpublish_saas` — it uses its own WordPress database.
+
 Expected: single plugin **rankpublish 0.8.0**, menu **RankPublish** with Scheduler, Calendar, SEO, Account.
