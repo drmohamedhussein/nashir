@@ -9,7 +9,7 @@ const path = require("path");
 const root = path.resolve(__dirname, "../..");
 const steps = [
   ["deploy-saas.cjs", "Next.js SaaS (build + PM2 + prisma push + seed)"],
-  ["migrate-paypal-columns.cjs", "Rename stripe → paypal subscription columns"],
+  ["apply-staging-schema-safe.cjs", "Safe rp_* schema + PayPal columns (never drops wp_*)"],
   ["deploy-rankpublish-site.cjs", "WordPress marketing plugin (rankpublish-site)"],
   ["deploy-saas-proxy.cjs", "mu-plugin SaaS proxy (/app → :3001)"],
 ];
