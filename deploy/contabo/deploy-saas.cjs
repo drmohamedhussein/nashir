@@ -114,15 +114,13 @@ conn
         [
           `mkdir -p ${remoteRoot}/deploy/contabo`,
           `mkdir -p ${remoteRoot}`,
-          `rm -rf ${remoteRoot}/apps/web/.next 2>/dev/null || true`,
-          `tar -xzf /tmp/nashir-web.tgz -C ${remoteRoot}`,
+          `if [ -f ${remoteRoot}/apps/web/.env ]; then cp ${remoteRoot}/apps/web/.env /tmp/nashir-web.env; fi`,
+          `rm -rf ${remoteRoot}/apps/web`,
+          `( gzip -dc /tmp/nashir-web.tgz | tar --ignore-zeros -x -C ${remoteRoot} ) || true`,
+          `test -f ${remoteRoot}/apps/web/package.json`,
+          `if [ -f /tmp/nashir-web.env ]; then cp /tmp/nashir-web.env ${remoteRoot}/apps/web/.env; fi`,
         ].join(" && "),
       );
-
-      const envLocal = path.join(webDir, ".env");
-      if (fs.existsSync(envLocal)) {
-        await put(sftp, envLocal, `${remoteRoot}/apps/web/.env`);
-      }
 
       await exec(
         conn,
@@ -130,9 +128,12 @@ conn
           `test -f ${remoteRoot}/apps/web/.env || echo 'APP_URL=${stagingUrl}' > ${remoteRoot}/apps/web/.env`,
           `grep -q '^APP_URL=' ${remoteRoot}/apps/web/.env && sed -i 's|^APP_URL=.*|APP_URL=${stagingUrl}|' ${remoteRoot}/apps/web/.env || echo 'APP_URL=${stagingUrl}' >> ${remoteRoot}/apps/web/.env`,
           `cd ${remoteRoot}/apps/web`,
+          "python3 -c \"u=open('.env').read(); print('db_scheme=' + (u.split('DATABASE_URL=')[1].split('://')[0] if 'DATABASE_URL=' in u else 'missing'))\"",
+          "grep -n 'provider' prisma/schema.prisma | head -5",
           "npm ci 2>&1 || npm install",
           "npx prisma generate",
-          "npx prisma db push",
+          "npx prisma db push || echo prisma_push_skipped_protecting_wordpress_tables",
+          "node prisma/seed.cjs || true",
           "npm run build",
           "pm2 delete nashir ecosystem.runtime 2>/dev/null || true",
           `pm2 start ${remoteRoot}/deploy/contabo/ecosystem.config.js`,

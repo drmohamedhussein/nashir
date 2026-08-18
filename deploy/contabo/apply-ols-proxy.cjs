@@ -29,8 +29,9 @@ c.on("ready", async () => {
     console.log("Wrote", target);
   }
 
-  // LiteSpeed doc: direct 127.0.0.1:port without external app
-  const htaccess = `# BEGIN RankPublish SaaS Proxy
+  // htaccess [P] proxy 500s until OLS External App "127.0.0.1:3001" exists.
+  if (process.env.ENABLE_HTACCESS_PROXY === "1") {
+    const htaccess = `# BEGIN RankPublish SaaS Proxy
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteRule ^(app|api|login|register|privacy|terms|sitemap\\.xml)(/.*)?$ http://127.0.0.1:${port}/$1$2 [P,L,E=Proxy-Host:nashir.satest.top]
@@ -38,13 +39,13 @@ RewriteRule ^_next/(.*)$ http://127.0.0.1:${port}/_next/$1 [P,L,E=Proxy-Host:nas
 </IfModule>
 # END RankPublish SaaS Proxy
 `;
-  await new Promise((res, rej) =>
-    sftp.writeFile(`/home/${user}/nashirwp/public_html/.htaccess.saas`, htaccess, (e) => (e ? rej(e) : res())),
-  );
+    await new Promise((res, rej) =>
+      sftp.writeFile(`/home/${user}/nashirwp/public_html/.htaccess.saas`, htaccess, (e) => (e ? rej(e) : res())),
+    );
 
-  await exec(
-    c,
-    `cd /home/${user}/nashirwp/public_html && python3 - <<'PY'
+    await exec(
+      c,
+      `cd /home/${user}/nashirwp/public_html && python3 - <<'PY'
 from pathlib import Path
 p = Path('.htaccess')
 text = p.read_text(encoding='utf-8')
@@ -57,7 +58,10 @@ else:
     p.write_text(block + '\\n' + text[end:].lstrip('\\n'), encoding='utf-8')
 print('htaccess_patched')
 PY`,
-  );
+    );
+  } else {
+    console.log("Skipped htaccess [P] proxy (set ENABLE_HTACCESS_PROXY=1 after creating OLS External App)");
+  }
 
   await exec(c, "curl -sI https://nashir.satest.top/api/health | head -5; curl -s https://nashir.satest.top/api/health 2>/dev/null | head -c 120");
   c.end();

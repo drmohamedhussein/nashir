@@ -37,7 +37,7 @@ export default async function DownloadPage() {
           ))}
         </ol>
         <div className="mt-10 flex flex-wrap gap-3">
-          <a href="/downloads/nashir.zip" className="btn-gradient rounded-full px-5 py-3 text-sm font-bold">
+          <a href="/wp-content/uploads/rankpublish/rankpublish.zip" className="btn-gradient rounded-full px-5 py-3 text-sm font-bold">
             {copy.download}
           </a>
           <Link href="/register" className="rounded-full border border-ink/15 px-5 py-3 text-sm font-bold">

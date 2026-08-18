@@ -106,7 +106,7 @@ export default async function GettingStartedPage() {
                 ) : null}
                 {index === 2 ? (
                   <a
-                    href="/downloads/nashir.zip"
+                    href="/wp-content/uploads/rankpublish/rankpublish.zip"
                     className="mt-3 inline-block rounded-full border border-ink/15 px-4 py-2 text-sm font-semibold hover:border-brand hover:text-brand"
                   >
                     {copy.download}

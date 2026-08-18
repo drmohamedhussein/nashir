@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { hash, compare } from "bcryptjs";
 
 export async function hashPassword(password: string): Promise<string> {
@@ -60,4 +60,20 @@ export function readSignedHeaders(request: Request): { timestamp: string; signat
 
 export function hashSecret(value: string): string {
   return createHmac("sha256", "nashir-api-key").update(value).digest("hex");
+}
+
+export function digestToken(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+export function sameDigest(expected: string, raw: string): boolean {
+  const actual = digestToken(raw);
+  const a = Buffer.from(expected, "utf8");
+  const b = Buffer.from(actual, "utf8");
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+export function normalizeOrigin(value: string): string {
+  const url = new URL(value);
+  return url.origin.toLowerCase();
 }

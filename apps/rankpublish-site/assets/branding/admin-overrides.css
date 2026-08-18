@@ -1,0 +1,116 @@
+/**
+ * RankPublish overrides for upstream SchedulePress / ThinkRank admin chrome.
+ */
+
+body.rankpublish-site-branded-admin .wpsp-admin-header svg,
+body.rankpublish-site-branded-admin .wpsp-admin-header img,
+body.rankpublish-site-branded-admin .wpsp-modal--header--left svg,
+body.rankpublish-site-branded-admin .wpsp-modal--header--left img,
+body.rankpublish-site-branded-admin img[src*="wpsp-logo"],
+body.rankpublish-site-branded-admin img[src*="schedulepress"] {
+	opacity: 0 !important;
+	width: 0 !important;
+	height: 0 !important;
+	overflow: hidden !important;
+	position: absolute !important;
+	pointer-events: none !important;
+}
+
+body.rankpublish-site-branded-admin .wpsp-admin-header,
+body.rankpublish-site-branded-admin .wpsp-modal--header--left {
+	position: relative;
+	min-height: 48px;
+}
+
+body.rankpublish-site-branded-admin .wpsp-admin-header::before,
+body.rankpublish-site-branded-admin .wpsp-modal--header--left::before {
+	content: "RankPublish";
+	position: absolute;
+	left: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 16px;
+	font-weight: 650;
+	color: #1b3a4b;
+	letter-spacing: -0.02em;
+	background: url("logo.svg") no-repeat left center;
+	background-size: 28px 28px;
+	padding-left: 36px;
+	line-height: 28px;
+	pointer-events: none;
+	z-index: 2;
+}
+
+body.rankpublish-site-branded-admin .tr-root aside a svg:first-of-type,
+body.rankpublish-site-branded-admin .tr-root nav a svg:first-of-type {
+	opacity: 0 !important;
+	width: 0 !important;
+	height: 0 !important;
+	overflow: hidden !important;
+}
+
+body.rankpublish-site-branded-admin .tr-root aside a:has(svg),
+body.rankpublish-site-branded-admin .tr-root nav a:has(svg) {
+	position: relative;
+	min-width: 32px;
+	min-height: 32px;
+}
+
+body.rankpublish-site-branded-admin .tr-root aside a:has(svg)::before,
+body.rankpublish-site-branded-admin .tr-root nav a:has(svg)::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 28px;
+	height: 28px;
+	background: url("logo.svg") no-repeat center;
+	background-size: contain;
+}
+
+.rankpublish-site-chrome {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 20px 4px;
+}
+
+.rankpublish-site-chrome img {
+	width: 28px;
+	height: 28px;
+}
+
+.rankpublish-site-chrome span {
+	font-size: 16px;
+	font-weight: 650;
+	color: #1b3a4b;
+}
+
+body.rankpublish-site-branded-admin iframe[src*="youtube.com"],
+body.rankpublish-site-branded-admin iframe[src*="youtu.be"] {
+	display: none !important;
+}
+
+#the-list a[href*="wpdeveloper.com"],
+#the-list a[href*="schedulepress.com"],
+#the-list a[href*="thinkrank.ai"] {
+	display: none !important;
+}
+
+.rankpublish-license-banner {
+	max-width: 720px;
+	margin: 16px 20px 8px;
+	padding: 16px 20px;
+	background: #f6fafb;
+	border: 1px solid #d5e4ea;
+	border-radius: 10px;
+}
+
+.rankpublish-license-banner p {
+	margin: 8px 0 0;
+}
+
+.rankpublish-license-banner .button {
+	margin: 8px 8px 0 0;
+}

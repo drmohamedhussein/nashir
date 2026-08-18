@@ -1,4 +1,4 @@
-﻿import { PairingPanel } from "@/components/pairing-panel";
+import { PairingPanel } from "@/components/pairing-panel";
 import { SiteCard } from "@/components/site-card";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -61,7 +61,7 @@ export default async function AppHomePage() {
           {copy.billingTeaser}
         </Link>
         <PairingPanel locale={locale} appUrl={cloudAppUrl} />
-        <a href="/downloads/nashir.zip" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm text-ink-soft shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
+        <a href="/wp-content/uploads/rankpublish/rankpublish.zip" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm text-ink-soft shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
           {copy.download}
         </a>
       </div>

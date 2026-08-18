@@ -3,30 +3,102 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id             String         @id @default(cuid())
+  id             String              @id @default(cuid())
   name           String
-  email          String         @unique
+  email          String              @unique
   passwordHash   String
-  locale         String         @default("ar")
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  locale         String              @default("ar")
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
   workspace      Workspace?
+  memberships    WorkspaceMember[]
+  sentInvites    WorkspaceInvite[]
+  commands       Command[]
+
+  @@map("rp_user")
 }
 
 model Workspace {
-  id            String         @id @default(cuid())
+  id            String              @id @default(cuid())
   name          String
-  ownerId       String         @unique
-  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  slug          String              @unique
+  ownerId       String              @unique
+  owner         User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   sites         Site[]
   subscriptions Subscription[]
+  members       WorkspaceMember[]
+  invites       WorkspaceInvite[]
+  commands      Command[]
+  activities    ActivityEvent[]
+
+  @@map("rp_workspace")
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String    @default("member") // owner, admin, member, viewer
+  createdAt   DateTime  @default(now())
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("rp_workspace_member")
+}
+
+model WorkspaceInvite {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email       String
+  role        String    @default("member") // admin, member, viewer
+  status      String    @default("pending") // pending, accepted, revoked
+  invitedById String
+  invitedBy   User      @relation(fields: [invitedById], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  @@unique([workspaceId, email, status])
+  @@index([workspaceId])
+  @@map("rp_workspace_invite")
+}
+
+model Plan {
+  id                String            @id
+  name              String
+  description       String?
+  monthlyPriceCents Int
+  yearlyPriceCents  Int
+  siteLimit         Int               @default(1)
+  isActive          Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  entitlements      PlanEntitlement[]
+  subscriptions     Subscription[]
+
+  @@map("rp_plan")
+}
+
+model PlanEntitlement {
+  id            String   @id @default(cuid())
+  planId        String
+  plan          Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  capabilityKey String
+  isIncluded    Boolean  @default(true)
+  quota         Int?
+  createdAt     DateTime @default(now())
+
+  @@unique([planId, capabilityKey])
+  @@map("rp_plan_entitlement")
 }
 
 model Site {
@@ -39,6 +111,10 @@ model Site {
   wpVersion       String?
   apiKeyHash      String
   signingSecret   String
+  connectionTokenHash String?
+  tokenExpiresAt  DateTime?
+  bridgeSecretHash String?
+  workerStatus    String           @default("none")
   status          String           @default("connected")
   lastSeenAt      DateTime?
   integrationsJson String          @default("[]")
@@ -56,8 +132,12 @@ model Site {
   socialAccounts  SocialAccount[]
   socialTemplates SocialTemplate[]
   shareJobs       SocialShareJob[]
+  seoAudits       SeoAudit[]
+  commands        Command[]
+  activities      ActivityEvent[]
 
   @@unique([workspaceId, url])
+  @@map("rp_site")
 }
 
 model PairingCode {
@@ -69,44 +149,60 @@ model PairingCode {
   expiresAt   DateTime
   usedAt      DateTime?
   createdAt   DateTime  @default(now())
+
+  @@map("rp_pairing_code")
 }
 
 model Subscription {
-  id               String    @id @default(cuid())
-  workspaceId      String
-  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  siteId           String?   @unique
-  site             Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
-  interval         String
-  status           String    @default("trial")
-  priceCents       Int
-  currency         String    @default("USD")
-  currentPeriodEnd DateTime
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id                     String    @id @default(cuid())
+  workspaceId            String
+  workspace              Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  siteId                 String?   @unique
+  site                   Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  planId                 String?
+  plan                   Plan?     @relation(fields: [planId], references: [id])
+  interval               String
+  status                 String    @default("trial")
+  priceCents             Int
+  currency               String    @default("USD")
+  currentPeriodEnd       DateTime
+  renewalDate            DateTime?
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([planId])
+  @@map("rp_subscription")
 }
 
 model EditorialPost {
-  id             String        @id @default(cuid())
-  siteId         String
-  site           Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  wpPostId       Int
-  title          String
-  status         String
-  postType       String        @default("post")
-  permalink      String?
-  scheduledAt    DateTime?
-  publishedAt    DateTime?
-  unpublishAt    DateTime?
-  republishAt    DateTime?
-  advancedAt     DateTime?
-  syncedAt       DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  jobs           ScheduleJob[]
-  shareJobs      SocialShareJob[]
+  id              String        @id @default(cuid())
+  siteId          String
+  site            Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  wpPostId        Int
+  title           String
+  status          String
+  postType        String        @default("post")
+  permalink       String?
+  excerpt         String?       @db.Text
+  seoTitle        String?
+  metaDescription String?
+  keywords        String?       @default("[]")
+  scheduledAt     DateTime?
+  publishedAt     DateTime?
+  unpublishAt     DateTime?
+  republishAt     DateTime?
+  advancedAt      DateTime?
+  syncedAt        DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  jobs            ScheduleJob[]
+  shareJobs       SocialShareJob[]
+  seoAudits       SeoAudit[]
 
   @@unique([siteId, wpPostId])
   @@index([siteId, scheduledAt])
+  @@map("rp_editorial_post")
 }
 
 model ScheduleJob {
@@ -125,6 +221,7 @@ model ScheduleJob {
   updatedAt DateTime       @updatedAt
 
   @@index([status, runAt])
+  @@map("rp_schedule_job")
 }
 
 model SocialAccount {
@@ -141,6 +238,7 @@ model SocialAccount {
   updatedAt    DateTime @updatedAt
 
   @@unique([siteId, platform, label])
+  @@map("rp_social_account")
 }
 
 model SocialTemplate {
@@ -153,6 +251,7 @@ model SocialTemplate {
   updatedAt DateTime @updatedAt
 
   @@unique([siteId, platform])
+  @@map("rp_social_template")
 }
 
 model SocialShareJob {
@@ -167,4 +266,63 @@ model SocialShareJob {
   lastError String?
   runAt     DateTime       @default(now())
   createdAt DateTime       @default(now())
+
+  @@map("rp_social_share_job")
+}
+
+model SeoAudit {
+  id              String        @id @default(cuid())
+  siteId          String
+  site            Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  postId          String
+  post            EditorialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  score           Int
+  recommendations String?      @db.Text
+  createdAt       DateTime      @default(now())
+
+  @@index([postId, createdAt])
+  @@map("rp_seo_audit")
+}
+
+model Command {
+  id             String          @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  siteId         String
+  site           Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  actorId        String
+  actor          User            @relation(fields: [actorId], references: [id])
+  capabilityKey  String
+  idempotencyKey String
+  status         String          @default("pending") // pending, running, succeeded, failed
+  input          String?         @db.Text
+  result         String?         @db.Text
+  errorCode      String?
+  errorMessage   String?         @db.Text
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime        @default(now())
+  activities     ActivityEvent[]
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, status, createdAt])
+  @@map("rp_command")
+}
+
+model ActivityEvent {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  siteId      String?
+  site        Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  commandId   String?
+  command     Command?  @relation(fields: [commandId], references: [id], onDelete: SetNull)
+  type        String
+  title       String
+  detail      String?   @db.Text
+  status      String    @default("pending") // pending, running, succeeded, failed
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@map("rp_activity_event")
 }

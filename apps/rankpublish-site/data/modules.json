@@ -1,0 +1,70 @@
+[
+  {
+    "id": "schedule",
+    "label": "SchedulePress",
+    "basename": "wp-scheduled-posts/wp-scheduled-posts.php",
+    "slug": "wp-scheduled-posts",
+    "merged_subpath": "rankpublish/modules/schedule",
+    "upstream_entry": "wp-scheduled-posts.php",
+    "merged_entry": "bootstrap.php",
+    "embed_hooks": [
+      "bootstrap.php",
+      "includes/Admin.php",
+      "includes/Admin/Menu.php",
+      "includes/Admin/Settings/Assets.php",
+      "includes/Installer.php"
+    ],
+    "skip_paths": [".keep", "rankpublish-menu.svg"]
+  },
+  {
+    "id": "schedule-pro",
+    "label": "SchedulePress Pro",
+    "basename": "wp-scheduled-posts-pro/wp-scheduled-posts-pro.php",
+    "slug": "wp-scheduled-posts-pro",
+    "merged_subpath": "rankpublish/modules/schedule-pro",
+    "upstream_entry": "wp-scheduled-posts-pro.php",
+    "merged_entry": "bootstrap.php",
+    "embed_hooks": [
+      "bootstrap.php",
+      "includes/Admin.php",
+      "includes/Installer.php",
+      "includes/functions.php",
+      "includes/Dependencies/WPDeveloper/Licensing/Manager.php",
+      "assets/images/wpps-icon.svg",
+      "assets/images/wpsp-dark.svg"
+    ],
+    "skip_paths": [".keep"]
+  },
+  {
+    "id": "seo",
+    "label": "ThinkRank",
+    "basename": "thinkrank/thinkrank.php",
+    "slug": "thinkrank",
+    "merged_subpath": "rankpublish/modules/seo",
+    "upstream_entry": "thinkrank.php",
+    "merged_entry": "bootstrap.php",
+    "embed_hooks": [
+      "bootstrap.php",
+      "includes/admin/class-manager.php",
+      "includes/admin/class-setup-wizard.php",
+      "includes/core/class-usage-tracker-manager.php",
+      "includes/frontend/class-seo-manager.php"
+    ],
+    "skip_paths": [".keep", "static/svg/rankpublish-menu.svg"]
+  },
+  {
+    "id": "seo-pro",
+    "label": "ThinkRank Pro",
+    "basename": "thinkrank-pro/thinkrank-pro.php",
+    "slug": "thinkrank-pro",
+    "merged_subpath": "rankpublish/modules/seo-pro",
+    "upstream_entry": "thinkrank-pro.php",
+    "merged_entry": "bootstrap.php",
+    "embed_hooks": [
+      "bootstrap.php",
+      "includes/admin/class-manager.php",
+      "includes/Dependencies/WPDeveloper/Licensing/Manager.php"
+    ],
+    "skip_paths": [".keep"]
+  }
+]

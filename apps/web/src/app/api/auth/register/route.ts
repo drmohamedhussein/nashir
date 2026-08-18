@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { createSession } from "@/lib/auth";
-import { hashPassword } from "@/lib/crypto";
+import { hashPassword, randomToken } from "@/lib/crypto";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { PLANS, trialEnd } from "@/lib/plans";
 
@@ -38,16 +38,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "هذا البريد مسجّل مسبقاً." }, { status: 409 });
   }
 
+  const slug = parsed.data.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60) + "-" + randomToken(4);
+
   const user = await prisma.user.create({
     data: {
       name: parsed.data.name,
       email,
       passwordHash: await hashPassword(parsed.data.password),
       workspace: {
-        create: { name: parsed.data.name },
+        create: { name: parsed.data.name, slug },
       },
     },
     include: { workspace: true },
+  });
+
+  await prisma.workspaceMember.create({
+    data: {
+      workspaceId: user.workspace!.id,
+      userId: user.id,
+      role: "owner",
+    },
   });
 
   await createSession({

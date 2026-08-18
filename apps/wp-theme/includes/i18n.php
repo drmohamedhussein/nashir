@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Original PublisherWP marketing copy. English is the source language; Arabic is the translation.
  *
@@ -41,7 +41,7 @@ function nashir_ar(): array {
 	return array(
 		'brand'          => 'PublisherWP',
 		'tagline'        => 'منصة إدارة النشر لمواقع ووردبريس',
-		'promo'          => 'تجربة 14 يوماً بلا بطاقة — فعّل مقعداً وجرّب التقويم اليوم.',
+		'promo'          => 'تجربة 7 أيام بلا بطاقة — فعّل مقعداً وجرّب التقويم اليوم.',
 		'hero'           => 'انشر في موعده. ونمِ محتواك أسرع.',
 		'hero_body'      => 'تقويم تحريري، جدولة موثوقة، وإعادة نشر، ومشاركة على المنصات — من ووردبريس أو من حساب PublisherWP السحابي.',
 		'cta_download'   => 'تنزيل الإضافة',
@@ -105,7 +105,7 @@ function nashir_ar(): array {
 		'g8b'            => 'صيغة مستقلة لكل منصة، تُحفظ في الحساب لا على كل سيرفر.',
 		'g9t'            => 'موصل خفيف',
 		'g9b'            => 'إضافة ووردبريس تنفّذ. الحساب السحابي يحفظ الجدول والقنوات.',
-		'g10t'           => 'تجربة 14 يوماً',
+		'g10t'           => 'تجربة 7 أيام',
 		'g10b'           => 'مقعد تجريبي بلا بطاقة. التحصيل الآلي يُربط لاحقاً.',
 		'social_k'       => 'انشر مرة، وصالِح على المنصات',
 		'social_h'       => 'مشاركة تلقائية أو فورية بعد النشر',
@@ -127,7 +127,7 @@ function nashir_ar(): array {
 		'mprice'         => '9.90$',
 		'yprice'         => '99$',
 		'choose_plan'    => 'اختر الخطة',
-		'trial'          => 'تجربة 14 يوماً دون بطاقة. التحصيل الآلي يُربط لاحقاً.',
+		'trial'          => 'تجربة 7 أيام دون بطاقة. التحصيل الآلي يُربط لاحقاً.',
 		'included'       => 'يشمل الخطة',
 		'p1'             => 'تقويم سحب وإفلات',
 		'p2'             => 'جدولة تلقائية ويدوية',
@@ -139,7 +139,7 @@ function nashir_ar(): array {
 		'p8'             => 'نقل الدومين على نفس المقعد',
 		'platforms_h'    => 'انشر إلى المنصات التي تستخدمها',
 		'trial_k'        => 'بلا التزام للتحصيل الآن',
-		'trial_h'        => 'جرّب PublisherWP 14 يوماً',
+		'trial_h'        => 'جرّب PublisherWP 7 أيام',
 		'trial_b'        => 'فعّل مقعداً تجريبياً، اربط موقعك، وشغّل التقويم والمواعيد. لا نطلب بطاقة اليوم.',
 		'guarantee_h'    => 'تجربة بلا التزام للتحصيل',
 		'guarantee_b'    => 'فعّل مقعداً تجريبياً من الحساب، اربط موقعك، وجرّب التقويم والمواعيد. لا نحصّل بطاقة الآن.',
@@ -195,7 +195,7 @@ function nashir_en(): array {
 	return array(
 		'brand'          => 'PublisherWP',
 		'tagline'        => 'Publishing control for WordPress sites',
-		'promo'          => '14-day trial — no card required. Activate a seat and run the calendar today.',
+		'promo'          => '7-day trial — no card required. Activate a seat and run the calendar today.',
 		'hero'           => 'Publish on time. Grow your content faster.',
 		'hero_body'      => 'Editorial calendar, reliable schedules, republishing, and social sharing — from WordPress or from your PublisherWP cloud account.',
 		'cta_download'   => 'Download plugin',
@@ -259,7 +259,7 @@ function nashir_en(): array {
 		'g8b'            => 'A separate format per network, stored in the account, not on every server.',
 		'g9t'            => 'Light connector',
 		'g9b'            => 'The WordPress plugin executes. The cloud account stores the schedule and channels.',
-		'g10t'           => '14-day trial',
+		'g10t'           => '7-day trial',
 		'g10b'           => 'A trial seat with no card. Automatic billing comes later.',
 		'social_k'       => 'Publish once, syndicate with care',
 		'social_h'       => 'Automatic or instant shares after publish',
@@ -281,7 +281,7 @@ function nashir_en(): array {
 		'mprice'         => '$9.90',
 		'yprice'         => '$99',
 		'choose_plan'    => 'Choose plan',
-		'trial'          => '14-day trial, no card. Automatic billing comes later.',
+		'trial'          => '7-day trial, no card. Automatic billing comes later.',
 		'included'       => 'Every plan includes',
 		'p1'             => 'Drag-and-drop calendar',
 		'p2'             => 'Auto and manual scheduling',
@@ -293,7 +293,7 @@ function nashir_en(): array {
 		'p8'             => 'Rebind domain on the same seat',
 		'platforms_h'    => 'Publish to the networks you already use',
 		'trial_k'        => 'No card charge today',
-		'trial_h'        => 'Try PublisherWP for 14 days',
+		'trial_h'        => 'Try PublisherWP for 7 days',
 		'trial_b'        => 'Activate a trial seat, connect a site, and run the calendar. We do not collect cards yet.',
 		'guarantee_h'    => 'Try the product before any card charge',
 		'guarantee_b'    => 'Activate a trial seat, connect a site, and run the calendar. We do not collect cards yet.',

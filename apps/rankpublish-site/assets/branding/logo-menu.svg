@@ -1,0 +1,8 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RankPublish">
+  <rect width="20" height="20" rx="5.5" fill="#1B3A4B"/>
+  <path d="M5.6 14.4V6.6h3.25c1.94 0 3.1 1 3.1 2.53 0 1.06-.56 1.84-1.53 2.22L11.2 14.4H9.6L8.3 11.6H6.5v2.8H5.6Z" fill="#F4F1EA"/>
+  <path d="M6.7 11.3h1.7c.97 0 1.53-.44 1.53-1.1s-.56-1.1-1.53-1.1H6.7v2.2Z" fill="#1B3A4B"/>
+  <rect x="13.25" y="12.5" width="1.3" height="2.4" rx="0.25" fill="#C45C26"/>
+  <rect x="15.05" y="11.3" width="1.3" height="4.1" rx="0.25" fill="#C45C26"/>
+  <rect x="16.85" y="9.8" width="1.3" height="6.1" rx="0.25" fill="#E08A3C"/>
+</svg>
