@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { Client } = require(path.join(process.env.TEMP, "nashir-ssh", "node_modules", "ssh2"));
+const { Client } = require("./lib/ssh2-client.cjs");
 
 const host = process.env.NASHIR_SSH_HOST;
 const username = process.env.NASHIR_SSH_USER;
