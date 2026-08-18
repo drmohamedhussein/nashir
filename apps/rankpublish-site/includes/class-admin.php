@@ -372,91 +372,34 @@ final class RankPublish_Site_Admin {
 	}
 
 	public function render_scheduler(): void {
-		$ctx  = $this->ctx();
-		$cal  = is_array( $ctx['calendar'] ?? null ) ? $ctx['calendar'] : array();
-		$queue = is_array( $ctx['queue'] ?? null ) ? $ctx['queue'] : array();
-
 		$this->shell_start( self::MENU_SLUG . '-scheduler' );
 		RankPublish_Site_Admin_Os::heading(
 			__( 'Scheduler', 'rankpublish-site' ),
-			__( 'Content calendar', 'rankpublish-site' ),
-			__( 'Plan publishing with the WordPress post calendar. Open a post in the editor to change its schedule.', 'rankpublish-site' ),
+			__( 'SchedulePress workspace', 'rankpublish-site' ),
+			__( 'Use SchedulePress and SchedulePress Pro inside RankPublish Core without leaving this screen.', 'rankpublish-site' ),
 			'<a class="rpsite-os-btn rpsite-os-btn--outline" href="' . esc_url( RankPublish_Site_Admin_Os::url( self::MENU_SLUG . '-sites' ) ) . '">'
 			. RankPublish_Site_Admin_Os::icon( 'globe' )
 			. esc_html__( 'Manage sites', 'rankpublish-site' )
 			. '</a>'
 		);
-		$this->render_calendar( $cal );
-		?>
-		<section class="rpsite-os-card">
-			<div class="rpsite-os-card__head">
-				<div>
-					<h2><?php esc_html_e( 'Publishing queue', 'rankpublish-site' ); ?></h2>
-					<p><?php esc_html_e( 'Scheduled WordPress posts. Command status stays pending until a Worker is provisioned.', 'rankpublish-site' ); ?></p>
-				</div>
-				<?php echo RankPublish_Site_Admin_Os::icon( 'clock' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			</div>
-			<?php if ( array() === $queue ) : ?>
-				<?php $this->empty_state( 'clock', __( 'No publishing operations yet', 'rankpublish-site' ), __( 'Schedule a post in WordPress and it will appear here as pending.', 'rankpublish-site' ), true ); ?>
-			<?php else : ?>
-				<ul class="rpsite-os-queue">
-					<?php foreach ( $queue as $item ) : ?>
-						<li>
-							<div>
-								<strong><?php echo esc_html( (string) ( $item['title'] ?? '' ) ); ?></strong>
-								<p><?php echo esc_html( (string) ( $item['when'] ?? '' ) ); ?></p>
-							</div>
-							<div class="rpsite-os-queue__meta">
-								<?php RankPublish_Site_Admin_Os::status_badge( (string) ( $item['status'] ?? 'pending' ) ); ?>
-								<?php if ( ! empty( $item['edit'] ) ) : ?>
-									<a class="rpsite-os-btn rpsite-os-btn--outline" href="<?php echo esc_url( (string) $item['edit'] ); ?>"><?php esc_html_e( 'Edit', 'rankpublish-site' ); ?></a>
-								<?php endif; ?>
-							</div>
-						</li>
-					<?php endforeach; ?>
-				</ul>
-			<?php endif; ?>
-		</section>
-		<?php
+		RankPublish_Site_Module_Embed::render_workspace(
+			RankPublish_Site_Module_Embed::scheduler_panels(),
+			'scheduler'
+		);
 		$this->shell_end();
 	}
 
 	public function render_seo(): void {
-		$ctx   = $this->ctx();
-		$posts = is_array( $ctx['posts'] ?? null ) ? $ctx['posts'] : array();
-
 		$this->shell_start( self::MENU_SLUG . '-seo' );
 		RankPublish_Site_Admin_Os::heading(
 			__( 'SEO', 'rankpublish-site' ),
-			__( 'Search metadata', 'rankpublish-site' ),
-			__( 'Review posts on this site and open the WordPress editor to change titles and excerpts.', 'rankpublish-site' )
+			__( 'ThinkRank workspace', 'rankpublish-site' ),
+			__( 'Use ThinkRank and ThinkRank Pro inside RankPublish Core without leaving this screen.', 'rankpublish-site' )
 		);
-
-		if ( array() === $posts ) {
-			echo '<section class="rpsite-os-card">';
-			$this->empty_state( 'seo', __( 'SEO starts with content', 'rankpublish-site' ), __( 'When posts exist on this site, they will appear here with edit links.', 'rankpublish-site' ) );
-			echo '</section>';
-			$this->shell_end();
-			return;
-		}
-		?>
-		<section class="rpsite-os-card rpsite-os-card--flush">
-			<ul class="rpsite-os-posts">
-				<?php foreach ( $posts as $post ) : ?>
-					<li>
-						<div>
-							<strong><?php echo esc_html( (string) ( $post['title'] ?? '' ) ); ?></strong>
-							<p><?php echo esc_html( (string) ( $post['excerpt'] ?? '' ) ); ?></p>
-						</div>
-						<div class="rpsite-os-posts__meta">
-							<span class="rpsite-os-pill rpsite-os-pill--<?php echo esc_attr( $this->post_pill( (string) ( $post['status'] ?? '' ) ) ); ?>"><?php echo esc_html( (string) ( $post['status'] ?? '' ) ); ?></span>
-							<a class="rpsite-os-btn rpsite-os-btn--outline" href="<?php echo esc_url( (string) ( $post['edit'] ?? '' ) ); ?>"><?php esc_html_e( 'Edit', 'rankpublish-site' ); ?></a>
-						</div>
-					</li>
-				<?php endforeach; ?>
-			</ul>
-		</section>
-		<?php
+		RankPublish_Site_Module_Embed::render_workspace(
+			RankPublish_Site_Module_Embed::seo_panels(),
+			'seo'
+		);
 		$this->shell_end();
 	}
 
