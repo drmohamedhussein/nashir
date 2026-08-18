@@ -5,43 +5,16 @@ const prisma = new PrismaClient();
 const SEED_PLANS = [
   {
     id: "starter",
-    name: "Starter",
-    description: "For focused publishing workflows on a single site.",
-    monthlyPriceCents: 990,
+    name: "RankPublish",
+    description: "One WordPress site — calendar, scheduling, SEO, and social.",
+    monthlyPriceCents: 999,
     yearlyPriceCents: 9900,
     siteLimit: 1,
-    entitlements: [
-      { capabilityKey: "schedule.calendar", quota: null },
-      { capabilityKey: "seo.audit", quota: 25 },
-    ],
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    description: "For teams managing several WordPress properties.",
-    monthlyPriceCents: 2900,
-    yearlyPriceCents: 29000,
-    siteLimit: 5,
     entitlements: [
       { capabilityKey: "schedule.calendar", quota: null },
       { capabilityKey: "schedule.queue", quota: null },
       { capabilityKey: "seo.audit", quota: 250 },
       { capabilityKey: "seo.metadata", quota: null },
-    ],
-  },
-  {
-    id: "scale",
-    name: "Scale",
-    description: "For advanced publishing and SEO operations at scale.",
-    monthlyPriceCents: 4900,
-    yearlyPriceCents: 49000,
-    siteLimit: 15,
-    entitlements: [
-      { capabilityKey: "schedule.calendar", quota: null },
-      { capabilityKey: "schedule.queue", quota: null },
-      { capabilityKey: "seo.audit", quota: null },
-      { capabilityKey: "seo.metadata", quota: null },
-      { capabilityKey: "operations.priority", quota: null },
     ],
   },
 ];
@@ -88,14 +61,17 @@ async function main() {
     }
   }
 
-  console.log("Seeded plans and entitlements.");
+  await prisma.plan.updateMany({
+    where: { id: { in: ["growth", "scale"] } },
+    data: { isActive: false },
+  });
+
+  console.log("Seeded plans:", SEED_PLANS.map((p) => p.id).join(", "));
 }
 
 main()
-  .catch((error) => {
-    console.error(error);
+  .catch((e) => {
+    console.error(e);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .finally(() => prisma.$disconnect());

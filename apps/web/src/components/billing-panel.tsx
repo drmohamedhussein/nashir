@@ -42,6 +42,7 @@ export function BillingPanel({
   const searchParams = useSearchParams();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const plan = plans[0];
 
   useEffect(() => {
     const checkout = searchParams.get("checkout");
@@ -63,13 +64,14 @@ export function BillingPanel({
     })();
   }, [searchParams, router]);
 
-  async function startTrial(planId: string, interval: "monthly" | "yearly") {
+  async function startTrial(interval: "monthly" | "yearly") {
+    if (!plan) return;
     setPending(true);
     setError("");
     const response = await fetch("/api/v1/billing", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "trial", planId, interval }),
+      body: JSON.stringify({ action: "trial", planId: plan.id, interval }),
     });
     const data = (await response.json()) as { error?: { message?: string } };
     setPending(false);
@@ -80,13 +82,14 @@ export function BillingPanel({
     router.refresh();
   }
 
-  async function checkout(planId: string, interval: "monthly" | "yearly") {
+  async function checkout(interval: "monthly" | "yearly") {
+    if (!plan) return;
     setPending(true);
     setError("");
     const response = await fetch("/api/v1/billing", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "checkout", planId, interval }),
+      body: JSON.stringify({ action: "checkout", planId: plan.id, interval }),
     });
     const data = (await response.json()) as { data?: { url?: string }; error?: { message?: string } };
     setPending(false);
@@ -124,41 +127,76 @@ export function BillingPanel({
     router.refresh();
   }
 
+  if (!plan) {
+    return <p className="text-sm text-ink-soft">{copy.billingNoSeats}</p>;
+  }
+
   return (
     <div className="space-y-6">
       <p className="text-sm text-ink-soft">{copy.billingIntro}</p>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {plans.map((plan) => (
-          <article key={plan.id} className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
-            <h3 className="text-lg font-semibold">{plan.name}</h3>
-            <p className="mt-1 text-sm text-ink-soft">
-              {(plan.monthlyPriceCents / 100).toFixed(2)}$ / {copy.billingMonthlyShort ?? "mo"} · {plan.siteLimit}{" "}
-              {copy.sites ?? "sites"}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+      <div className="grid gap-4 md:grid-cols-2">
+        <article className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
+          <h3 className="text-lg font-semibold">{copy.monthly}</h3>
+          <p className="mt-2 text-3xl font-bold">{(plan.monthlyPriceCents / 100).toFixed(2)}$</p>
+          <p className="text-sm text-ink-soft">{copy.perSite}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => startTrial("monthly")}
+              className="rounded-full border border-ink/15 px-3 py-1.5 text-xs disabled:opacity-60"
+            >
+              {copy.billingTrialMonthly}
+            </button>
+            {paypalConfigured ? (
               <button
                 type="button"
                 disabled={pending}
-                onClick={() => startTrial(plan.id, "monthly")}
-                className="rounded-full border border-ink/15 px-3 py-1.5 text-xs disabled:opacity-60"
+                onClick={() => checkout("monthly")}
+                className="rounded-full bg-ink px-3 py-1.5 text-xs text-paper disabled:opacity-60"
               >
-                {copy.billingTrialMonthly}
+                PayPal · {copy.billingSubscribe ?? "Subscribe"}
               </button>
-              {paypalConfigured ? (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => checkout(plan.id, "monthly")}
-                  className="rounded-full bg-ink px-3 py-1.5 text-xs text-paper disabled:opacity-60"
-                >
-                  {copy.billingSubscribe ?? "Subscribe with PayPal"}
-                </button>
-              ) : null}
-            </div>
-          </article>
-        ))}
+            ) : null}
+          </div>
+        </article>
+
+        <article className="rounded-2xl border border-sky-200 bg-sky-50/40 p-5 shadow-sm">
+          <span className="text-xs font-bold uppercase text-sky-700">{copy.popular}</span>
+          <h3 className="mt-1 text-lg font-semibold">{copy.yearly}</h3>
+          <p className="mt-2 text-3xl font-bold">{(plan.yearlyPriceCents / 100).toFixed(2)}$</p>
+          <p className="text-sm text-ink-soft">{copy.perSite}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => startTrial("yearly")}
+              className="rounded-full border border-ink/15 px-3 py-1.5 text-xs disabled:opacity-60"
+            >
+              {copy.billingTrialYearly}
+            </button>
+            {paypalConfigured ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => checkout("yearly")}
+                className="rounded-full bg-ink px-3 py-1.5 text-xs text-paper disabled:opacity-60"
+              >
+                PayPal · {copy.billingSubscribe ?? "Subscribe"}
+              </button>
+            ) : null}
+          </div>
+        </article>
       </div>
+
+      {!paypalConfigured ? (
+        <p className="rounded-xl border border-dashed border-ink/15 bg-slate-50/50 p-4 text-sm text-ink-soft">
+          {locale === "ar"
+            ? "PayPal سيُربط لاحقاً عند اكتمال المشروع. المقاعد التجريبية تعمل الآن."
+            : "PayPal connects later when the project is complete. Trial seats work now."}
+        </p>
+      ) : null}
 
       {paypalConfigured && seats.some((s) => s.paypalSubscriptionId) ? (
         <button type="button" disabled={pending} onClick={openPortal} className="rounded-full border border-ink/15 px-4 py-2 text-sm">

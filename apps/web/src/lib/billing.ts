@@ -99,7 +99,7 @@ export async function activateSubscriptionFromPayPal(subscriptionId: string): Pr
 
   const plan = await prisma.plan.findUnique({ where: { id: meta.planId } });
   const priceCents =
-    meta.interval === "yearly" ? plan?.yearlyPriceCents ?? 9900 : plan?.monthlyPriceCents ?? 990;
+    meta.interval === "yearly" ? plan?.yearlyPriceCents ?? 9900 : plan?.monthlyPriceCents ?? 999;
   const end = periodEnd(meta.interval);
   const paypalPayerId = subscription.subscriber?.payer_id ?? null;
 

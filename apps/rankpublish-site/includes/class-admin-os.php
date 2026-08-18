@@ -127,7 +127,7 @@ final class RankPublish_Site_Admin_Os {
 			),
 			'plan'           => array(
 				'name'         => 'RankPublish',
-				'price_month'  => '$9.90',
+				'price_month'  => '$9.99',
 				'price_year'   => '$99',
 				'trial_days'   => 7,
 				'site_limit'   => 1,

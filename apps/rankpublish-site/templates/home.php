@@ -147,30 +147,30 @@ $tones = array( 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10' );
 			</div>
 			<p class="muted"><?php echo esc_html( rpsite_t( 'trial' ) ); ?></p>
 		</div>
-		<div class="os-plans os-plans-tier">
-			<?php
-			$tiers = array(
-				array( 'starter', 'plan_starter_t', 'plan_starter_p', 'plan_starter_b', 'plan_starter_sites' ),
-				array( 'growth', 'plan_growth_t', 'plan_growth_p', 'plan_growth_b', 'plan_growth_sites' ),
-				array( 'scale', 'plan_scale_t', 'plan_scale_p', 'plan_scale_b', 'plan_scale_sites' ),
-			);
-			foreach ( $tiers as $index => $tier ) :
-				$featured = 1 === $index ? ' featured' : '';
-				?>
-			<article class="reveal<?php echo esc_attr( $featured ); ?>">
-				<?php if ( $featured ) : ?><span class="badge"><?php echo esc_html( rpsite_t( 'plan_popular' ) ); ?></span><?php endif; ?>
-				<h3><?php echo esc_html( rpsite_t( $tier[1] ) ); ?></h3>
-				<p class="muted"><?php echo esc_html( rpsite_t( $tier[4] ) ); ?></p>
-				<div class="price"><?php echo esc_html( rpsite_t( $tier[2] ) ); ?></div>
-				<p class="muted"><?php echo esc_html( rpsite_t( $tier[3] ) ); ?></p>
+		<div class="os-plans">
+			<article class="reveal">
+				<h3><?php echo esc_html( rpsite_t( 'monthly' ) ); ?></h3>
+				<div class="price"><?php echo esc_html( rpsite_t( 'mprice' ) ); ?></div>
+				<p class="muted"><?php echo esc_html( rpsite_t( 'per_site' ) ); ?></p>
 				<ul class="checks">
-					<?php foreach ( array( 'p1', 'p2', 'p3', 'p4' ) as $item ) : ?>
+					<?php foreach ( array( 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8' ) as $item ) : ?>
 						<li><?php echo esc_html( rpsite_t( $item ) ); ?></li>
 					<?php endforeach; ?>
 				</ul>
-				<a class="btn <?php echo $featured ? 'btn-sky' : 'btn-ink'; ?>" href="<?php echo esc_url( $start ); ?>"><?php echo esc_html( rpsite_t( 'choose_plan' ) ); ?></a>
+				<a class="btn btn-ink" href="<?php echo esc_url( $start ); ?>"><?php echo esc_html( rpsite_t( 'choose_plan' ) ); ?></a>
 			</article>
-			<?php endforeach; ?>
+			<article class="reveal featured">
+				<span class="badge"><?php echo esc_html( rpsite_t( 'popular' ) ); ?></span>
+				<h3><?php echo esc_html( rpsite_t( 'yearly' ) ); ?></h3>
+				<div class="price"><?php echo esc_html( rpsite_t( 'yprice' ) ); ?></div>
+				<p class="muted"><?php echo esc_html( rpsite_t( 'per_site' ) ); ?> · <?php echo esc_html( rpsite_t( 'save_badge' ) ); ?></p>
+				<ul class="checks">
+					<?php foreach ( array( 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8' ) as $item ) : ?>
+						<li><?php echo esc_html( rpsite_t( $item ) ); ?></li>
+					<?php endforeach; ?>
+				</ul>
+				<a class="btn btn-sky" href="<?php echo esc_url( $start ); ?>"><?php echo esc_html( rpsite_t( 'choose_plan' ) ); ?></a>
+			</article>
 		</div>
 	</div>
 </section>

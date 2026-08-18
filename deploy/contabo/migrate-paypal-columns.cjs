@@ -5,7 +5,7 @@
  * Env: NASHIR_SSH_*, optional NASHIR_MYSQL_USER / NASHIR_MYSQL_PASS / NASHIR_MYSQL_DB
  */
 const path = require("path");
-const { Client } = require(path.join(process.env.TEMP, "nashir-ssh", "node_modules", "ssh2"));
+const { Client } = require("./lib/ssh2-client.cjs");
 
 const host = process.env.NASHIR_SSH_HOST;
 const username = process.env.NASHIR_SSH_USER;

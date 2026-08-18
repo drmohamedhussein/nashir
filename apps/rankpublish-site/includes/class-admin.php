@@ -270,7 +270,7 @@ final class RankPublish_Site_Admin {
 					<h2><?php echo esc_html( (string) ( $plan['name'] ?? 'RankPublish' ) ); ?></h2>
 					<?php echo RankPublish_Site_Admin_Os::icon( 'spark' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
-				<p><?php esc_html_e( '$9.90 / month or $99 / year per site, with a 7-day trial.', 'rankpublish-site' ); ?></p>
+				<p><?php esc_html_e( '$9.99 / month or $99 / year per site, with a 7-day trial.', 'rankpublish-site' ); ?></p>
 				<hr />
 				<div class="rpsite-os-card__foot">
 					<div>
@@ -569,14 +569,14 @@ final class RankPublish_Site_Admin {
 		RankPublish_Site_Admin_Os::heading(
 			__( 'Billing & entitlements', 'rankpublish-site' ),
 			__( 'A plan that matches your operating scope.', 'rankpublish-site' ),
-			__( 'Locked public price: $9.90 per month or $99 per year, per site, with a 7-day trial. Card billing lives in the RankPublish account.', 'rankpublish-site' )
+			__( 'Locked public price: $9.99 per month or $99 per year, per site, with a 7-day trial. Card billing lives in the RankPublish account.', 'rankpublish-site' )
 		);
 		?>
 		<div class="rpsite-os-split rpsite-os-split--billing">
 			<section class="rpsite-os-card rpsite-os-card--dark">
 				<p class="rpsite-os-kicker-light"><?php esc_html_e( 'Current plan', 'rankpublish-site' ); ?></p>
 				<h2><?php echo esc_html( (string) ( $plan['name'] ?? 'RankPublish' ) ); ?></h2>
-				<p><?php esc_html_e( '$9.90 / month or $99 / year per connected site, with a 7-day trial.', 'rankpublish-site' ); ?></p>
+				<p><?php esc_html_e( '$9.99 / month or $99 / year per connected site, with a 7-day trial.', 'rankpublish-site' ); ?></p>
 				<div class="rpsite-os-meter">
 					<div>
 						<span><?php esc_html_e( 'Connected sites', 'rankpublish-site' ); ?></span>
@@ -639,7 +639,7 @@ final class RankPublish_Site_Admin {
 						<strong><?php esc_html_e( 'Monthly', 'rankpublish-site' ); ?></strong>
 						<span class="rpsite-os-pill rpsite-os-pill--running"><?php esc_html_e( 'Current', 'rankpublish-site' ); ?></span>
 					</div>
-					<p><?php esc_html_e( '$9.90 / month · 1 site', 'rankpublish-site' ); ?></p>
+					<p><?php esc_html_e( '$9.99 / month · 1 site', 'rankpublish-site' ); ?></p>
 					<a class="rpsite-os-btn rpsite-os-btn--outline" href="<?php echo esc_url( (string) $ctx['billing_url'] ); ?>"><?php esc_html_e( 'Selected plan', 'rankpublish-site' ); ?></a>
 				</article>
 				<article class="rpsite-os-plan">

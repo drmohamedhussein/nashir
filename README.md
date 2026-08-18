@@ -43,6 +43,6 @@ Environment: `DATABASE_URL`, `AUTH_SECRET`, `CRON_SECRET`, and `APP_URL`.
 ## Product
 
 - Activate the plugin by signing in with a PublisherWP account (email + password).
-- One seat per site: **$9.90 / month** or **$99 / year**. Card billing comes later; trial/manual seats work now.
+- One seat per site: **$9.99 / month** or **$99 / year**. PayPal billing comes later; trial/manual seats work now.
 - Unbind a domain and attach another on the same seat without buying again.
 - Calendar, scheduling, republishing, and social sharing from the account or from WordPress.

@@ -100,14 +100,14 @@ switch ( $slug ) {
 				'What is RankPublish?' => 'A WPDevLtd WordPress plugin for SEO, AI metadata, editorial calendar, and social sharing. It runs on your site without a cloud account today.',
 				'How does it relate to SchedulePress or ThinkRank?' => 'RankPublish embeds those GPL modules. Settings already stored as wpsp_* / thinkrank_* keep working. The RankPublish name and logo are original; we do not claim original authorship of the embedded module code.',
 				'Should I keep the old plugins active?' => 'No. Keep standalone SchedulePress and ThinkRank deactivated so the embedded modules can load.',
-				'When is Connect & billing ready?' => 'Target price is $9.90/month or $99/year with a 7-day trial. Connect & Activate ships with RankPublish.com. Until then, download and run the plugin locally.',
+				'When is Connect & billing ready?' => 'Target price is $9.99/month or $99/year with a 7-day trial. Connect & Activate ships with RankPublish.com. Until then, download and run the plugin locally.',
 				'Can I move the domain later?' => 'Yes. After account launch you unbind a seat and attach another domain.',
 			)
 			: array(
 				'ما هو RankPublish؟' => 'إضافة ووردبريس من WPDevLtd للسيو والذكاء الاصطناعي والتقويم والمشاركة الاجتماعية. تعمل على موقعك دون حساب سحابي اليوم.',
 				'ما علاقتها بـ SchedulePress أو ThinkRank؟' => 'RankPublish يضم تلك الوحدات المرخّصة GPL. الإعدادات المخزّنة كمفاتيح wpsp_* وthinkrank_* تبقى صالحة. الاسم والشعار أصليان؛ لا ندّعي تأليف كود الوحدات المضمّنة.',
 				'هل أبقي الإضافات القديمة مفعّلة؟' => 'لا. أبقِ SchedulePress وThinkRank المنفصلتين معطّلتين حتى تُحمَّل الوحدات المضمّنة.',
-				'متى Connect والفوترة؟' => 'السعر المستهدف 9.90$ شهرياً أو 99$ سنوياً مع تجربة 7 أيام. Connect يأتي مع RankPublish.com. حتى ذلك الحين نزّل الإضافة وشغّلها محلياً.',
+				'متى Connect والفوترة؟' => 'السعر المستهدف 9.99$ شهرياً أو 99$ سنوياً مع تجربة 7 أيام. Connect يأتي مع RankPublish.com. حتى ذلك الحين نزّل الإضافة وشغّلها محلياً.',
 				'هل أنقل الدومين لاحقاً؟' => 'نعم. بعد إطلاق الحساب تفك الربط وتربط نطاقاً آخر على نفس المقعد.',
 			);
 		foreach ( $faqs as $q => $a ) {

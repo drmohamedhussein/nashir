@@ -13,13 +13,13 @@ import { SEED_PLANS } from "@/lib/plans";
 import { appUrl } from "@/lib/env";
 
 const checkoutSchema = z.object({
-  planId: z.enum(["starter", "growth", "scale"]).default("starter"),
+  planId: z.literal("starter").default("starter"),
   interval: z.enum(["monthly", "yearly"]).default("monthly"),
 });
 
 const trialSchema = z.object({
   interval: z.enum(["monthly", "yearly"]).default("monthly"),
-  planId: z.enum(["starter", "growth", "scale"]).default("starter"),
+  planId: z.literal("starter").default("starter"),
 });
 
 const captureSchema = z.object({
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
 
   const plan = await prisma.plan.findUnique({ where: { id: parsed.data.planId } });
   const priceCents =
-    parsed.data.interval === "yearly" ? plan?.yearlyPriceCents ?? 9900 : plan?.monthlyPriceCents ?? 990;
+    parsed.data.interval === "yearly" ? plan?.yearlyPriceCents ?? 9900 : plan?.monthlyPriceCents ?? 999;
 
   const seat = await prisma.subscription.create({
     data: {
