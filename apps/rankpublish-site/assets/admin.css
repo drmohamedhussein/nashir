@@ -1583,3 +1583,75 @@ body.rpsite-os .update-nag {
 	padding: 6px 0 0;
 	opacity: 1;
 }
+
+/* Upstream plugin iframe workspace (Scheduler / SEO) */
+.rpsite-os-embed-wrap {
+	overflow: hidden;
+}
+
+.rpsite-os-embed-status {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 14px 18px;
+	border-bottom: 1px solid var(--rp-line);
+	background: #fff;
+}
+
+.rpsite-os-embed-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 12px 18px;
+	border-bottom: 1px solid var(--rp-line);
+	background: #fff;
+}
+
+.rpsite-os-embed-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	border-radius: 999px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #475569;
+	background: #f1f5f9;
+	border: 1px solid transparent;
+	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.rpsite-os-embed-tab:hover {
+	color: #0f172a;
+	background: #e2e8f0;
+}
+
+.rpsite-os-embed-tab.is-active {
+	color: #fff;
+	background: var(--rp-sidebar);
+	border-color: var(--rp-sidebar);
+}
+
+.rpsite-os-embed-tab__pro {
+	font-style: normal;
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 2px 6px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.16);
+	color: inherit;
+}
+
+.rpsite-os-embed-tab.is-active .rpsite-os-embed-tab__pro {
+	background: rgba(255, 255, 255, 0.2);
+}
+
+.rpsite-os-embed-frame {
+	display: block;
+	width: 100%;
+	min-height: 72vh;
+	border: 0;
+	background: #fff;
+}
