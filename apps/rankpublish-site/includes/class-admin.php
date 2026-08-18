@@ -375,17 +375,10 @@ final class RankPublish_Site_Admin {
 		$this->shell_start( self::MENU_SLUG . '-scheduler' );
 		RankPublish_Site_Admin_Os::heading(
 			__( 'Scheduler', 'rankpublish-site' ),
-			__( 'SchedulePress workspace', 'rankpublish-site' ),
-			__( 'Use SchedulePress and SchedulePress Pro inside RankPublish Core without leaving this screen.', 'rankpublish-site' ),
-			'<a class="rpsite-os-btn rpsite-os-btn--outline" href="' . esc_url( RankPublish_Site_Admin_Os::url( self::MENU_SLUG . '-sites' ) ) . '">'
-			. RankPublish_Site_Admin_Os::icon( 'globe' )
-			. esc_html__( 'Manage sites', 'rankpublish-site' )
-			. '</a>'
+			__( 'Publishing workspace', 'rankpublish-site' ),
+			__( 'Plan, schedule, and publish content with RankPublish.', 'rankpublish-site' )
 		);
-		RankPublish_Site_Module_Embed::render_workspace(
-			RankPublish_Site_Module_Embed::scheduler_panels(),
-			'scheduler'
-		);
+		RankPublish_Site_Module_Embed::render_missing_stack( 'scheduler' );
 		$this->shell_end();
 	}
 
@@ -393,13 +386,10 @@ final class RankPublish_Site_Admin {
 		$this->shell_start( self::MENU_SLUG . '-seo' );
 		RankPublish_Site_Admin_Os::heading(
 			__( 'SEO', 'rankpublish-site' ),
-			__( 'ThinkRank workspace', 'rankpublish-site' ),
-			__( 'Use ThinkRank and ThinkRank Pro inside RankPublish Core without leaving this screen.', 'rankpublish-site' )
+			__( 'Search workspace', 'rankpublish-site' ),
+			__( 'Optimize metadata and rankings with RankPublish.', 'rankpublish-site' )
 		);
-		RankPublish_Site_Module_Embed::render_workspace(
-			RankPublish_Site_Module_Embed::seo_panels(),
-			'seo'
-		);
+		RankPublish_Site_Module_Embed::render_missing_stack( 'seo' );
 		$this->shell_end();
 	}
 

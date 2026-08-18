@@ -90,15 +90,13 @@ final class RankPublish_Site_Branding {
 			return $url;
 		}
 
-		if ( ! preg_match( '#/(wpsp-logo(?:-full)?|wpsp-icon|wpps-icon|wpsp-dark|wpsp-el-editor-modal-logo|wpsp)\.(svg|png)$#i', $path ) ) {
-			return $url;
-		}
+		if ( preg_match( '#/(wpsp-logo(?:-full)?|wpsp-icon|wpps-icon|wpsp-dark|wpsp-el-editor-modal-logo|wpsp|thinkrank-logo|thinkrank-icon|rankpublish-menu|tr-logo)\.(svg|png)$#i', $path ) ) {
+			if ( str_contains( $path, 'logo-full' ) || str_contains( $path, 'full' ) ) {
+				return self::url( 'logo-full.svg' );
+			}
 
-		if ( str_contains( $path, 'logo-full' ) ) {
-			return self::url( 'logo-full.svg' );
+			return self::url( 'logo-icon.svg' );
 		}
-
-		return self::url( 'logo-icon.svg' );
 	}
 
 	/**

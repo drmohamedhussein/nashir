@@ -25,7 +25,10 @@
 	];
 
 	function isAdminTarget() {
-		return document.body.classList.contains('rankpublish-site-branded');
+		return (
+			document.body.classList.contains('rankpublish-site-branded') ||
+			document.body.classList.contains('rpsite-os-module-wrap')
+		);
 	}
 
 	function isLicenseScreen() {
@@ -78,13 +81,26 @@
 			injectImg(header, logo, 28, 28);
 		});
 
-		root.querySelectorAll('.tr-root aside a, .tr-root nav a').forEach(function (link) {
+		root.querySelectorAll('.tr-root aside a, .tr-root nav a, .tr-root header a, .tr-root [class*="logo"]').forEach(function (link) {
 			var svg = link.querySelector('svg');
+			var img = link.querySelector('img');
+			if (img && UPSTREAM_RE.test(img.getAttribute('src') || '')) {
+				img.src = logo;
+				img.alt = name;
+				return;
+			}
 			if (!svg || !isUpstreamSvg(svg)) {
 				return;
 			}
 			svg.style.setProperty('display', 'none', 'important');
 			injectImg(link, logo, 32, 32);
+		});
+
+		root.querySelectorAll('.tr-root h1, .tr-root [class*="brand"], .tr-root [class*="logo"]').forEach(function (node) {
+			if (!UPSTREAM_RE.test(node.textContent || '')) {
+				return;
+			}
+			walkText(node);
 		});
 	}
 

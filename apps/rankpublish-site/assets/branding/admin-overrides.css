@@ -23,7 +23,9 @@ body.rankpublish-site-branded-admin .wpsp-modal--header--left {
 }
 
 body.rankpublish-site-branded-admin .wpsp-admin-header::before,
-body.rankpublish-site-branded-admin .wpsp-modal--header--left::before {
+body.rankpublish-site-branded-admin .wpsp-modal--header--left::before,
+body.rpsite-os-module-wrap .wpsp-admin-header::before,
+body.rpsite-os-module-wrap .wpsp-modal--header--left::before {
 	content: "RankPublish";
 	position: absolute;
 	left: 20px;

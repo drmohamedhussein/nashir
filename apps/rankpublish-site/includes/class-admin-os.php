@@ -65,6 +65,12 @@ final class RankPublish_Site_Admin_Os {
 	}
 
 	public static function current_page(): string {
+		if ( class_exists( 'RankPublish_Site_Module_Embed', false ) && RankPublish_Site_Module_Embed::is_os_wrapped_request() && isset( $_GET['rpsite_ctx'] ) ) {
+			$ctx = sanitize_key( (string) wp_unslash( $_GET['rpsite_ctx'] ) );
+			if ( in_array( $ctx, array( 'scheduler', 'seo' ), true ) ) {
+				return self::SLUG . '-' . $ctx;
+			}
+		}
 		$page = isset( $_GET['page'] ) ? sanitize_key( (string) wp_unslash( $_GET['page'] ) ) : '';
 		return str_starts_with( $page, self::SLUG ) ? $page : self::SLUG;
 	}
@@ -180,7 +186,7 @@ final class RankPublish_Site_Admin_Os {
 		?>
 		<aside class="rpsite-os-sidebar">
 			<a class="rpsite-os-brand" href="<?php echo esc_url( self::url( self::SLUG ) ); ?>">
-				<span class="rpsite-os-brand__mark">R</span>
+				<img class="rpsite-os-brand__logo" src="<?php echo esc_url( RankPublish_Site_Branding::url( 'logo-menu.svg' ) ); ?>" width="36" height="36" alt="" />
 				<span class="rpsite-os-brand__text">
 					<strong>RankPublish</strong>
 					<em><?php esc_html_e( 'Publishing OS', 'rankpublish-site' ); ?></em>

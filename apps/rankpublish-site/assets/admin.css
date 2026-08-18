@@ -93,17 +93,12 @@ body.rpsite-os .update-nag {
 	color: #fff;
 }
 
-.rpsite-os-brand__mark {
-	display: grid;
-	place-items: center;
+.rpsite-os-brand__logo {
 	width: 36px;
 	height: 36px;
+	flex-shrink: 0;
 	border-radius: 12px;
-	background: linear-gradient(135deg, #38bdf8, #6366f1);
-	color: #081224;
-	font-size: 14px;
-	font-weight: 800;
-	box-shadow: 0 10px 24px rgba(56, 189, 248, 0.22);
+	box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28);
 }
 
 .rpsite-os-brand__text strong {
@@ -1584,30 +1579,26 @@ body.rpsite-os .update-nag {
 	opacity: 1;
 }
 
-/* Upstream plugin iframe workspace (Scheduler / SEO) */
-.rpsite-os-embed-wrap {
-	overflow: hidden;
+/* Native module workspace (Scheduler / SEO — no iframe) */
+body.rpsite-os-module-wrap #wpbody-content > .notice,
+body.rpsite-os-module-wrap #wpbody-content > .update-nag,
+body.rpsite-os-module-wrap #wpbody-content > .wpdeveloper-licensing-notice {
+	display: none !important;
 }
 
-.rpsite-os-embed-status {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	padding: 14px 18px;
-	border-bottom: 1px solid var(--rp-line);
-	background: #fff;
+body.rpsite-os-module-wrap .rpsite-os-body {
+	max-width: none;
+	padding: 24px 32px 32px;
 }
 
-.rpsite-os-embed-tabs {
+.rpsite-os-module-tabs {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
-	padding: 12px 18px;
-	border-bottom: 1px solid var(--rp-line);
-	background: #fff;
+	margin-bottom: 20px;
 }
 
-.rpsite-os-embed-tab {
+.rpsite-os-module-tab {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
@@ -1621,18 +1612,18 @@ body.rpsite-os .update-nag {
 	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.rpsite-os-embed-tab:hover {
+.rpsite-os-module-tab:hover {
 	color: #0f172a;
 	background: #e2e8f0;
 }
 
-.rpsite-os-embed-tab.is-active {
+.rpsite-os-module-tab.is-active {
 	color: #fff;
 	background: var(--rp-sidebar);
 	border-color: var(--rp-sidebar);
 }
 
-.rpsite-os-embed-tab__pro {
+.rpsite-os-module-tab__pro {
 	font-style: normal;
 	font-size: 10px;
 	font-weight: 700;
@@ -1644,14 +1635,32 @@ body.rpsite-os .update-nag {
 	color: inherit;
 }
 
-.rpsite-os-embed-tab.is-active .rpsite-os-embed-tab__pro {
+.rpsite-os-module-tab.is-active .rpsite-os-module-tab__pro {
 	background: rgba(255, 255, 255, 0.2);
 }
 
-.rpsite-os-embed-frame {
-	display: block;
-	width: 100%;
-	min-height: 72vh;
-	border: 0;
+.rpsite-module-native {
 	background: #fff;
+	border: 1px solid var(--rp-line);
+	border-radius: 16px;
+	overflow: hidden;
+	min-height: calc(100vh - 260px);
+	box-shadow: var(--rp-shadow);
+}
+
+.rpsite-module-native .wrap,
+.rpsite-module-native #wpsp-dashboard-body,
+.rpsite-module-native .thinkrank-admin-page,
+.rpsite-module-native .tr-root {
+	max-width: none !important;
+	margin: 0 !important;
+}
+
+.rpsite-module-native #wpsp-dashboard-body,
+.rpsite-module-native .tr-root {
+	min-height: calc(100vh - 280px);
+}
+
+.rpsite-module-native iframe {
+	max-width: 100%;
 }
