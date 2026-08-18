@@ -36,8 +36,16 @@ Then set `DATABASE_URL=postgresql://nashir:nashir@127.0.0.1:5433/nashir`.
 $env:NASHIR_SSH_HOST='YOUR_HOST'
 $env:NASHIR_SSH_USER='YOUR_USER'
 $env:NASHIR_SSH_PASS='YOUR_PASS'
-node deploy/contabo/deploy-saas.cjs
-```
+   node deploy/contabo/deploy-saas.cjs
+   ```
+
+   Or run everything in one step:
+
+   ```powershell
+   node deploy/contabo/deploy-all.cjs
+   ```
+
+   `deploy-all.cjs` also runs PayPal column migration, marketing plugin, and SaaS proxy.
 
 This uploads `apps/web`, runs `prisma db push`, `npm run build`, starts PM2, and sets `rankpublish_cloud_url` on WordPress.
 
