@@ -97,6 +97,8 @@ final class RankPublish_Site_Branding {
 
 			return self::url( 'logo-icon.svg' );
 		}
+
+		return $url;
 	}
 
 	/**
