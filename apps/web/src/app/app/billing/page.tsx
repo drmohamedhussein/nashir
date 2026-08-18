@@ -1,6 +1,7 @@
+import { Suspense } from "react";
 import { BillingPanel } from "@/components/billing-panel";
 import { getSession } from "@/lib/auth";
-import { isStripeConfigured } from "@/lib/billing";
+import { isPayPalConfigured } from "@/lib/billing";
 import { prisma } from "@/lib/db";
 import { getLocale } from "@/lib/locale";
 import { SEED_PLANS } from "@/lib/plans";
@@ -44,24 +45,26 @@ export default async function BillingPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold">{copy.billing}</h1>
-      <BillingPanel
-        locale={locale}
-        stripeConfigured={isStripeConfigured()}
-        plans={plans}
-        seats={subscriptions.map((row) => ({
-          id: row.id,
-          interval: row.interval,
-          status: row.status,
-          priceCents: row.priceCents,
-          planId: row.planId,
-          planName: row.plan?.name ?? null,
-          currentPeriodEnd: row.currentPeriodEnd.toISOString(),
-          siteId: row.siteId,
-          siteUrl: row.site?.url ?? null,
-          siteName: row.site?.name ?? null,
-          stripeCustomerId: row.stripeCustomerId,
-        }))}
-      />
+      <Suspense fallback={null}>
+        <BillingPanel
+          locale={locale}
+          paypalConfigured={isPayPalConfigured()}
+          plans={plans}
+          seats={subscriptions.map((row) => ({
+            id: row.id,
+            interval: row.interval,
+            status: row.status,
+            priceCents: row.priceCents,
+            planId: row.planId,
+            planName: row.plan?.name ?? null,
+            currentPeriodEnd: row.currentPeriodEnd.toISOString(),
+            siteId: row.siteId,
+            siteUrl: row.site?.url ?? null,
+            siteName: row.site?.name ?? null,
+            paypalSubscriptionId: row.paypalSubscriptionId,
+          }))}
+        />
+      </Suspense>
     </div>
   );
 }

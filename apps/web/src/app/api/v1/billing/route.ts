@@ -2,7 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { createBillingPortalSession, createCheckoutSession, isStripeConfigured, trialEnd } from "@/lib/billing";
+import {
+  activateSubscriptionFromPayPal,
+  createBillingPortalSession,
+  createCheckoutSession,
+  isPayPalConfigured,
+  trialEnd,
+} from "@/lib/billing";
 import { SEED_PLANS } from "@/lib/plans";
 import { appUrl } from "@/lib/env";
 
@@ -14,6 +20,10 @@ const checkoutSchema = z.object({
 const trialSchema = z.object({
   interval: z.enum(["monthly", "yearly"]).default("monthly"),
   planId: z.enum(["starter", "growth", "scale"]).default("starter"),
+});
+
+const captureSchema = z.object({
+  subscriptionId: z.string().min(1),
 });
 
 export async function GET() {
@@ -34,7 +44,7 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     data: {
-      stripeConfigured: isStripeConfigured(),
+      paypalConfigured: isPayPalConfigured(),
       plans: plans.length ? plans : SEED_PLANS,
       subscriptions: subscriptions.map((row) => ({
         id: row.id,
@@ -47,7 +57,8 @@ export async function GET() {
         siteId: row.siteId,
         siteUrl: row.site?.url ?? null,
         siteName: row.site?.name ?? null,
-        stripeCustomerId: row.stripeCustomerId,
+        paypalPayerId: row.paypalPayerId,
+        paypalSubscriptionId: row.paypalSubscriptionId,
       })),
     },
   });
@@ -85,18 +96,32 @@ export async function POST(request: Request) {
     }
   }
 
+  if (action === "capture") {
+    const parsed = captureSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ ok: false, error: { code: "INVALID_REQUEST", message: "subscriptionId required." } }, { status: 400 });
+    }
+    if (parsed.data.subscriptionId.startsWith("mock_")) {
+      return NextResponse.json({ ok: true, data: { mock: true } });
+    }
+    try {
+      const activated = await activateSubscriptionFromPayPal(parsed.data.subscriptionId);
+      return NextResponse.json({ ok: true, data: { activated } });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Capture failed";
+      return NextResponse.json({ ok: false, error: { code: "CAPTURE_FAILED", message } }, { status: 502 });
+    }
+  }
+
   if (action === "portal") {
     const sub = await prisma.subscription.findFirst({
-      where: { workspaceId: session.workspaceId, stripeCustomerId: { not: null } },
+      where: { workspaceId: session.workspaceId, paypalSubscriptionId: { not: null } },
       orderBy: { createdAt: "desc" },
     });
-    if (!sub?.stripeCustomerId) {
-      return NextResponse.json({ ok: false, error: { code: "NO_CUSTOMER", message: "No Stripe customer on file." } }, { status: 404 });
+    if (!sub?.paypalSubscriptionId) {
+      return NextResponse.json({ ok: false, error: { code: "NO_CUSTOMER", message: "No PayPal subscription on file." } }, { status: 404 });
     }
-    const portal = await createBillingPortalSession({
-      stripeCustomerId: sub.stripeCustomerId,
-      returnUrl: `${appUrl()}/app/billing`,
-    });
+    const portal = await createBillingPortalSession();
     return NextResponse.json({ ok: true, data: { url: portal.url } });
   }
 

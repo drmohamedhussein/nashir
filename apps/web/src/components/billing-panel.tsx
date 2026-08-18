@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { t, type Locale } from "@/lib/i18n";
 
 type Plan = {
@@ -23,24 +23,45 @@ type Seat = {
   siteId: string | null;
   siteUrl: string | null;
   siteName: string | null;
-  stripeCustomerId: string | null;
+  paypalSubscriptionId: string | null;
 };
 
 export function BillingPanel({
   seats,
   plans,
-  stripeConfigured,
+  paypalConfigured,
   locale,
 }: {
   seats: Seat[];
   plans: Plan[];
-  stripeConfigured: boolean;
+  paypalConfigured: boolean;
   locale: Locale;
 }) {
   const copy = t(locale);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const checkout = searchParams.get("checkout");
+    const subscriptionId = searchParams.get("subscription_id");
+    if (checkout !== "success" || !subscriptionId) {
+      return;
+    }
+
+    void (async () => {
+      setPending(true);
+      await fetch("/api/v1/billing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "capture", subscriptionId }),
+      });
+      setPending(false);
+      router.replace("/app/billing");
+      router.refresh();
+    })();
+  }, [searchParams, router]);
 
   async function startTrial(planId: string, interval: "monthly" | "yearly") {
     setPending(true);
@@ -124,14 +145,14 @@ export function BillingPanel({
               >
                 {copy.billingTrialMonthly}
               </button>
-              {stripeConfigured ? (
+              {paypalConfigured ? (
                 <button
                   type="button"
                   disabled={pending}
                   onClick={() => checkout(plan.id, "monthly")}
                   className="rounded-full bg-ink px-3 py-1.5 text-xs text-paper disabled:opacity-60"
                 >
-                  {copy.billingSubscribe ?? "Subscribe"}
+                  {copy.billingSubscribe ?? "Subscribe with PayPal"}
                 </button>
               ) : null}
             </div>
@@ -139,9 +160,9 @@ export function BillingPanel({
         ))}
       </div>
 
-      {stripeConfigured && seats.some((s) => s.stripeCustomerId) ? (
+      {paypalConfigured && seats.some((s) => s.paypalSubscriptionId) ? (
         <button type="button" disabled={pending} onClick={openPortal} className="rounded-full border border-ink/15 px-4 py-2 text-sm">
-          {copy.billingManage ?? "Manage subscription"}
+          {copy.billingManage ?? "Manage PayPal subscription"}
         </button>
       ) : null}
 

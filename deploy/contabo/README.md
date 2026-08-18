@@ -106,9 +106,10 @@ When the production domain is ready:
    - `APP_URL=https://rankpublish.com`
    - `DATABASE_URL` (MySQL with `rp_*` + `wp_*` tables)
    - `AUTH_SECRET`, `CRON_SECRET`
-   - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-   - `STRIPE_PRICE_STARTER_MONTHLY`, `STRIPE_PRICE_GROWTH_MONTHLY`, `STRIPE_PRICE_SCALE_MONTHLY` (and yearly variants)
+   - `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` (`sandbox` or `live`)
+   - `PAYPAL_WEBHOOK_ID`
+   - `PAYPAL_PLAN_STARTER_MONTHLY`, `PAYPAL_PLAN_GROWTH_MONTHLY`, `PAYPAL_PLAN_SCALE_MONTHLY` (and yearly variants — PayPal plan IDs like `P-xxx`)
 6. **Database** — Run `npx prisma db push` (never use `--accept-data-loss` on shared WP+SaaS DB).
 7. **Plugin ZIPs** — `node deploy/package-rankpublish.cjs` → upload `dist/rankpublish-site.zip` and distribute `dist/rankpublish-bridge.zip` to client sites.
-8. **Stripe webhook** — Register `https://rankpublish.com/api/webhooks/stripe` in Stripe dashboard.
+8. **PayPal webhook** — Register `https://rankpublish.com/api/webhooks/paypal` in PayPal Developer dashboard.
 9. **Verify** — `/api/health`, `/register`, `/app`, marketing homepage, bridge connect flow.

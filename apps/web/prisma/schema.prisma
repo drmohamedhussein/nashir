@@ -170,8 +170,8 @@ model Subscription {
   currency               String    @default("USD")
   currentPeriodEnd       DateTime
   renewalDate            DateTime?
-  stripeCustomerId       String?
-  stripeSubscriptionId   String?
+  paypalPayerId          String?
+  paypalSubscriptionId   String?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
