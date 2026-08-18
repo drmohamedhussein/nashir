@@ -66,6 +66,13 @@ function mysqlPortFromMyCnf(root) {
   return match ? Number(match[1]) : null;
 }
 
+function portFromDbHost(host) {
+  if (!host) return null;
+  const tcp = host.match(/127\.0\.0\.1:(\d+)/);
+  if (tcp) return Number(tcp[1]);
+  return null;
+}
+
 function readWpConfigConstants(configPath) {
   if (!fs.existsSync(configPath)) {
     throw new Error(`wp-config.php not found: ${configPath}`);
@@ -162,7 +169,7 @@ async function main() {
     current.DB_NAME !== expected.DB_NAME ||
     current.DB_USER !== expected.DB_USER ||
     current.DB_PASSWORD !== expected.DB_PASSWORD ||
-    (port && current.DB_HOST !== expected.DB_HOST);
+    (port && (current.DB_HOST !== expected.DB_HOST || portFromDbHost(current.DB_HOST) !== port));
 
   if (!needsFix) {
     console.log("\n✓ wp-config.php already matches expected values.");

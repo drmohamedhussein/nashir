@@ -73,11 +73,20 @@ Login: `http://rankpublish-test.local/wp-admin/` — user `admin`.
 If you see **"Error establishing a database connection"**:
 
 1. **Start the site** in Local (green "Running" state).
-2. Run the fix script from repo root (Windows):
+2. **Run from the nashir repo** — NOT from `app\public`:
 
 ```powershell
-node deploy/local/fix-wp-db.cjs --site rankpublish-test
+cd C:\Users\drmoh\Projects\nashir
+.\deploy\local\rp-local.ps1 fix-db --site rankpublish-test
 ```
+
+From Local Site Shell (any folder):
+
+```powershell
+powershell -File C:\Users\drmoh\Projects\nashir\deploy\local\rp-local.ps1 fix-db --site rankpublish-test
+```
+
+Check `wp-config.php`: `DB_NAME` must be `local` and `DB_HOST` must be `127.0.0.1:PORT` where PORT matches Local → Site → Database tab.
 
 | Site | Expected `DB_NAME` | Notes |
 |------|-------------------|--------|
