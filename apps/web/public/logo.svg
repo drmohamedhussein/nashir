@@ -1,8 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="RankPublish">
-  <rect width="32" height="32" rx="8" fill="#1B3A4B"/>
-  <path d="M9 23V10.5h5.2c3.1 0 5 1.6 5 4.05 0 1.7-.9 2.95-2.45 3.55L19.6 23h-2.55l-2.55-4.55H11.4V23H9Z" fill="#F4F1EA"/>
-  <path d="M11.4 16.35h2.7c1.55 0 2.45-.7 2.45-1.8s-.9-1.75-2.45-1.75h-2.7v3.55Z" fill="#1B3A4B"/>
-  <rect x="21.2" y="19.2" width="2.1" height="3.8" rx="0.4" fill="#C45C26"/>
-  <rect x="24.1" y="16.4" width="2.1" height="6.6" rx="0.4" fill="#C45C26"/>
-  <rect x="27" y="13.2" width="2.1" height="9.8" rx="0.4" fill="#E08A3C"/>
+  <defs>
+    <linearGradient id="rp-bg" x1="5" y1="3" x2="27" y2="29" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="rp-bars" x1="18" y1="24" x2="28" y2="8" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#a5b4fc"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="10" fill="url(#rp-bg)"/>
+  <rect x="7" y="9" width="9.5" height="14" rx="2.2" fill="#fff" fill-opacity="0.97"/>
+  <rect x="8.8" y="11.8" width="6.2" height="1.5" rx="0.75" fill="#4338ca" fill-opacity="0.22"/>
+  <rect x="8.8" y="14.6" width="6.2" height="1.5" rx="0.75" fill="#4338ca" fill-opacity="0.16"/>
+  <rect x="8.8" y="17.4" width="4.2" height="1.5" rx="0.75" fill="#4338ca" fill-opacity="0.1"/>
+  <rect x="19.2" y="18.2" width="2.5" height="4.8" rx="1.25" fill="url(#rp-bars)" fill-opacity="0.7"/>
+  <rect x="22.5" y="14.8" width="2.5" height="8.2" rx="1.25" fill="url(#rp-bars)" fill-opacity="0.88"/>
+  <rect x="25.8" y="11" width="2.5" height="12" rx="1.25" fill="url(#rp-bars)"/>
+  <path d="M26.05 10.2 26.05 7.4 28.55 10.2Z" fill="#ecfeff"/>
 </svg>

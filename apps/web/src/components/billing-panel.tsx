@@ -192,9 +192,7 @@ export function BillingPanel({
 
       {!paypalConfigured ? (
         <p className="rounded-xl border border-dashed border-ink/15 bg-slate-50/50 p-4 text-sm text-ink-soft">
-          {locale === "ar"
-            ? "PayPal سيُربط لاحقاً عند اكتمال المشروع. المقاعد التجريبية تعمل الآن."
-            : "PayPal connects later when the project is complete. Trial seats work now."}
+          {copy.paypalLater}
         </p>
       ) : null}
 

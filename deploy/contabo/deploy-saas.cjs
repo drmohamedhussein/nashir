@@ -132,7 +132,7 @@ conn
           "grep -n 'provider' prisma/schema.prisma | head -5",
           "npm ci 2>&1 || npm install",
           "npx prisma generate",
-          "npx prisma db push || echo prisma_push_skipped_protecting_wordpress_tables",
+          `node ${remoteRoot}/deploy/contabo/run-staging-schema-safe.cjs ${remoteRoot}/apps/web`,
           "node prisma/seed.cjs || true",
           "npm run build",
           "pm2 delete nashir ecosystem.runtime 2>/dev/null || true",

@@ -16,7 +16,6 @@ $cloud    = rpsite_cloud_url();
 $os_home  = is_front_page();
 $start    = $cloud ? $cloud . '/register' : rpsite_plugin_zip_url();
 $login    = $cloud ? $cloud . '/login' : '';
-$toggle   = add_query_arg( 'lang', 'en' === $lang ? 'ar' : 'en' );
 $body_os  = $os_home ? ' rp-os' : '';
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -37,7 +36,7 @@ $body_os  = $os_home ? ' rp-os' : '';
 <header class="site-header<?php echo $os_home ? ' os-header' : ''; ?>">
 	<div class="wrap inner">
 		<a class="brand os-brand" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-			<span class="os-mark" aria-hidden="true">R</span>
+			<img class="brand-logo" src="<?php echo esc_url( rpsite_logo_url() ); ?>" width="36" height="36" alt="<?php echo esc_attr( rpsite_t( 'brand' ) ); ?>" />
 			<span class="os-wordmark">
 				<span class="os-name"><?php echo esc_html( rpsite_t( 'brand' ) ); ?></span>
 				<span class="os-sub"><?php echo esc_html( rpsite_t( 'os_sub' ) ); ?></span>
@@ -60,7 +59,11 @@ $body_os  = $os_home ? ' rp-os' : '';
 				<a class="os-login" href="<?php echo esc_url( $login ); ?>"><?php echo esc_html( rpsite_t( 'cta_login' ) ); ?></a>
 			<?php endif; ?>
 			<a class="btn <?php echo $os_home ? 'btn-os' : 'btn-gradient'; ?>" href="<?php echo esc_url( $start ); ?>"><?php echo esc_html( rpsite_t( 'cta_started' ) ); ?></a>
-			<a class="lang" href="<?php echo esc_url( $toggle ); ?>"><?php echo 'en' === $lang ? 'عربي' : 'EN'; ?></a>
+			<span class="lang-switch" aria-label="Language">
+				<a class="lang<?php echo 'en' === $lang ? ' is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'lang', 'en' ) ); ?>">EN</a>
+				<span class="lang-sep">/</span>
+				<a class="lang<?php echo 'ar' === $lang ? ' is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'lang', 'ar' ) ); ?>">عربي</a>
+			</span>
 		</div>
 	</div>
 </header>

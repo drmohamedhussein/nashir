@@ -1,8 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RankPublish">
-  <rect width="512" height="512" rx="128" fill="#1B3A4B"/>
-  <path d="M144 368V168h83.2c49.6 0 80 25.6 80 64.8 0 27.2-14.4 47.2-39.2 56.8L313.6 368h-40.8L272 295.2h-38.4V368H144Z" fill="#F4F1EA"/>
-  <path d="M182.4 261.6h43.2c24.8 0 39.2-11.2 39.2-28.8s-14.4-28-39.2-28h-43.2v56.8Z" fill="#1B3A4B"/>
-  <rect x="339.2" y="307.2" width="33.6" height="60.8" rx="6.4" fill="#C45C26"/>
-  <rect x="385.6" y="262.4" width="33.6" height="105.6" rx="6.4" fill="#C45C26"/>
-  <rect x="432" y="211.2" width="33.6" height="156.8" rx="6.4" fill="#E08A3C"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="RankPublish">
+  <defs>
+    <linearGradient id="rpi-bg" x1="5" y1="3" x2="27" y2="29" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="rpi-bars" x1="18" y1="24" x2="28" y2="8" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#a5b4fc"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="10" fill="url(#rpi-bg)"/>
+  <rect x="7" y="9" width="9.5" height="14" rx="2.2" fill="#fff" fill-opacity="0.97"/>
+  <rect x="19.2" y="18.2" width="2.5" height="4.8" rx="1.25" fill="url(#rpi-bars)" fill-opacity="0.7"/>
+  <rect x="22.5" y="14.8" width="2.5" height="8.2" rx="1.25" fill="url(#rpi-bars)" fill-opacity="0.88"/>
+  <rect x="25.8" y="11" width="2.5" height="12" rx="1.25" fill="url(#rpi-bars)"/>
 </svg>

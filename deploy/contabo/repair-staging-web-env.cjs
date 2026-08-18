@@ -1,5 +1,4 @@
 const path = require("path");
-const crypto = require("crypto");
 const { Client } = require(path.join(process.env.TEMP, "nashir-ssh", "node_modules", "ssh2"));
 
 const host = process.env.NASHIR_SSH_HOST;
@@ -7,12 +6,16 @@ const username = process.env.NASHIR_SSH_USER;
 const password = process.env.NASHIR_SSH_PASS;
 const remoteRoot = process.env.NASHIR_REMOTE_ROOT || `/home/${username}/nashir`;
 const appUrl = process.env.NASHIR_APP_URL || "https://nashir.satest.top";
+const dbUrl = process.env.NASHIR_DATABASE_URL;
+const authSecret = process.env.NASHIR_AUTH_SECRET;
+const cronSecret = process.env.NASHIR_CRON_SECRET;
 
-const dbUrl =
-  process.env.NASHIR_DATABASE_URL ||
-  "mysql://Dnh0lge57UHlNg5N:vzo5zYgdFFrWqOke@127.0.0.1:3306/nashirwp_WKBlixyk";
-const authSecret = process.env.NASHIR_AUTH_SECRET || crypto.randomBytes(24).toString("hex");
-const cronSecret = process.env.NASHIR_CRON_SECRET || crypto.randomBytes(24).toString("hex");
+if (!host || !username || !password || !dbUrl || !authSecret || !cronSecret) {
+  console.error(
+    "Missing NASHIR_SSH_* / NASHIR_DATABASE_URL / NASHIR_AUTH_SECRET / NASHIR_CRON_SECRET",
+  );
+  process.exit(1);
+}
 
 const envContent = [
   `DATABASE_URL="${dbUrl}"`,
@@ -44,17 +47,17 @@ conn
       const escaped = envContent.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
       await exec(
         conn,
-        `python3 - <<'PY'\nfrom pathlib import Path\nPath("${remoteRoot}/apps/web/.env").write_text("${escaped}", encoding="utf-8")\nprint("env_written")\nPY`
+        `python3 - <<'PY'\nfrom pathlib import Path\nPath("${remoteRoot}/apps/web/.env").write_text("${escaped}", encoding="utf-8")\nprint("env_written")\nPY`,
       );
       await exec(
         conn,
         [
           `cd ${remoteRoot}/apps/web`,
           "npx prisma generate",
-          "npx prisma db push || echo prisma_push_skipped_protecting_wordpress_tables",
+          `node ${remoteRoot}/deploy/contabo/run-staging-schema-safe.cjs ${remoteRoot}/apps/web`,
           "node prisma/seed.cjs || true",
           "pm2 restart nashir",
-        ].join(" && ")
+        ].join(" && "),
       );
       conn.end();
     } catch (error) {

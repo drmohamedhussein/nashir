@@ -1,11 +1,6 @@
-﻿<?php
-/**
- * Marketing homepage.
- *
- * @package PublisherWP
- */
-
+<?php
 declare(strict_types=1);
+
 
 get_header();
 $cloud    = nashir_cloud_url();

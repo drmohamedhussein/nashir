@@ -24,7 +24,7 @@ export default async function AppHomePage() {
   });
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
+    <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
       {sites.length === 0 ? (
         <div className="lg:col-span-2 rounded-2xl border border-brand/20 bg-brand/5 px-5 py-4 text-sm">
           {copy.appWelcomeBanner}{" "}
@@ -58,7 +58,7 @@ export default async function AppHomePage() {
           )}
         </div>
       </section>
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         <Link href="/app/billing" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
           {copy.billingTeaser}
         </Link>

@@ -164,14 +164,14 @@ Alternative: email/password activate → `POST /api/v1/license/activate`
 
 - Marketing: `/`, `/pricing`, `/download`, `/login`, `/register`
 - App: `/app` (dashboard), `/app/calendar`, `/app/social`, `/app/settings`, `/app/billing`
-- i18n: Arabic default + locale switch
+- i18n: English default + locale switch (Arabic on demand)
 
 ### 3.5 Pricing (code vs spec)
 
 | Spec | Code (`apps/web/src/lib/plans.ts`) |
 |------|-------------------------------------|
 | $9.90/mo, $99/yr | ✓ `990` / `9900` cents |
-| 7-day trial | **Gap:** `TRIAL_DAYS = 14` |
+| 7-day trial | ✓ `TRIAL_DAYS = 7` |
 
 ### 3.6 Scheduler actions (Nashir-native)
 

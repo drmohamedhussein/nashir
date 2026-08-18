@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { t, type Locale } from "@/lib/i18n";
 
 type Site = {
   id: string;
@@ -11,7 +12,8 @@ type Site = {
   allowedTypes: string;
 };
 
-export function SettingsForm({ sites }: { sites: Site[] }) {
+export function SettingsForm({ sites, locale }: { sites: Site[]; locale: Locale }) {
+  const copy = t(locale);
   const [siteId, setSiteId] = useState(sites[0]?.id ?? "");
   const site = sites.find((row) => row.id === siteId);
   const [mode, setMode] = useState(site?.schedulerMode ?? "off");
@@ -21,7 +23,7 @@ export function SettingsForm({ sites }: { sites: Site[] }) {
   const [message, setMessage] = useState("");
 
   if (!site) {
-    return <p className="text-sm text-ink-soft">اربط موقعاً أولاً.</p>;
+    return <p className="text-sm text-ink-soft">{copy.settingsNoSite}</p>;
   }
 
   return (
@@ -33,7 +35,7 @@ export function SettingsForm({ sites }: { sites: Site[] }) {
         try {
           weekSlots = JSON.parse(slots) as Record<string, string[]>;
         } catch {
-          setMessage("weekSlots يجب أن يكون JSON.");
+          setMessage(copy.weekSlotsJson);
           return;
         }
         const response = await fetch(`/api/v1/sites/${site.id}/settings`, {
@@ -46,11 +48,11 @@ export function SettingsForm({ sites }: { sites: Site[] }) {
             weekSlots,
           }),
         });
-        setMessage(response.ok ? "حُفظت." : "تعذر الحفظ.");
+        setMessage(response.ok ? copy.saved : copy.workspaceSaveError);
       }}
     >
       <label className="block text-sm">
-        الموقع
+        {copy.siteLabel}
         <select
           className="mt-1 w-full rounded-xl border border-ink/10 bg-white px-3 py-2"
           value={siteId}
@@ -73,27 +75,27 @@ export function SettingsForm({ sites }: { sites: Site[] }) {
         </select>
       </label>
       <label className="block text-sm">
-        وضع الجدولة
+        {copy.schedulerMode}
         <select className="mt-1 w-full rounded-xl border border-ink/10 bg-white px-3 py-2" value={mode} onChange={(e) => setMode(e.target.value)}>
-          <option value="off">إيقاف</option>
-          <option value="auto">تلقائي</option>
-          <option value="manual">يدوي</option>
+          <option value="off">{copy.schedulerOff}</option>
+          <option value="auto">{copy.schedulerAuto}</option>
+          <option value="manual">{copy.schedulerManual}</option>
         </select>
       </label>
       <label className="block text-sm">
-        الفاصل بالدقائق
+        {copy.intervalMinutes}
         <input type="number" min={15} className="mt-1 w-full rounded-xl border border-ink/10 bg-white px-3 py-2" value={interval} onChange={(e) => setInterval(Number(e.target.value))} />
       </label>
       <label className="block text-sm">
-        أنواع المقالات
+        {copy.postTypes}
         <input className="mt-1 w-full rounded-xl border border-ink/10 bg-white px-3 py-2" value={types} onChange={(e) => setTypes(e.target.value)} />
       </label>
       <label className="block text-sm">
-        ساعات يدوية JSON مثل {"{\"1\":[\"09:00\",\"14:00\"]}"}
+        {copy.weekSlotsHint} {'{"1":["09:00","14:00"]}'}
         <textarea className="mt-1 w-full rounded-xl border border-ink/10 bg-white px-3 py-2 font-mono text-xs" rows={5} value={slots} onChange={(e) => setSlots(e.target.value)} />
       </label>
       <button className="rounded-full bg-ink px-4 py-2 text-sm text-paper" type="submit">
-        حفظ
+        {copy.save}
       </button>
       {message ? <p className="text-sm">{message}</p> : null}
     </form>

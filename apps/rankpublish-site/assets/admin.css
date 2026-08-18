@@ -1589,6 +1589,30 @@ body.rpsite-os-module-wrap #wpbody-content > .wpdeveloper-licensing-notice {
 body.rpsite-os-module-wrap .rpsite-os-body {
 	max-width: none;
 	padding: 24px 32px 32px;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+body.rpsite-os-module-wrap #wpwrap {
+	overflow: hidden;
+	height: calc(100vh - 32px);
+}
+
+body.rpsite-os-module-wrap .rpsite-os {
+	height: 100%;
+	min-height: 0;
+	overflow: hidden;
+}
+
+body.rpsite-os-module-wrap .rpsite-os-main {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 .rpsite-os-module-tabs {
@@ -1643,8 +1667,9 @@ body.rpsite-os-module-wrap .rpsite-os-body {
 	background: #fff;
 	border: 1px solid var(--rp-line);
 	border-radius: 16px;
-	overflow: hidden;
-	min-height: calc(100vh - 260px);
+	overflow: auto;
+	flex: 1;
+	min-height: 0;
 	box-shadow: var(--rp-shadow);
 }
 
@@ -1658,7 +1683,159 @@ body.rpsite-os-module-wrap .rpsite-os-body {
 
 .rpsite-module-native #wpsp-dashboard-body,
 .rpsite-module-native .tr-root {
-	min-height: calc(100vh - 280px);
+	min-height: auto !important;
+	height: auto !important;
+	overflow: visible !important;
+}
+
+/* Native RankPublish workspace (no upstream embed) */
+.rpsite-workspace-gate {
+	padding: 28px 32px;
+}
+
+.rpsite-workspace-gate__hero {
+	display: flex;
+	gap: 20px;
+	align-items: flex-start;
+	margin-bottom: 28px;
+}
+
+.rpsite-workspace-gate__hero h2 {
+	margin: 0 0 8px;
+	font-size: 1.35rem;
+	color: var(--rp-ink);
+}
+
+.rpsite-workspace-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	gap: 16px;
+	counter-reset: rpsite-step;
+}
+
+.rpsite-workspace-steps li {
+	counter-increment: rpsite-step;
+	padding: 20px 20px 20px 56px;
+	border: 1px solid var(--rp-line);
+	border-radius: 14px;
+	background: #fff;
+	position: relative;
+}
+
+.rpsite-workspace-steps li::before {
+	content: counter(rpsite-step);
+	position: absolute;
+	left: 18px;
+	top: 18px;
+	width: 28px;
+	height: 28px;
+	border-radius: 999px;
+	background: #eef2ff;
+	color: #4338ca;
+	font-weight: 700;
+	font-size: 13px;
+	display: grid;
+	place-items: center;
+}
+
+.rpsite-workspace-steps li p {
+	margin: 6px 0 12px;
+	color: #64748b;
+	max-width: 62ch;
+}
+
+.rpsite-workspace-steps .rpsite-os-btn {
+	margin-inline-end: 8px;
+	margin-top: 4px;
+}
+
+.rpsite-workspace-gate__warn {
+	margin-top: 20px;
+	padding: 16px 18px;
+	border-radius: 12px;
+	background: #fff7ed;
+	border: 1px solid #fed7aa;
+}
+
+.rpsite-native-module {
+	padding: 24px 28px;
+}
+
+.rpsite-native-module__head h2 {
+	margin: 4px 0 8px;
+	font-size: 1.25rem;
+}
+
+.rpsite-native-module__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin: 16px 0;
+	font-size: 13px;
+	color: #64748b;
+}
+
+.rpsite-native-module__meta code {
+	background: #f1f5f9;
+	padding: 2px 6px;
+	border-radius: 6px;
+}
+
+.rpsite-native-module__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 16px;
+}
+
+.rpsite-native-module__stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 16px 0;
+}
+
+.rpsite-native-module__stats div {
+	min-width: 120px;
+	padding: 12px 16px;
+	border-radius: 12px;
+	background: #f8fafc;
+	border: 1px solid var(--rp-line);
+}
+
+.rpsite-native-module__stats strong {
+	display: block;
+	font-size: 1.35rem;
+	color: var(--rp-ink);
+}
+
+.rpsite-native-module__stats span {
+	font-size: 12px;
+	color: #64748b;
+}
+
+.rpsite-os-site-list {
+	display: grid;
+	gap: 12px;
+}
+
+.rpsite-os-site--row {
+	border-top: 1px solid var(--rp-line);
+	padding-top: 12px;
+}
+
+.rpsite-os-site-list .rpsite-os-site--row:first-child {
+	border-top: 0;
+	padding-top: 0;
+}
+
+.rpsite-os-note {
+	margin: 0;
+	font-size: 13px;
+	color: #64748b;
+	max-width: 70ch;
 }
 
 .rpsite-module-native iframe {

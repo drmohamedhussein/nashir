@@ -348,12 +348,13 @@ final class RankPublish_Site_Branding {
 			'rankpublish-site-admin-overrides',
 			'rankpublishSiteBrand',
 			array(
-				'logoUrl'     => self::url( 'logo.svg' ),
-				'logoFullUrl' => self::url( 'logo-full.svg' ),
-				'name'        => 'RankPublish',
-				'cloudUrl'    => $cloud,
-				'plansUrl'    => $cloud . '/register',
-				'guideUrl'    => $cloud . '/guide/',
+				'logoUrl'      => self::url( 'logo.svg' ),
+				'logoFullUrl'  => self::url( 'logo-full.svg' ),
+				'name'         => 'RankPublish',
+				'cloudUrl'     => $cloud,
+				'plansUrl'     => $cloud . '/register',
+				'guideUrl'     => $cloud . '/guide/',
+				'isModuleWrap' => class_exists( 'RankPublish_Site_Module_Embed', false ) && RankPublish_Site_Module_Embed::is_os_wrapped_request(),
 			)
 		);
 	}

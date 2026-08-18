@@ -34,7 +34,8 @@ final class RankPublish_Site_Module_Embed {
 	}
 
 	/**
-	 * Send Core scheduler/SEO menu items to the native upstream workspace.
+	 * Send Core scheduler/SEO to the wrapped RankPublish engine UIs
+	 * (SchedulePress + Pro, ThinkRank + Pro) inside the Publishing OS shell.
 	 */
 	public function maybe_redirect_core_module(): void {
 		if ( ! is_admin() || wp_doing_ajax() ) {
@@ -268,6 +269,20 @@ final class RankPublish_Site_Module_Embed {
 				'pro'    => false,
 			);
 			$panels[] = array(
+				'id'     => 'ai-tools',
+				'label'  => __( 'AI Tools', 'rankpublish-site' ),
+				'page'   => 'thinkrank-ai-tools',
+				'plugin' => 'thinkrank',
+				'pro'    => false,
+			);
+			$panels[] = array(
+				'id'     => 'usages',
+				'label'  => __( 'Usages', 'rankpublish-site' ),
+				'page'   => 'thinkrank-usages',
+				'plugin' => 'thinkrank',
+				'pro'    => false,
+			);
+			$panels[] = array(
 				'id'     => 'seo-settings',
 				'label'  => __( 'SEO Settings', 'rankpublish-site' ),
 				'page'   => 'thinkrank-settings',
@@ -280,7 +295,14 @@ final class RankPublish_Site_Module_Embed {
 			$panels[] = array(
 				'id'     => 'seo-pro',
 				'label'  => __( 'SEO Pro', 'rankpublish-site' ),
-				'page'   => 'thinkrank',
+				'page'   => 'thinkrank-essential-seo',
+				'plugin' => 'thinkrank-pro',
+				'pro'    => true,
+			);
+			$panels[] = array(
+				'id'     => 'license',
+				'label'  => __( 'Account', 'rankpublish-site' ),
+				'page'   => 'thinkrank-license',
 				'plugin' => 'thinkrank-pro',
 				'pro'    => true,
 			);
@@ -358,6 +380,9 @@ final class RankPublish_Site_Module_Embed {
 				'thinkrank-essential-seo',
 				'thinkrank-settings',
 				'thinkrank-ai-tools',
+				'thinkrank-usages',
+				'thinkrank-license',
+				'thinkrank-migration',
 			),
 			true
 		);

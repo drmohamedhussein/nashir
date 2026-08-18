@@ -1,6 +1,7 @@
 ﻿import { prisma } from "./db";
 import { hashSecret, randomToken, verifyPassword } from "./crypto";
 import { isSubscriptionLive, PLANS, trialEnd } from "./plans";
+import { API_ERRORS } from "./api-errors";
 
 function normalizeUrl(value: string): string {
   return value.replace(/\/+$/, "");
@@ -29,7 +30,7 @@ export async function activateByLogin(input: {
     include: { workspace: true },
   });
   if (!user?.workspace || !(await verifyPassword(input.password, user.passwordHash))) {
-    throw new LicenseError("بريد أو كلمة مرور غير صحيحة.", 401);
+    throw new LicenseError(API_ERRORS.INVALID_CREDENTIALS, 401);
   }
 
   const workspaceId = user.workspace.id;
@@ -69,10 +70,7 @@ export async function activateByLogin(input: {
   }
 
   if (!seat) {
-    throw new LicenseError(
-      "لا يوجد مقعد اشتراك فارغ لهذا الحساب. فعّل تجريبياً من لوحة RankPublish أو أضف اشتراكاً للموقع.",
-      402,
-    );
+    throw new LicenseError(API_ERRORS.NO_SEAT, 402);
   }
 
   const apiKey = randomToken(24);
@@ -132,7 +130,7 @@ export async function unbindSeat(workspaceId: string, subscriptionId: string) {
     where: { id: subscriptionId, workspaceId },
   });
   if (!seat) {
-    throw new LicenseError("الاشتراك غير موجود.", 404);
+    throw new LicenseError(API_ERRORS.SUBSCRIPTION_NOT_FOUND, 404);
   }
 
   if (seat.siteId) {

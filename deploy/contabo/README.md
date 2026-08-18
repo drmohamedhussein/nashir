@@ -9,7 +9,7 @@ cd apps/web
 copy .env.example .env
 npm install
 npx prisma generate
-npx prisma db push
+node ../../deploy/contabo/run-staging-schema-safe.cjs .
 npm run dev
 ```
 
@@ -47,7 +47,7 @@ $env:NASHIR_SSH_PASS='YOUR_PASS'
 
    `deploy-all.cjs` also runs PayPal column migration, marketing plugin, and SaaS proxy.
 
-This uploads `apps/web`, runs `prisma db push`, `npm run build`, starts PM2, and sets `rankpublish_cloud_url` on WordPress.
+This uploads `apps/web`, applies additive `rp_*` SQL (never `prisma db push`), builds, starts PM2, and sets `rankpublish_cloud_url` on WordPress.
 
 ### 2. Nginx split (required — fixes empty `/app`)
 
@@ -117,7 +117,7 @@ When the production domain is ready:
    - `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` (`sandbox` or `live`)
    - `PAYPAL_WEBHOOK_ID`
    - `PAYPAL_PLAN_STARTER_MONTHLY`, `PAYPAL_PLAN_GROWTH_MONTHLY`, `PAYPAL_PLAN_SCALE_MONTHLY` (and yearly variants — PayPal plan IDs like `P-xxx`)
-6. **Database** — Run `npx prisma db push` (never use `--accept-data-loss` on shared WP+SaaS DB).
+6. **Database** — Run `node deploy/contabo/run-staging-schema-safe.cjs apps/web` (never `prisma db push` on the shared WordPress MySQL database).
 7. **Plugin ZIPs** — `node deploy/package-rankpublish.cjs` → upload `dist/rankpublish-site.zip` and distribute `dist/rankpublish-bridge.zip` to client sites.
 8. **PayPal webhook** — Register `https://rankpublish.com/api/webhooks/paypal` in PayPal Developer dashboard.
 9. **Verify** — `/api/health`, `/register`, `/app`, marketing homepage, bridge connect flow.

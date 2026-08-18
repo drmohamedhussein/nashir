@@ -1,11 +1,6 @@
-﻿<?php
-/**
- * Single post.
- *
- * @package PublisherWP
- */
-
+<?php
 declare(strict_types=1);
+
 
 get_header();
 ?>

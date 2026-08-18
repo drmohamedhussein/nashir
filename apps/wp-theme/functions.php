@@ -1,11 +1,11 @@
-﻿<?php
+<?php
+declare(strict_types=1);
+
 /**
  * PublisherWP official theme.
  *
  * @package PublisherWP
  */
-
-declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -26,6 +26,7 @@ function nashir_locale(): string {
 
 require_once get_template_directory() . '/includes/i18n.php';
 require_once get_template_directory() . '/includes/mocks.php';
+require_once get_template_directory() . '/includes/user-guide.php';
 
 function nashir_setup(): void {
 	add_theme_support( 'title-tag' );
@@ -56,6 +57,10 @@ function nashir_language_attributes(): string {
 add_filter( 'language_attributes', 'nashir_language_attributes' );
 
 function nashir_plugin_zip_url(): string {
+	$rankpublish = WP_CONTENT_DIR . '/uploads/rankpublish/rankpublish.zip';
+	if ( file_exists( $rankpublish ) ) {
+		return content_url( 'uploads/rankpublish/rankpublish.zip' );
+	}
 	$path = WP_CONTENT_DIR . '/uploads/nashir/nashir.zip';
 	return file_exists( $path ) ? content_url( 'uploads/nashir/nashir.zip' ) : home_url( '/download/' );
 }

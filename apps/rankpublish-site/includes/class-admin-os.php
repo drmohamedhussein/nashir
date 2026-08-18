@@ -120,16 +120,16 @@ final class RankPublish_Site_Admin_Os {
 				'name'   => $blog !== '' ? $blog : 'RankPublish',
 				'url'    => $home,
 				'status' => $connected,
-				'worker' => 'not_provisioned',
+				'worker' => 'platform',
 			),
 			'counts'         => array(
-				'sites'     => 1,
+				'sites'     => 0,
 				'scheduled' => $future,
 				'pending'   => 0,
 				'drafts'    => $draft,
 				'published' => $publish,
-				'active'    => 'connected' === $connected ? 1 : 0,
-				'awaiting'  => 'pending' === $connected ? 1 : 0,
+				'active'    => 0,
+				'awaiting'  => 0,
 			),
 			'plan'           => array(
 				'name'         => 'RankPublish',
@@ -137,7 +137,7 @@ final class RankPublish_Site_Admin_Os {
 				'price_year'   => '$99',
 				'trial_days'   => 7,
 				'site_limit'   => 1,
-				'sites_used'   => 1,
+				'sites_used'   => 0,
 			),
 			'bridge_zip'     => $bridge,
 			'product_zip'    => $product,
@@ -350,6 +350,7 @@ final class RankPublish_Site_Admin_Os {
 			'failed'       => __( 'failed', 'rankpublish-site' ),
 			'connected'    => __( 'connected', 'rankpublish-site' ),
 			'disconnected' => __( 'disconnected', 'rankpublish-site' ),
+			'platform'     => __( 'platform HQ', 'rankpublish-site' ),
 		);
 		printf(
 			'<span class="rpsite-os-pill rpsite-os-pill--%1$s">%2$s</span>',
@@ -421,8 +422,7 @@ final class RankPublish_Site_Admin_Os {
 	}
 
 	private static function local_site_status(): string {
-		$home = (string) home_url();
-		return '' !== $home ? 'connected' : 'pending';
+		return rpsite_is_platform() ? 'platform' : 'disconnected';
 	}
 
 	/**

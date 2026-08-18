@@ -58,6 +58,19 @@ function mysqlPortFromSiteJson(json) {
   return null;
 }
 
+function mysqlPortFromEnvrc(publicPath) {
+  const envrcPath = path.join(path.dirname(publicPath), ".envrc");
+  if (!fs.existsSync(envrcPath)) return null;
+  const text = fs.readFileSync(envrcPath, "utf8");
+  const homeMatch = text.match(/^export MYSQL_HOME="([^"]+)"/m);
+  if (!homeMatch) return null;
+  const cnf = path.join(homeMatch[1].replace(/\//g, path.sep), "my.cnf");
+  if (!fs.existsSync(cnf)) return null;
+  const cnfText = fs.readFileSync(cnf, "utf8");
+  const match = cnfText.match(/port\s*=\s*(\d+)/i);
+  return match ? Number(match[1]) : null;
+}
+
 function mysqlPortFromMyCnf(root) {
   const cnf = path.join(root, "conf", "mysql", "my.cnf");
   if (!fs.existsSync(cnf)) return null;
@@ -89,6 +102,53 @@ function readWpConfigConstants(configPath) {
     DB_PASSWORD: pick("DB_PASSWORD"),
     DB_HOST: pick("DB_HOST"),
   };
+}
+
+function isInvalidDbHost(host) {
+  return !host || /XXXX/i.test(host) || host === "localhost";
+}
+
+function detectDbName(siteKey, port) {
+  const preferred = expectedDbName(siteKey);
+  if (!port) return preferred;
+
+  const mysqlBin =
+    process.env.MYSQL_BIN ||
+    "C:/Users/drmoh/AppData/Roaming/Local/lightning-services/mysql-8.4.0/bin/win64/bin/mysql.exe";
+  const { spawnSync } = require("child_process");
+  const list = spawnSync(
+    mysqlBin,
+    [`--host=127.0.0.1`, `--port=${port}`, "--user=root", "--password=root", "-N", "-e", "SHOW DATABASES;"],
+    { encoding: "utf8", windowsHide: true }
+  );
+  if (list.status !== 0) return preferred;
+
+  const dbs = (list.stdout || "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (dbs.includes(preferred)) return preferred;
+
+  if (siteKey === "rankpublish-test" && dbs.includes("rankpublish_saas")) {
+    const siteUrl = spawnSync(
+      mysqlBin,
+      [
+        `--host=127.0.0.1`,
+        `--port=${port}`,
+        "--user=root",
+        "--password=root",
+        "-N",
+        "-e",
+        "SELECT option_value FROM rankpublish_saas.wp_options WHERE option_name='siteurl' LIMIT 1;",
+      ],
+      { encoding: "utf8", windowsHide: true }
+    );
+    if ((siteUrl.stdout || "").includes("rankpublish-test.local")) {
+      return "rankpublish_saas";
+    }
+  }
+
+  return preferred;
 }
 
 function expectedDbName(siteKey) {
@@ -137,8 +197,7 @@ function printHelp(siteKey, root, port, current, expected) {
   console.log("\nIf MySQL port is unknown:");
   console.log("  1. Open Local → select site → Start");
   console.log("  2. Site → Open site shell → re-run this script");
-  console.log("\nCommon mistake: rankpublish-test must NOT use rankpublish_saas.");
-  console.log("Only rankpublish.local shares rankpublish_saas (wp_* + rp_*).");
+  console.log("\nIf rankpublish-test has no `local` DB, this script may select rankpublish_saas when siteurl matches.");
 }
 
 async function main() {
@@ -154,10 +213,13 @@ async function main() {
   const root = siteRoot(publicPath);
   const configPath = path.join(publicPath, "wp-config.php");
   const current = readWpConfigConstants(configPath);
-  const port = mysqlPortFromSiteJson(readSiteJson(root)) ?? mysqlPortFromMyCnf(root);
+  const port =
+    mysqlPortFromSiteJson(readSiteJson(root)) ??
+    mysqlPortFromMyCnf(root) ??
+    mysqlPortFromEnvrc(publicPath);
 
   const expected = {
-    DB_NAME: expectedDbName(site),
+    DB_NAME: detectDbName(site, port),
     DB_USER: "root",
     DB_PASSWORD: "root",
     DB_HOST: port ? buildDbHost(port) : current.DB_HOST || "localhost",
@@ -169,6 +231,7 @@ async function main() {
     current.DB_NAME !== expected.DB_NAME ||
     current.DB_USER !== expected.DB_USER ||
     current.DB_PASSWORD !== expected.DB_PASSWORD ||
+    isInvalidDbHost(current.DB_HOST) ||
     (port && (current.DB_HOST !== expected.DB_HOST || portFromDbHost(current.DB_HOST) !== port));
 
   if (!needsFix) {

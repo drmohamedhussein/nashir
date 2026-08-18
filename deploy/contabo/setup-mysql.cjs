@@ -42,12 +42,19 @@ if (!host || !username || !password || !mysqlUser || !mysqlPass) {
   process.exit(1);
 }
 
+const authSecret = process.env.AUTH_SECRET || process.env.NASHIR_AUTH_SECRET;
+const cronSecret = process.env.CRON_SECRET || process.env.NASHIR_CRON_SECRET;
+if (!authSecret || !cronSecret) {
+  console.error("Missing AUTH_SECRET / CRON_SECRET (or NASHIR_AUTH_SECRET / NASHIR_CRON_SECRET)");
+  process.exit(1);
+}
+
 const dbUrl = `mysql://${encodeURIComponent(mysqlUser)}:${encodeURIComponent(mysqlPass)}@127.0.0.1:3306/${dbName}`;
 const envBody = [
   `DATABASE_URL="${dbUrl}"`,
   `APP_URL="${stagingUrl}"`,
-  `AUTH_SECRET="${process.env.AUTH_SECRET || "f9a15a442d29718a7250f33a576f6e50fbdbbd8f9c6b5c28"}"`,
-  `CRON_SECRET="${process.env.CRON_SECRET || "f8dc00622f974fb9aba947497dcdfaddc9b057fd4480008a"}"`,
+  `AUTH_SECRET="${authSecret}"`,
+  `CRON_SECRET="${cronSecret}"`,
   "",
 ].join("\n");
 

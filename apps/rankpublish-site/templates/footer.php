@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="wrap foot-grid">
 		<div>
 			<h4 class="foot-brand">
-				<span class="os-mark" aria-hidden="true">R</span>
+				<img class="brand-logo" src="<?php echo esc_url( rpsite_logo_url() ); ?>" width="28" height="28" alt="<?php echo esc_attr( rpsite_t( 'brand' ) ); ?>" />
 				<span>
 					<span class="os-name"><?php echo esc_html( rpsite_t( 'brand' ) ); ?></span>
 					<span class="os-sub"><?php echo esc_html( rpsite_t( 'os_sub' ) ); ?></span>

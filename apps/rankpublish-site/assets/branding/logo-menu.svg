@@ -1,8 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" role="img" aria-label="RankPublish">
-  <rect width="20" height="20" rx="5.5" fill="#11172A"/>
-  <path d="M4.7 14.6V5.4h2.7c1.55 0 2.5.78 2.5 2.02 0 .85-.45 1.48-1.22 1.78l1.45 2.7H8.6L7.3 11.2H6.1v3.4H4.7Zm1.6-3.85h1.2c.68 0 1.05-.34 1.05-.9 0-.56-.37-.88-1.05-.88H6.3v1.78Z" fill="#F8FAFC"/>
-  <path d="M10.1 14.6V5.4h2.55c1.45 0 2.35.72 2.35 1.88 0 .9-.53 1.52-1.37 1.78 1 .24 1.65 1 1.65 2.05 0 1.35-1.03 2.1-2.85 2.1H10.1Zm1.6-3.55h1.02c.65 0 .98-.32.98-.78 0-.46-.33-.75-.98-.75h-1.02v1.53Zm0-2.65h.97c.6 0 .92-.28.92-.72 0-.44-.32-.69-.92-.69h-.97v1.41Z" fill="#F8FAFC"/>
-  <rect x="13.8" y="11.7" width=".95" height="3.2" rx=".22" fill="#F97316"/>
-  <rect x="15.25" y="10.1" width=".95" height="4.8" rx=".22" fill="#FB923C"/>
-  <rect x="16.7" y="8.4" width=".95" height="6.5" rx=".22" fill="#FDBA74"/>
+  <defs>
+    <linearGradient id="rpm-bg" x1="2" y1="2" x2="18" y2="18" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="rpm-bars" x1="11" y1="15" x2="18" y2="5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#c7d2fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="20" height="20" rx="6" fill="url(#rpm-bg)"/>
+  <rect x="4.2" y="5.5" width="6" height="9" rx="1.4" fill="#fff" fill-opacity="0.97"/>
+  <rect x="5.3" y="7.2" width="3.8" height="1" rx="0.5" fill="#4338ca" fill-opacity="0.2"/>
+  <rect x="5.3" y="9" width="3.8" height="1" rx="0.5" fill="#4338ca" fill-opacity="0.14"/>
+  <rect x="12" y="11.5" width="1.6" height="3" rx="0.8" fill="url(#rpm-bars)" fill-opacity="0.75"/>
+  <rect x="14.1" y="9.2" width="1.6" height="5.3" rx="0.8" fill="url(#rpm-bars)" fill-opacity="0.9"/>
+  <rect x="16.2" y="6.8" width="1.6" height="7.7" rx="0.8" fill="url(#rpm-bars)"/>
 </svg>
