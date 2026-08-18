@@ -5,6 +5,7 @@ import { createSession } from "@/lib/auth";
 import { hashPassword, randomToken } from "@/lib/crypto";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { PLANS, trialEnd } from "@/lib/plans";
+import { acceptPendingInvites } from "@/lib/workspace";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -64,16 +65,24 @@ export async function POST(request: Request) {
     },
   });
 
+  const joinedWorkspaceId = await acceptPendingInvites(user.id, email);
+  const sessionWorkspaceId = joinedWorkspaceId ?? user.workspace!.id;
+
   await createSession({
     id: user.id,
     name: user.name,
     email: user.email,
-    workspaceId: user.workspace!.id,
+    workspaceId: sessionWorkspaceId,
   });
+
+  if (joinedWorkspaceId) {
+    return NextResponse.json({ ok: true, joinedWorkspace: true });
+  }
 
   await prisma.subscription.create({
     data: {
       workspaceId: user.workspace!.id,
+      planId: "starter",
       interval: PLANS.monthly.interval,
       status: "trial",
       priceCents: PLANS.monthly.priceCents,

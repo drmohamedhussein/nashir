@@ -58,6 +58,19 @@ export async function getSession(): Promise<SessionUser | null> {
     ) {
       return null;
     }
+
+    const member = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: payload.workspaceId,
+          userId: payload.id,
+        },
+      },
+    });
+    if (!member) {
+      return null;
+    }
+
     return {
       id: payload.id,
       name: payload.name,

@@ -14,6 +14,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { BrandMark } from "@/components/rankpublish/brand-mark";
+import { WorkspaceSwitcher } from "@/components/rankpublish/workspace-switcher";
 import { LogoutButton } from "@/components/logout-button";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n";
@@ -80,12 +81,14 @@ function NavGroup({
 export function AppDashboardShell({
   locale,
   userName,
+  workspaceId,
   logoutLabel,
   labels,
   children,
 }: {
   locale: Locale;
   userName: string;
+  workspaceId: string;
   logoutLabel: string;
   labels: Record<string, string>;
   children: React.ReactNode;
@@ -119,9 +122,12 @@ export function AppDashboardShell({
             </p>
             <p className="mt-0.5 text-sm font-bold text-slate-900">{workspaceName}</p>
           </div>
-          <div className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-700 sm:flex">
+          <div className="flex items-center gap-3">
+            <WorkspaceSwitcher activeWorkspaceId={workspaceId} />
+            <div className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-700 sm:flex">
             <span className="size-1.5 rounded-full bg-emerald-500" />
             {labels.systemsOperational ?? "Systems operational"}
+            </div>
           </div>
           <div className="flex items-center gap-3 lg:hidden">
             <Link href="/app">

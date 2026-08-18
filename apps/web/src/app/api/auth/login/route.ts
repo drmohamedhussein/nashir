@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { createSession } from "@/lib/auth";
 import { verifyPassword } from "@/lib/crypto";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
+import { acceptPendingInvites, resolveSessionWorkspaceId } from "@/lib/workspace";
 
 const schema = z.object({
   email: z.string().trim().email(),
@@ -20,20 +21,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "بيانات غير مكتملة." }, { status: 400 });
   }
 
+  const email = parsed.data.email.toLowerCase();
   const user = await prisma.user.findUnique({
-    where: { email: parsed.data.email.toLowerCase() },
-    include: { workspace: true },
+    where: { email },
   });
 
-  if (!user?.workspace || !(await verifyPassword(parsed.data.password, user.passwordHash))) {
+  if (!user || !(await verifyPassword(parsed.data.password, user.passwordHash))) {
     return NextResponse.json({ error: "البريد أو كلمة المرور غير صحيحة." }, { status: 401 });
+  }
+
+  const joinedWorkspaceId = await acceptPendingInvites(user.id, email);
+  const workspaceId = joinedWorkspaceId ?? (await resolveSessionWorkspaceId(user.id));
+  if (!workspaceId) {
+    return NextResponse.json({ error: "لا توجد مساحة عمل مرتبطة بهذا الحساب." }, { status: 403 });
   }
 
   await createSession({
     id: user.id,
     name: user.name,
     email: user.email,
-    workspaceId: user.workspace.id,
+    workspaceId,
   });
 
   return NextResponse.json({ ok: true });

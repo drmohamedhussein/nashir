@@ -55,7 +55,15 @@ node deploy/contabo/deploy-rankpublish-site.cjs
 
 Replaces old **Nashir** theme branding with **RankPublish** rankpublish-site templates.
 
-### 4. Verify
+### 4. Package plugin ZIPs
+
+```bash
+node deploy/package-rankpublish.cjs
+```
+
+Builds `dist/rankpublish-site.zip`, `dist/rankpublish-connector.zip`, and `dist/rankpublish-bridge.zip` for upload to WordPress.
+
+### 5. Verify
 
 - https://nashir.satest.top/ → RankPublish marketing (WP)
 - https://nashir.satest.top/register → SaaS signup
@@ -85,3 +93,22 @@ node .\deploy\contabo\activate-dev-stack.cjs
 ```
 
 Credentials stay in env only — never commit them.
+
+## Production (rankpublish.com)
+
+When the production domain is ready:
+
+1. **DNS** — Point `rankpublish.com` and `www.rankpublish.com` to the Contabo VPS IP.
+2. **SSL** — Enable Let's Encrypt in ServerAvatar for the domain.
+3. **WordPress marketing** — Deploy `rankpublish-site` plugin; set `rankpublish_cloud_url` option to `https://rankpublish.com`.
+4. **SaaS routing** — Use the mu-plugin proxy (`wordpress/mu-plugins/rankpublish-saas-proxy.php`) or Nginx split config so `/app`, `/api`, `/login`, `/register` reach Next.js on port 3001.
+5. **Environment** — On server `/var/www/nashir/apps/web/.env`:
+   - `APP_URL=https://rankpublish.com`
+   - `DATABASE_URL` (MySQL with `rp_*` + `wp_*` tables)
+   - `AUTH_SECRET`, `CRON_SECRET`
+   - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+   - `STRIPE_PRICE_STARTER_MONTHLY`, `STRIPE_PRICE_GROWTH_MONTHLY`, `STRIPE_PRICE_SCALE_MONTHLY` (and yearly variants)
+6. **Database** — Run `npx prisma db push` (never use `--accept-data-loss` on shared WP+SaaS DB).
+7. **Plugin ZIPs** — `node deploy/package-rankpublish.cjs` → upload `dist/rankpublish-site.zip` and distribute `dist/rankpublish-bridge.zip` to client sites.
+8. **Stripe webhook** — Register `https://rankpublish.com/api/webhooks/stripe` in Stripe dashboard.
+9. **Verify** — `/api/health`, `/register`, `/app`, marketing homepage, bridge connect flow.

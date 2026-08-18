@@ -108,6 +108,7 @@ model Site {
   name            String
   url             String
   restUrl         String
+  connectorType   String           @default("rankpublish") // rankpublish | nashir
   wpVersion       String?
   apiKeyHash      String
   signingSecret   String
@@ -115,8 +116,10 @@ model Site {
   tokenExpiresAt  DateTime?
   bridgeSecretHash String?
   workerStatus    String           @default("none")
+  workerRef       String?
   status          String           @default("connected")
   lastSeenAt      DateTime?
+  syncState       SyncState?
   integrationsJson String          @default("[]")
   capabilitiesJson String          @default("[]")
   schedulerMode   String           @default("manual")
@@ -325,4 +328,16 @@ model ActivityEvent {
 
   @@index([workspaceId, createdAt])
   @@map("rp_activity_event")
+}
+
+model SyncState {
+  id                   String   @id @default(cuid())
+  siteId               String   @unique
+  site                 Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  lastCapabilitySyncAt DateTime?
+  lastPostSyncAt       DateTime?
+  postSyncCursor       String?
+  updatedAt            DateTime @updatedAt
+
+  @@map("rp_sync_state")
 }

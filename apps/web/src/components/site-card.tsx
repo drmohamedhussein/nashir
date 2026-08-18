@@ -13,6 +13,8 @@ export function SiteCard({
   wpVersion,
   lastSeen,
   subscriptionId,
+  workerStatus,
+  connectorType,
   locale,
 }: {
   id: string;
@@ -22,6 +24,8 @@ export function SiteCard({
   wpVersion: string | null;
   lastSeen: string | null;
   subscriptionId?: string | null;
+  workerStatus?: string | null;
+  connectorType?: string | null;
   locale: Locale;
 }) {
   const router = useRouter();
@@ -68,9 +72,19 @@ export function SiteCard({
             {url}
           </a>
         </div>
-        <span className="rounded-full bg-brand/10 px-3 py-1 text-xs text-brand">
-          {status === "connected" ? copy.connectedLabel : status}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="rounded-full bg-brand/10 px-3 py-1 text-xs text-brand">
+            {status === "connected" ? copy.connectedLabel : status}
+          </span>
+          {workerStatus && workerStatus !== "none" ? (
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+              {workerStatus}
+            </span>
+          ) : null}
+          {connectorType ? (
+            <span className="text-[10px] uppercase tracking-wide text-ink-soft">{connectorType}</span>
+          ) : null}
+        </div>
       </div>
       <p className="mt-3 text-xs text-ink-soft">
         WordPress {wpVersion ?? copy.wpUnknown}

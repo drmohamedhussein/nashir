@@ -1,4 +1,4 @@
-import { PairingPanel } from "@/components/pairing-panel";
+import { ConnectionWizard } from "@/components/rankpublish/connection-wizard";
 import { SiteCard } from "@/components/site-card";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -50,6 +50,8 @@ export default async function AppHomePage() {
                 wpVersion={site.wpVersion}
                 lastSeen={site.lastSeenAt ? site.lastSeenAt.toLocaleString(locale) : null}
                 subscriptionId={site.subscription?.id}
+                workerStatus={site.workerStatus}
+                connectorType={site.connectorType}
                 locale={locale}
               />
             ))
@@ -60,7 +62,7 @@ export default async function AppHomePage() {
         <Link href="/app/billing" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
           {copy.billingTeaser}
         </Link>
-        <PairingPanel locale={locale} appUrl={cloudAppUrl} />
+        <ConnectionWizard locale={locale} appUrl={cloudAppUrl} />
         <a href="/wp-content/uploads/rankpublish/rankpublish.zip" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm text-ink-soft shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
           {copy.download}
         </a>

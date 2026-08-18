@@ -32,7 +32,7 @@ export default async function ActivityPage() {
 
       {events.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-ink/15 p-10 text-center text-sm text-ink-soft">
-          No activity yet. Operations will appear here as you use the workspace.
+          {copy.activityEmpty}
         </div>
       ) : (
         <div className="mt-6 space-y-2">

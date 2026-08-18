@@ -165,3 +165,87 @@ export async function disconnectSite(userId: string, workspaceId: string, siteId
     },
   });
 }
+
+export async function listPendingInvites(email: string) {
+  return prisma.workspaceInvite.findMany({
+    where: {
+      email: email.toLowerCase(),
+      status: "pending",
+      expiresAt: { gt: new Date() },
+    },
+    include: { workspace: { select: { id: true, name: true, slug: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function acceptPendingInvites(userId: string, email: string): Promise<string | null> {
+  const invites = await listPendingInvites(email);
+  let firstJoined: string | null = null;
+
+  for (const invite of invites) {
+    const existing = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId: invite.workspaceId, userId } },
+    });
+    if (!existing) {
+      await prisma.workspaceMember.create({
+        data: { workspaceId: invite.workspaceId, userId, role: invite.role },
+      });
+      if (!firstJoined) {
+        firstJoined = invite.workspaceId;
+      }
+    }
+    await prisma.workspaceInvite.update({
+      where: { id: invite.id },
+      data: { status: "accepted" },
+    });
+  }
+
+  return firstJoined;
+}
+
+export async function acceptInvite(userId: string, email: string, inviteId: string): Promise<string> {
+  const invite = await prisma.workspaceInvite.findFirst({
+    where: {
+      id: inviteId,
+      email: email.toLowerCase(),
+      status: "pending",
+      expiresAt: { gt: new Date() },
+    },
+  });
+  if (!invite) {
+    throw new Error("Invite not found or expired");
+  }
+
+  const existing = await prisma.workspaceMember.findUnique({
+    where: { workspaceId_userId: { workspaceId: invite.workspaceId, userId } },
+  });
+  if (!existing) {
+    await prisma.workspaceMember.create({
+      data: { workspaceId: invite.workspaceId, userId, role: invite.role },
+    });
+  }
+
+  await prisma.workspaceInvite.update({
+    where: { id: invite.id },
+    data: { status: "accepted" },
+  });
+
+  return invite.workspaceId;
+}
+
+export async function resolveSessionWorkspaceId(userId: string): Promise<string | null> {
+  const owned = await prisma.workspace.findUnique({
+    where: { ownerId: userId },
+    select: { id: true },
+  });
+  if (owned) {
+    return owned.id;
+  }
+
+  const membership = await prisma.workspaceMember.findFirst({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+    select: { workspaceId: true },
+  });
+  return membership?.workspaceId ?? null;
+}

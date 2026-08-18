@@ -4,38 +4,93 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { t, type Locale } from "@/lib/i18n";
 
+type Plan = {
+  id: string;
+  name: string;
+  monthlyPriceCents: number;
+  yearlyPriceCents: number;
+  siteLimit: number;
+};
+
 type Seat = {
   id: string;
   interval: string;
   status: string;
   priceCents: number;
+  planId: string | null;
+  planName: string | null;
   currentPeriodEnd: string;
   siteId: string | null;
   siteUrl: string | null;
   siteName: string | null;
+  stripeCustomerId: string | null;
 };
 
-export function BillingPanel({ seats, locale }: { seats: Seat[]; locale: Locale }) {
+export function BillingPanel({
+  seats,
+  plans,
+  stripeConfigured,
+  locale,
+}: {
+  seats: Seat[];
+  plans: Plan[];
+  stripeConfigured: boolean;
+  locale: Locale;
+}) {
   const copy = t(locale);
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
-  async function addSeat(interval: "monthly" | "yearly") {
+  async function startTrial(planId: string, interval: "monthly" | "yearly") {
     setPending(true);
     setError("");
     const response = await fetch("/api/v1/billing", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ interval }),
+      body: JSON.stringify({ action: "trial", planId, interval }),
     });
-    const data = (await response.json()) as { error?: string };
+    const data = (await response.json()) as { error?: { message?: string } };
     setPending(false);
     if (!response.ok) {
-      setError(data.error ?? copy.billingError);
+      setError(data.error?.message ?? copy.billingError);
       return;
     }
     router.refresh();
+  }
+
+  async function checkout(planId: string, interval: "monthly" | "yearly") {
+    setPending(true);
+    setError("");
+    const response = await fetch("/api/v1/billing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "checkout", planId, interval }),
+    });
+    const data = (await response.json()) as { data?: { url?: string }; error?: { message?: string } };
+    setPending(false);
+    if (!response.ok || !data.data?.url) {
+      setError(data.error?.message ?? copy.billingError);
+      return;
+    }
+    window.location.href = data.data.url;
+  }
+
+  async function openPortal() {
+    setPending(true);
+    setError("");
+    const response = await fetch("/api/v1/billing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "portal" }),
+    });
+    const data = (await response.json()) as { data?: { url?: string }; error?: { message?: string } };
+    setPending(false);
+    if (!response.ok || !data.data?.url) {
+      setError(data.error?.message ?? copy.billingError);
+      return;
+    }
+    window.location.href = data.data.url;
   }
 
   async function unbind(id: string) {
@@ -51,25 +106,47 @@ export function BillingPanel({ seats, locale }: { seats: Seat[]; locale: Locale 
   return (
     <div className="space-y-6">
       <p className="text-sm text-ink-soft">{copy.billingIntro}</p>
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => addSeat("monthly")}
-          className="rounded-full bg-ink px-4 py-2 text-sm text-paper disabled:opacity-60"
-        >
-          {copy.billingTrialMonthly}
-        </button>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => addSeat("yearly")}
-          className="rounded-full border border-ink/15 px-4 py-2 text-sm disabled:opacity-60"
-        >
-          {copy.billingTrialYearly}
-        </button>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {plans.map((plan) => (
+          <article key={plan.id} className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
+            <h3 className="text-lg font-semibold">{plan.name}</h3>
+            <p className="mt-1 text-sm text-ink-soft">
+              {(plan.monthlyPriceCents / 100).toFixed(2)}$ / {copy.billingMonthlyShort ?? "mo"} · {plan.siteLimit}{" "}
+              {copy.sites ?? "sites"}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => startTrial(plan.id, "monthly")}
+                className="rounded-full border border-ink/15 px-3 py-1.5 text-xs disabled:opacity-60"
+              >
+                {copy.billingTrialMonthly}
+              </button>
+              {stripeConfigured ? (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => checkout(plan.id, "monthly")}
+                  className="rounded-full bg-ink px-3 py-1.5 text-xs text-paper disabled:opacity-60"
+                >
+                  {copy.billingSubscribe ?? "Subscribe"}
+                </button>
+              ) : null}
+            </div>
+          </article>
+        ))}
       </div>
+
+      {stripeConfigured && seats.some((s) => s.stripeCustomerId) ? (
+        <button type="button" disabled={pending} onClick={openPortal} className="rounded-full border border-ink/15 px-4 py-2 text-sm">
+          {copy.billingManage ?? "Manage subscription"}
+        </button>
+      ) : null}
+
       {error ? <p className="text-sm text-danger">{error}</p> : null}
+
       {seats.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-ink/15 p-6 text-sm text-ink-soft">{copy.billingNoSeats}</p>
       ) : (
@@ -77,13 +154,11 @@ export function BillingPanel({ seats, locale }: { seats: Seat[]; locale: Locale 
           {seats.map((seat) => (
             <li key={seat.id} className="rounded-2xl bg-white p-5 text-sm shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
               <div className="font-medium">
-                {seat.interval} · {seat.status} · {(seat.priceCents / 100).toFixed(2)}$
+                {seat.planName ?? seat.planId ?? "Plan"} · {seat.interval} · {seat.status} · {(seat.priceCents / 100).toFixed(2)}$
               </div>
               <div className="mt-1 text-ink-soft">
                 {copy.billingUntil} {new Date(seat.currentPeriodEnd).toLocaleDateString(locale)}
-                {seat.siteUrl
-                  ? ` · ${seat.siteName} (${seat.siteUrl})`
-                  : ` · ${copy.billingEmptySeat}`}
+                {seat.siteUrl ? ` · ${seat.siteName} (${seat.siteUrl})` : ` · ${copy.billingEmptySeat}`}
               </div>
               {seat.siteId ? (
                 <button type="button" className="mt-3 text-purple" onClick={() => unbind(seat.id)} disabled={pending}>

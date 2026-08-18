@@ -1017,6 +1017,14 @@ p { margin: 0 0 1em; }
   color: #e2e8f0;
 }
 
+.os-plans.os-plans-tier {
+  grid-template-columns: 1fr;
+  max-width: 980px;
+  margin-inline: auto;
+}
+@media (min-width: 900px) {
+  .os-plans.os-plans-tier { grid-template-columns: repeat(3, 1fr); }
+}
 .os-plans-head {
   display: flex;
   justify-content: space-between;

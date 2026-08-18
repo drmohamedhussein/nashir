@@ -21,6 +21,7 @@ export default async function AppLayout({
     <AppDashboardShell
       locale={locale}
       userName={session.name}
+      workspaceId={session.workspaceId}
       logoutLabel={copy.logout}
       labels={copy as unknown as Record<string, string>}
     >

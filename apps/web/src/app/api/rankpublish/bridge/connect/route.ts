@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { digestToken, hashSecret, normalizeOrigin, randomToken, sameDigest } from "@/lib/crypto";
+import { logActivity } from "@/lib/commands";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
@@ -68,9 +69,20 @@ export async function POST(request: Request) {
       bridgeSecretHash: digestToken(bridgeSecret),
       connectionTokenHash: null,
       tokenExpiresAt: null,
-      workerStatus: "provisioning",
+      workerStatus: "active",
+      workerRef: site.id,
+      connectorType: "rankpublish",
       lastSeenAt: new Date(),
     },
+  });
+
+  await logActivity({
+    workspaceId: site.workspaceId,
+    siteId: site.id,
+    type: "site.connected",
+    title: "Site connected",
+    detail: siteOrigin,
+    status: "succeeded",
   });
 
   return NextResponse.json(
