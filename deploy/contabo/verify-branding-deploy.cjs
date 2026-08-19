@@ -99,6 +99,7 @@ if (!host || !username || !password) {
     const remoteJs = await exec(conn, `grep -E 'hideThinkRankUpsells|shouldSkipHide|PROTECTED_ROOT_SELECTORS|isThinkRankSettingsScreen' ${jsPath}`);
     const markers = [
       "hideThinkRankUpsells",
+      "hideThinkRankUpsellsSafe",
       "shouldSkipHide",
       "PROTECTED_ROOT_SELECTORS",
       "isThinkRankSettingsScreen",
