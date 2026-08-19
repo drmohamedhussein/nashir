@@ -38,8 +38,10 @@ function verifySyncedPlugin(dest, key) {
     ["unlockModuleScroll", js.includes("unlockModuleScroll")],
     ["unlockScrollOnElement", js.includes("unlockScrollOnElement")],
     ["hideModuleUpsells", js.includes("hideModuleUpsells")],
+    ["normalizeModuleLayout", js.includes("normalizeModuleLayout")],
+    ["layout: transparent module wrap", css.includes("background: transparent") && css.includes("rpsite-module-native .tr-root")],
     ["scroll unlock CSS", css.includes("document-level scroll")],
-    ["PHP scroll bootstrap", php.includes("RPSITE_VERSION")],
+    ["version >= 1.8.5", version !== "?" && parseFloat(version) >= 1.85],
   ];
 
   console.log(`\nVerify synced plugin on ${key} (v${version}):`);
