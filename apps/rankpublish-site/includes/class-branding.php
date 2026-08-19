@@ -129,14 +129,18 @@ final class RankPublish_Site_Branding {
 	public function rename_upstream_menus(): void {
 		global $menu, $submenu;
 
+		$icon_url = self::url( 'logo-menu.png' );
+
 		if ( is_array( $menu ) ) {
 			foreach ( $menu as $index => $item ) {
 				$slug = isset( $item[2] ) ? (string) $item[2] : '';
 				if ( 'thinkrank' === $slug ) {
 					$menu[ $index ][0] = __( 'RankPublish SEO', 'rankpublish-site' );
+					$menu[ $index ][6] = $icon_url;
 				}
 				if ( 'schedulepress' === $slug ) {
 					$menu[ $index ][0] = __( 'RankPublish Scheduler', 'rankpublish-site' );
+					$menu[ $index ][6] = $icon_url;
 				}
 			}
 		}
