@@ -57,8 +57,11 @@ Direct Node (works everywhere):
 
 ```powershell
 node deploy/local/sync-rankpublish-site.cjs --site rankpublish-test
+node deploy/local/verify-thinkrank-local.cjs --site rankpublish-test
 node deploy/local/qa-rankpublish.cjs --site rankpublish-test
 ```
+
+`verify-thinkrank-local.cjs` does not require PHP/WP-CLI (use it when QA fails with `'php' is not recognized`).
 
 ### First-time test site setup
 

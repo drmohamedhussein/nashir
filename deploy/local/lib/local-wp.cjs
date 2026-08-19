@@ -1,5 +1,5 @@
 /**
- * Shared LocalWP + WP-CLI helpers for deploy/local scripts.
+ * Fix LocalWP envrc discovery + invoke WP-CLI via explicit php.exe (avoids PATH issues in PowerShell).
  */
 const fs = require("fs");
 const path = require("path");
@@ -8,6 +8,10 @@ const { spawnSync } = require("child_process");
 const WP_BAT = path.join(
   "C:/Program Files (x86)/Local/resources/extraResources/bin/wp-cli/win32",
   "wp.bat"
+);
+const WP_PHAR = path.join(
+  "C:/Program Files (x86)/Local/resources/extraResources/bin/wp-cli",
+  "wp-cli.phar"
 );
 
 const DEFAULT_SITES = {
@@ -37,12 +41,20 @@ const ALWAYS_OFF = {
   ],
 };
 
-function loadEnvrc(publicPath) {
-  const envrcPath = path.join(path.dirname(publicPath), ".envrc");
-  const env = { ...process.env };
-  if (!fs.existsSync(envrcPath)) {
-    return { env, envrcPath, ok: false };
-  }
+function siteRootFromPublic(publicPath) {
+  return path.dirname(path.dirname(publicPath));
+}
+
+function findEnvrc(publicPath) {
+  const candidates = [
+    path.join(siteRootFromPublic(publicPath), ".envrc"),
+    path.join(path.dirname(publicPath), ".envrc"),
+  ];
+  return candidates.find((candidate) => fs.existsSync(candidate)) || candidates[0];
+}
+
+function parseEnvrcFile(envrcPath, env) {
+  const next = { ...env };
   const pathParts = [];
   for (const line of fs.readFileSync(envrcPath, "utf8").split(/\r?\n/)) {
     const pathMatch = line.match(/^export PATH="([^"]*)"/);
@@ -52,14 +64,13 @@ function loadEnvrc(publicPath) {
     }
     const m = line.match(/^export\s+(\w+)="([^"]*)"/);
     if (m) {
-      env[m[1]] = m[2].replace(/\//g, path.sep);
+      next[m[1]] = m[2].replace(/\//g, path.sep);
     }
   }
   if (pathParts.length) {
-    env.PATH = [...pathParts, process.env.PATH].join(path.delimiter);
+    next.PATH = [...pathParts, process.env.PATH || ""].filter(Boolean).join(path.delimiter);
   }
-  const resolved = ensurePhpInPath(env, publicPath);
-  return { env: resolved, envrcPath, ok: Boolean(resolved.PHPRC) };
+  return next;
 }
 
 function phpBinaryName() {
@@ -75,25 +86,28 @@ function pathHasPhp(dir) {
   }
 }
 
-function ensurePhpInPath(env, publicPath) {
-  const next = { ...env };
-  const parts = (next.PATH || "").split(path.delimiter).filter(Boolean);
-  if (parts.some((p) => pathHasPhp(p))) {
-    return next;
-  }
-
+function listLocalPhpCandidates(publicPath, env) {
   const candidates = [];
-  if (next.PHPRC) {
-    let cursor = path.dirname(next.PHPRC);
-    for (let i = 0; i < 8 && cursor; i++) {
+  const parts = (env.PATH || "").split(path.delimiter).filter(Boolean);
+  candidates.push(...parts);
+
+  if (env.PHPRC) {
+    let cursor = path.dirname(env.PHPRC);
+    for (let i = 0; i < 10 && cursor; i++) {
       candidates.push(path.join(cursor, "bin", "win64"));
       candidates.push(path.join(cursor, "bin"));
       cursor = path.dirname(cursor);
     }
+    const siteRoot = siteRootFromPublic(publicPath);
+    candidates.push(path.join(siteRoot, "bin", "win64"));
   }
 
-  const localRoot = path.join(process.env.LOCALAPPDATA || "", "Programs", "Local", "lightning-services");
-  if (fs.existsSync(localRoot)) {
+  const localRoots = [
+    path.join(process.env.LOCALAPPDATA || "", "Programs", "Local", "lightning-services"),
+    path.join(process.env.LOCALAPPDATA || "", "Local", "Programs", "Local", "lightning-services"),
+  ];
+  for (const localRoot of localRoots) {
+    if (!fs.existsSync(localRoot)) continue;
     for (const entry of fs.readdirSync(localRoot, { withFileTypes: true })) {
       if (!entry.isDirectory() || !entry.name.includes("php")) continue;
       candidates.push(path.join(localRoot, entry.name, "bin", "win64"));
@@ -102,29 +116,64 @@ function ensurePhpInPath(env, publicPath) {
 
   const programFiles = process.env["ProgramFiles(x86)"] || process.env.ProgramFiles;
   if (programFiles) {
-    candidates.push(path.join(programFiles, "Local", "resources", "extraResources", "lightning-services", "php-8.2.27+1", "bin", "win64"));
-  }
-
-  for (const candidate of candidates) {
-    if (pathHasPhp(candidate)) {
-      next.PATH = [candidate, ...parts.filter((p) => p !== candidate)].join(path.delimiter);
-      if (!next.PHPRC) {
-        next.PHPRC = path.join(path.dirname(path.dirname(publicPath)), "conf", "php", "php.ini");
-      }
-      return next;
-    }
-  }
-
-  if (next.PHPRC) {
-    const phpDir = parts.find(
-      (p) => p.includes("lightning-services") && p.includes("php") && /win64/i.test(p)
+    const bundled = path.join(
+      programFiles,
+      "Local",
+      "resources",
+      "extraResources",
+      "lightning-services"
     );
-    if (phpDir && pathHasPhp(phpDir)) {
-      next.PATH = [phpDir, ...parts.filter((p) => p !== phpDir)].join(path.delimiter);
+    if (fs.existsSync(bundled)) {
+      for (const entry of fs.readdirSync(bundled, { withFileTypes: true })) {
+        if (!entry.isDirectory() || !entry.name.includes("php")) continue;
+        candidates.push(path.join(bundled, entry.name, "bin", "win64"));
+      }
     }
   }
 
+  return [...new Set(candidates)];
+}
+
+function resolvePhpExe(env, publicPath) {
+  for (const candidate of listLocalPhpCandidates(publicPath, env)) {
+    const exe = pathHasPhp(candidate) ? path.join(candidate, phpBinaryName()) : candidate;
+    if (exe.endsWith(phpBinaryName()) && fs.existsSync(exe)) {
+      return exe;
+    }
+  }
+  return null;
+}
+
+function ensurePhpInPath(env, publicPath) {
+  const next = { ...env };
+  const phpExe = resolvePhpExe(next, publicPath);
+  if (!phpExe) {
+    return next;
+  }
+  const phpDir = path.dirname(phpExe);
+  const parts = (next.PATH || "").split(path.delimiter).filter(Boolean);
+  next.PATH = [phpDir, ...parts.filter((p) => p !== phpDir)].join(path.delimiter);
+  next.WP_CLI_PHP = phpExe;
+  if (!next.PHPRC) {
+    next.PHPRC = path.join(siteRootFromPublic(publicPath), "conf", "php", "php.ini");
+  }
   return next;
+}
+
+function loadEnvrc(publicPath) {
+  const envrcPath = findEnvrc(publicPath);
+  let env = { ...process.env };
+  if (fs.existsSync(envrcPath)) {
+    env = parseEnvrcFile(envrcPath, env);
+  }
+  const resolved = ensurePhpInPath(env, publicPath);
+  const phpExe = resolvePhpExe(resolved, publicPath);
+  return {
+    env: resolved,
+    envrcPath,
+    phpExe,
+    ok: Boolean(resolved.PHPRC || phpExe),
+  };
 }
 
 function stripWpOutput(output) {
@@ -137,13 +186,30 @@ function stripWpOutput(output) {
 }
 
 function wp(publicPath, args, env, capture = false) {
+  const phpExe = env.WP_CLI_PHP || resolvePhpExe(env, publicPath);
+  if (!phpExe) {
+    throw new Error(
+      "PHP not found for LocalWP. Start the site in Local (Running), then retry from repo root."
+    );
+  }
+  if (!fs.existsSync(WP_PHAR)) {
+    throw new Error(`WP-CLI phar not found: ${WP_PHAR}`);
+  }
+
   const quoted = (s) => (/\s/.test(s) ? `"${s}"` : s);
-  const command = [quoted(WP_BAT), ...args.map(quoted), quoted(`--path=${publicPath}`)].join(" ");
+  const command = [
+    quoted(phpExe),
+    quoted(WP_PHAR),
+    ...args.map(quoted),
+    quoted(`--path=${publicPath}`),
+  ].join(" ");
+
+  const runEnv = { ...env, WP_CLI_PHP: phpExe };
   const r = spawnSync(command, {
     encoding: "utf8",
     windowsHide: true,
     shell: true,
-    env,
+    env: runEnv,
     stdio: capture ? "pipe" : "inherit",
   });
   if (r.status) {
@@ -204,11 +270,13 @@ function detectMode(publicPath, env) {
 
 module.exports = {
   WP_BAT,
+  WP_PHAR,
   DEFAULT_SITES,
   DEV_ACTIVE,
   PRODUCT_ACTIVE,
   ALWAYS_OFF,
   loadEnvrc,
+  resolvePhpExe,
   wp,
   pluginInstalled,
   resolveSite,

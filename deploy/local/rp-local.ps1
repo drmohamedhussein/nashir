@@ -14,7 +14,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync")]
+    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -55,6 +55,9 @@ switch ($Command) {
     }
     "sync" {
         Run-Node @("deploy/local/sync-rankpublish-site.cjs") + $Rest
+    }
+    "verify" {
+        Run-Node @("deploy/local/verify-thinkrank-local.cjs") + $Rest
     }
     default {
         Write-Host @"

@@ -46,6 +46,10 @@ if /I "%CMD%"=="sync" (
   node "%REPO_ROOT%\deploy\local\sync-rankpublish-site.cjs" %*
   exit /b %ERRORLEVEL%
 )
+if /I "%CMD%"=="verify" (
+  node "%REPO_ROOT%\deploy\local\verify-thinkrank-local.cjs" %*
+  exit /b %ERRORLEVEL%
+)
 
 echo Unknown command: %CMD%
 echo.
@@ -64,6 +68,7 @@ echo   status     Show active plugins / mode
 echo   qa         Automated QA checklist
 echo   setup-test First-time test site setup
 echo   sync       Sync rankpublish-site plugin to Local site
+echo   verify     Verify local ThinkRank branding (no PHP required)
 echo.
 echo Examples:
 echo   .\rp-local.cmd sync --site rankpublish-test
