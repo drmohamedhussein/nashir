@@ -37,6 +37,20 @@ function request(url) {
   });
 }
 
+async function requestWithFallback(host, path) {
+  const httpsUrl = `https://${host}${path}`;
+  const httpsRes = await request(httpsUrl);
+  if (httpsRes.status === 200 || httpsRes.status === 302) {
+    return { ...httpsRes, url: httpsUrl };
+  }
+  if (httpsRes.error === "timeout" || httpsRes.status === 0) {
+    const httpUrl = `http://${host}${path}`;
+    const httpRes = await request(httpUrl);
+    return { ...httpRes, url: httpUrl };
+  }
+  return { ...httpsRes, url: httpsUrl };
+}
+
 function check(label, pass, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${label}${detail ? ` — ${detail}` : ""}`);
   return pass;
@@ -57,26 +71,28 @@ function check(label, pass, detail = "") {
     const js = fs.existsSync(jsPath) ? fs.readFileSync(jsPath, "utf8") : "";
 
     if (!check(`${key}: rankpublish-site synced`, fs.existsSync(pluginRoot), pluginRoot)) failed++;
-    if (!check(`${key}: hideThinkRankUpsells present`, js.includes("hideThinkRankUpsells"))) failed++;
+    if (!check(`${key}: hideModuleUpsells present`, js.includes("hideModuleUpsells"))) failed++;
     if (!check(`${key}: shouldSkipHide present`, js.includes("shouldSkipHide"))) failed++;
 
     const host = key === "rankpublish-test" ? "rankpublish-test.local" : "rankpublish.local";
     const pages = [
-      ["thinkrank", `https://${host}/wp-admin/admin.php?page=thinkrank`],
-      ["schedulepress", `https://${host}/wp-admin/admin.php?page=schedulepress&rpsite_os=1&rpsite_ctx=scheduler`],
+      ["thinkrank", "/wp-admin/admin.php?page=thinkrank"],
+      ["schedulepress", "/wp-admin/admin.php?page=schedulepress&rpsite_os=1&rpsite_ctx=scheduler"],
     ];
-    const assetUrl = `https://${host}/wp-content/plugins/rankpublish-site/assets/branding/admin-overrides.js`;
 
-    const asset = await request(assetUrl);
-    if (!check(`${key}: branding asset HTTP`, asset.status === 200, `HTTP ${asset.status || asset.error}`)) failed++;
+    const asset = await requestWithFallback(
+      host,
+      "/wp-content/plugins/rankpublish-site/assets/branding/admin-overrides.js"
+    );
+    if (!check(`${key}: branding asset HTTP`, asset.status === 200, `${asset.url} -> HTTP ${asset.status || asset.error}`)) failed++;
 
-    for (const [label, thinkrankUrl] of pages) {
-      const page = await request(thinkrankUrl);
+    for (const [label, adminPath] of pages) {
+      const page = await requestWithFallback(host, adminPath);
       if (
         !check(
           `${key}: ${label} admin reachable`,
           page.status === 200 || page.status === 302,
-          page.status ? `HTTP ${page.status}` : page.error
+          `${page.url} -> ${page.status ? `HTTP ${page.status}` : page.error}`
         )
       ) {
         failed++;

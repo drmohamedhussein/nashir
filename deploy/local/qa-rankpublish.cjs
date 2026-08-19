@@ -10,6 +10,7 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
+const https = require("https");
 const {
   loadEnvrc,
   wp,
@@ -63,7 +64,8 @@ function wpEvalFile(check) {
 
 function httpGet(url) {
   return new Promise((resolve) => {
-    const req = http.get(url, { timeout: 15000 }, (res) => {
+    const lib = url.startsWith("https://") ? https : http;
+    const req = lib.get(url, { timeout: 15000, rejectUnauthorized: false }, (res) => {
       let body = "";
       res.on("data", (c) => (body += c));
       res.on("end", () =>
