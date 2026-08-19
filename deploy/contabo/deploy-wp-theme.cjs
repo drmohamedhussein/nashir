@@ -68,40 +68,44 @@ conn
         await put(sftp, file, remote);
         console.log("put", rel);
       }
-      await put(sftp, localZip, `${remoteRoot}/wp-content/uploads/nashir/nashir.zip`);
-      console.log("put plugin zip");
+      if (fs.existsSync(localZip)) {
+        await put(sftp, localZip, `${remoteRoot}/wp-content/uploads/nashir/nashir.zip`);
+        console.log("put legacy plugin zip");
+      } else {
+        console.log("skip legacy nashir.zip (use rankpublish.zip)");
+      }
 
       const wp = `cd ${remoteRoot} && wp --skip-plugins --skip-themes`;
       await exec(conn, `${wp} theme activate nashir`);
-      await exec(conn, `${wp} language core install ar || true`);
-      await exec(conn, `${wp} site switch-language ar || true`);
-      await exec(conn, `${wp} option update blogname "ناشر"`);
-      await exec(conn, `${wp} option update blogdescription "تقويم تحريري سحابي لمواقع ووردبريس"`);
+      await exec(conn, `${wp} language core install en_US ar || true`);
+      await exec(conn, `${wp} site switch-language en_US || true`);
+      await exec(conn, `${wp} option update blogname "RankPublish"`);
+      await exec(conn, `${wp} option update blogdescription "Editorial calendar and publishing for WordPress"`);
       await exec(conn, `${wp} option update timezone_string "Asia/Riyadh"`);
       await exec(conn, `${wp} rewrite structure "/%postname%/"`);
       await exec(conn, `${wp} rewrite flush`);
 
       const pages = [
-        ["home", "الرئيسية"],
-        ["pricing", "التسعير"],
-        ["download", "تنزيل الإضافة"],
-        ["privacy", "الخصوصية"],
-        ["terms", "الشروط"],
-        ["features", "المزايا"],
-        ["calendar", "التقويم التحريري"],
-        ["scheduling", "الجدولة"],
-        ["social", "المشاركة الاجتماعية"],
-        ["guide", "دليل البدء"],
-        ["faq", "أسئلة شائعة"],
-        ["about", "عن ناشر"],
-        ["changelog", "سجل الإصدارات"],
-        ["contact", "تواصل"],
-        ["blog", "المدونة"],
+        ["home", "Home"],
+        ["pricing", "Pricing"],
+        ["download", "Download plugin"],
+        ["privacy", "Privacy"],
+        ["terms", "Terms"],
+        ["features", "Features"],
+        ["calendar", "Editorial calendar"],
+        ["scheduling", "Scheduling"],
+        ["social", "Social sharing"],
+        ["guide", "Getting started"],
+        ["faq", "FAQ"],
+        ["about", "About RankPublish"],
+        ["changelog", "Changelog"],
+        ["contact", "Contact"],
+        ["blog", "Blog"],
       ];
       for (const [slug, title] of pages) {
         await exec(
           conn,
-          `${wp} post list --post_type=page --name=${slug} --field=ID | grep -q . || ${wp} post create --post_type=page --post_status=publish --post_name=${slug} --post_title=${JSON.stringify(title)}`,
+          `EXISTING=$(${wp} post list --post_type=page --name=${slug} --format=ids); if [ -z "$EXISTING" ]; then ${wp} post create --post_type=page --post_status=publish --post_name=${slug} --post_title=${JSON.stringify(title)}; fi`,
         );
       }
       const homeId = (await exec(conn, `${wp} post list --post_type=page --name=home --field=ID`)).trim().split(/\s+/)[0];
@@ -109,7 +113,7 @@ conn
       await exec(conn, `${wp} option update show_on_front page`);
       await exec(conn, `${wp} option update page_on_front ${homeId}`);
       await exec(conn, `${wp} option update page_for_posts ${blogId}`);
-      await exec(conn, `${wp} option update blogdescription "تقويم تحريري وجدولة ومشاركة اجتماعية لووردبريس"`);
+      await exec(conn, `${wp} option update blogdescription "Editorial calendar, scheduling, and social sharing for WordPress"`);
       await exec(conn, `${wp} post list --post_type=post --name=hello-world --field=ID`).then(async (ids) => {
         const clean = ids.trim();
         if (clean) await exec(conn, `${wp} post delete ${clean} --force || true`);
@@ -118,18 +122,18 @@ conn
       const posts = [
         [
           "keep-wordpress-on-time",
-          "كيف تُبقي ووردبريس ينشر في موعده",
-          "الموعد في ووردبريس يعتمد على زيارة الموقع وWP-Cron. ناشر يعالج الموعد من السحابة أولاً، والموقع يرسل نبضة كل دقيقة حتى لا يضيع المقال إن نام السيرفر.",
+          "Keep WordPress publishing on time",
+          "WordPress publish times depend on a site visit and WP-Cron. RankPublish runs the due job from the cloud first, and the site sends a heartbeat every minute so the post still goes out if the server sleeps.",
         ],
         [
           "editorial-calendar-for-teams",
-          "تقويم تحريري للفرق لا للأفراد فقط",
-          "اسحب المقال إلى يوم آخر من ووردبريس أو من حساب ناشر. المصدر واحد بعد المزامنة، والصلاحيات تتبع أدوار ووردبريس.",
+          "An editorial calendar for teams, not only individuals",
+          "Drag a post to another day from WordPress or from RankPublish. After sync the source is the same, and permissions follow WordPress roles.",
         ],
         [
           "share-from-one-account",
-          "شارك من حساب واحد لا من مفاتيح على كل سيرفر",
-          "أسرار فيسبوك وX ولينكدإن وباقي المنصات تُحفظ في ناشر. كل موقع مربوط يرث القنوات والقوالب دون توزيع المفاتيح.",
+          "Share from one account, not keys on every server",
+          "Facebook, X, LinkedIn, and other network secrets stay in RankPublish. Each connected site inherits channels and templates without distributing keys.",
         ],
       ];
       for (const [slug, title, content] of posts) {

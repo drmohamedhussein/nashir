@@ -1,11 +1,6 @@
-﻿<?php
-/**
- * Header.
- *
- * @package PublisherWP
- */
-
+<?php
 declare(strict_types=1);
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -46,7 +41,11 @@ $cloud = nashir_cloud_url();
 				<a href="<?php echo esc_url( $cloud . '/login' ); ?>"><?php echo esc_html( nashir_t( 'cta_login' ) ); ?></a>
 			<?php endif; ?>
 			<a class="btn btn-gradient" href="<?php echo esc_url( $cloud ? $cloud . '/register' : nashir_plugin_zip_url() ); ?>"><?php echo esc_html( nashir_t( 'cta_started' ) ); ?></a>
-			<a class="lang" href="<?php echo esc_url( add_query_arg( 'lang', 'en' === $lang ? 'ar' : 'en' ) ); ?>"><?php echo 'en' === $lang ? 'عربي' : 'EN'; ?></a>
+			<span class="lang-switch" aria-label="Language">
+				<a class="lang<?php echo 'en' === $lang ? ' is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'lang', 'en' ) ); ?>">EN</a>
+				<span class="lang-sep">/</span>
+				<a class="lang<?php echo 'ar' === $lang ? ' is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'lang', 'ar' ) ); ?>">عربي</a>
+			</span>
 		</div>
 	</div>
 </header>

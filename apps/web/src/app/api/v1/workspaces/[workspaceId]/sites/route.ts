@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
-import { assertMember, createSiteInWorkspace, disconnectSite, regenerateSiteToken } from "@/lib/workspace";
+import { assertMember, createSiteInWorkspace } from "@/lib/workspace";
 import { checkSiteLimit } from "@/lib/entitlements";
 import { prisma } from "@/lib/db";
 import { z } from "zod";

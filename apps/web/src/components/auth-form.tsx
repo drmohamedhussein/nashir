@@ -2,12 +2,13 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { BrandMark } from "@/components/rankpublish/brand-mark";
 import { t, type Locale } from "@/lib/i18n";
+import { localizeApiError } from "@/lib/localize-api-error";
+import { safeAppNextPath } from "@/lib/app-next";
 
 type Props = {
   mode: "login" | "register";
@@ -15,7 +16,6 @@ type Props = {
 };
 
 export function AuthForm({ mode, locale }: Props) {
-  const router = useRouter();
   const copy = t(locale);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -41,21 +41,15 @@ export function AuthForm({ mode, locale }: Props) {
     setPending(false);
 
     if (!response.ok) {
-      setError(
-        data.error ??
-          (response.status === 503
-            ? locale === "ar"
-              ? "الخادم لا يتصل بقاعدة البيانات. راجع إعدادات DATABASE_URL."
-              : "Server cannot reach the database. Check DATABASE_URL."
-            : locale === "ar"
-              ? "تعذر إتمام العملية."
-              : "Could not complete that."),
-      );
+      const fallback =
+        response.status === 503 ? copy.errorDatabase : copy.errorGeneric;
+      setError(localizeApiError(data.error ?? fallback, locale));
       return;
     }
 
-    router.push(isRegister ? "/app/getting-started" : "/app");
-    router.refresh();
+    const fallback = isRegister ? "/app/getting-started" : "/app";
+    const next = new URLSearchParams(window.location.search).get("next");
+    window.location.assign(safeAppNextPath(next, fallback));
   }
 
   return (

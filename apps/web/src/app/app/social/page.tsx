@@ -27,6 +27,7 @@ export default async function SocialPage() {
     <div>
       <h1 className="text-2xl font-bold">{copy.social}</h1>
       <SocialPanel
+        locale={locale}
         sites={sites.map((site) => ({
           id: site.id,
           name: site.name,

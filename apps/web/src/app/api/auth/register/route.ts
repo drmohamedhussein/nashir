@@ -6,6 +6,7 @@ import { hashPassword, randomToken } from "@/lib/crypto";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { PLANS, trialEnd } from "@/lib/plans";
 import { acceptPendingInvites } from "@/lib/workspace";
+import { API_ERRORS } from "@/lib/api-errors";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -15,12 +16,12 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   if (!rateLimit(clientKey(request, "register"), 8, 15 * 60 * 1000)) {
-    return NextResponse.json({ error: "محاولات كثيرة. انتظر قليلاً." }, { status: 429 });
+    return NextResponse.json({ error: API_ERRORS.RATE_LIMIT }, { status: 429 });
   }
   const json = await request.json().catch(() => null);
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "بيانات غير مكتملة." }, { status: 400 });
+    return NextResponse.json({ error: API_ERRORS.INCOMPLETE_DATA }, { status: 400 });
   }
 
   const email = parsed.data.email.toLowerCase();
@@ -29,14 +30,11 @@ export async function POST(request: Request) {
   try {
     exists = await prisma.user.findUnique({ where: { email } });
   } catch {
-    return NextResponse.json(
-      { error: "قاعدة البيانات غير متاحة. تحقق من DATABASE_URL ثم أعد تشغيل التطبيق." },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: API_ERRORS.DATABASE_UNAVAILABLE }, { status: 503 });
   }
 
   if (exists) {
-    return NextResponse.json({ error: "هذا البريد مسجّل مسبقاً." }, { status: 409 });
+    return NextResponse.json({ error: API_ERRORS.EMAIL_TAKEN }, { status: 409 });
   }
 
   const slug = parsed.data.name
@@ -45,50 +43,54 @@ export async function POST(request: Request) {
     .replace(/^-|-$/g, "")
     .slice(0, 60) + "-" + randomToken(4);
 
-  const user = await prisma.user.create({
-    data: {
-      name: parsed.data.name,
-      email,
-      passwordHash: await hashPassword(parsed.data.password),
-      workspace: {
-        create: { name: parsed.data.name, slug },
+  try {
+    const user = await prisma.user.create({
+      data: {
+        name: parsed.data.name,
+        email,
+        passwordHash: await hashPassword(parsed.data.password),
+        workspace: {
+          create: { name: parsed.data.name, slug },
+        },
       },
-    },
-    include: { workspace: true },
-  });
+      include: { workspace: true },
+    });
 
-  await prisma.workspaceMember.create({
-    data: {
-      workspaceId: user.workspace!.id,
-      userId: user.id,
-      role: "owner",
-    },
-  });
+    await prisma.workspaceMember.create({
+      data: {
+        workspaceId: user.workspace!.id,
+        userId: user.id,
+        role: "owner",
+      },
+    });
 
-  const joinedWorkspaceId = await acceptPendingInvites(user.id, email);
-  const sessionWorkspaceId = joinedWorkspaceId ?? user.workspace!.id;
+    const joinedWorkspaceId = await acceptPendingInvites(user.id, email);
+    const sessionWorkspaceId = joinedWorkspaceId ?? user.workspace!.id;
 
-  await createSession({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    workspaceId: sessionWorkspaceId,
-  });
+    await createSession({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      workspaceId: sessionWorkspaceId,
+    });
 
-  if (joinedWorkspaceId) {
-    return NextResponse.json({ ok: true, joinedWorkspace: true });
+    if (joinedWorkspaceId) {
+      return NextResponse.json({ ok: true, joinedWorkspace: true });
+    }
+
+    await prisma.subscription.create({
+      data: {
+        workspaceId: user.workspace!.id,
+        planId: "starter",
+        interval: PLANS.monthly.interval,
+        status: "trial",
+        priceCents: PLANS.monthly.priceCents,
+        currentPeriodEnd: trialEnd(),
+      },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: API_ERRORS.DATABASE_UNAVAILABLE }, { status: 503 });
   }
-
-  await prisma.subscription.create({
-    data: {
-      workspaceId: user.workspace!.id,
-      planId: "starter",
-      interval: PLANS.monthly.interval,
-      status: "trial",
-      priceCents: PLANS.monthly.priceCents,
-      currentPeriodEnd: trialEnd(),
-    },
-  });
-
-  return NextResponse.json({ ok: true });
 }

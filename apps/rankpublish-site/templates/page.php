@@ -33,6 +33,9 @@ $start = $cloud ? $cloud . '/register' : rpsite_plugin_zip_url();
 			case 'download':
 				echo '<h1>' . esc_html( rpsite_t( 'nav_plugin' ) ) . '</h1><p class="lead">' . esc_html( rpsite_t( 'how1b' ) ) . '</p>';
 				break;
+			case 'guide':
+				echo '<p class="kicker">RankPublish</p><h1>' . esc_html( $en ? 'User guide' : 'دليل الاستخدام' ) . '</h1><p class="lead">' . esc_html( $en ? 'Install the plugin, pair your site, then use every publishing and SEO tool from WordPress and your RankPublish account.' : 'ثبّت الإضافة، اربط موقعك، ثم استخدم كل أدوات النشر وتحسين البحث من ووردبريس ومن حساب RankPublish.' ) . '</p>';
+				break;
 			default:
 				echo '<h1>' . esc_html( get_the_title() ) . '</h1>';
 		}
@@ -86,11 +89,7 @@ switch ( $slug ) {
 		break;
 
 	case 'guide':
-		echo '<div class="grid-3">';
-		foreach ( array( '1', '2', '3' ) as $n ) {
-			echo '<article class="card"><h2>' . esc_html( $n . '. ' . rpsite_t( 'how' . $n . 't' ) ) . '</h2><p class="muted">' . esc_html( rpsite_t( 'how' . $n . 'b' ) ) . '</p></article>';
-		}
-		echo '</div>';
+		rpsite_render_user_guide();
 		break;
 
 	case 'faq':

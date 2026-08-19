@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { formatUsdFromCents, siteDisplayUrl } from "@/lib/billing-display";
 import { t, type Locale } from "@/lib/i18n";
 
 type Plan = {
@@ -53,11 +54,19 @@ export function BillingPanel({
 
     void (async () => {
       setPending(true);
-      await fetch("/api/v1/billing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "capture", subscriptionId }),
-      });
+      try {
+        const res = await fetch("/api/v1/billing", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "capture", subscriptionId }),
+        });
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+          setError(data.error?.message ?? copy.billingError);
+        }
+      } catch {
+        setError(copy.billingError);
+      }
       setPending(false);
       router.replace("/app/billing");
       router.refresh();
@@ -122,7 +131,15 @@ export function BillingPanel({
       return;
     }
     setPending(true);
-    await fetch(`/api/v1/subscriptions/${id}/unbind`, { method: "POST" });
+    try {
+      const res = await fetch(`/api/v1/subscriptions/${id}/unbind`, { method: "POST" });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+        setError(data.error?.message ?? copy.billingError);
+      }
+    } catch {
+      setError(copy.billingError);
+    }
     setPending(false);
     router.refresh();
   }
@@ -138,7 +155,7 @@ export function BillingPanel({
       <div className="grid gap-4 md:grid-cols-2">
         <article className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
           <h3 className="text-lg font-semibold">{copy.monthly}</h3>
-          <p className="mt-2 text-3xl font-bold">{(plan.monthlyPriceCents / 100).toFixed(2)}$</p>
+          <p className="mt-2 text-3xl font-bold">{formatUsdFromCents(plan.monthlyPriceCents)}</p>
           <p className="text-sm text-ink-soft">{copy.perSite}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             <button
@@ -165,7 +182,7 @@ export function BillingPanel({
         <article className="rounded-2xl border border-sky-200 bg-sky-50/40 p-5 shadow-sm">
           <span className="text-xs font-bold uppercase text-sky-700">{copy.popular}</span>
           <h3 className="mt-1 text-lg font-semibold">{copy.yearly}</h3>
-          <p className="mt-2 text-3xl font-bold">{(plan.yearlyPriceCents / 100).toFixed(2)}$</p>
+          <p className="mt-2 text-3xl font-bold">{formatUsdFromCents(plan.yearlyPriceCents)}</p>
           <p className="text-sm text-ink-soft">{copy.perSite}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             <button
@@ -190,11 +207,31 @@ export function BillingPanel({
         </article>
       </div>
 
+      <section className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
+        <h2 className="text-base font-semibold">{copy.billingEntitlementsTitle}</h2>
+        <p className="mt-1 text-sm text-ink-soft">{copy.billingEntitlementsLead}</p>
+        <ul className="mt-4 space-y-3">
+          {[
+            { title: copy.billingEnt1Title, body: copy.billingEnt1Body },
+            { title: copy.billingEnt2Title, body: copy.billingEnt2Body },
+            { title: copy.billingEnt3Title, body: copy.billingEnt3Body },
+          ].map((item) => (
+            <li key={item.title} className="flex items-start gap-3 rounded-xl border border-slate-100 p-3">
+              <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700" aria-hidden="true">
+                ✓
+              </span>
+              <div className="min-w-0 flex-1 text-start">
+                <strong className="block text-sm font-semibold text-ink">{item.title}</strong>
+                <p className="mt-1 text-sm text-ink-soft">{item.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {!paypalConfigured ? (
         <p className="rounded-xl border border-dashed border-ink/15 bg-slate-50/50 p-4 text-sm text-ink-soft">
-          {locale === "ar"
-            ? "PayPal سيُربط لاحقاً عند اكتمال المشروع. المقاعد التجريبية تعمل الآن."
-            : "PayPal connects later when the project is complete. Trial seats work now."}
+          {copy.paypalLater}
         </p>
       ) : null}
 
@@ -210,22 +247,47 @@ export function BillingPanel({
         <p className="rounded-2xl border border-dashed border-ink/15 p-6 text-sm text-ink-soft">{copy.billingNoSeats}</p>
       ) : (
         <ul className="space-y-3">
-          {seats.map((seat) => (
+          {seats.map((seat) => {
+            const href = siteDisplayUrl(seat.siteUrl);
+            const statusLabel =
+              seat.status === "trial"
+                ? copy.billingStatusTrial
+                : seat.status === "active"
+                  ? copy.billingStatusActive
+                  : seat.status;
+            const priceLabel = formatUsdFromCents(
+              seat.interval === "yearly" ? plan.yearlyPriceCents || seat.priceCents : plan.monthlyPriceCents || seat.priceCents,
+            );
+            return (
             <li key={seat.id} className="rounded-2xl bg-white p-5 text-sm shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
               <div className="font-medium">
-                {seat.planName ?? seat.planId ?? "Plan"} · {seat.interval} · {seat.status} · {(seat.priceCents / 100).toFixed(2)}$
+                {seat.planName ?? seat.planId ?? "Plan"} · {seat.interval} · {statusLabel} · {priceLabel}
               </div>
               <div className="mt-1 text-ink-soft">
                 {copy.billingUntil} {new Date(seat.currentPeriodEnd).toLocaleDateString(locale)}
-                {seat.siteUrl ? ` · ${seat.siteName} (${seat.siteUrl})` : ` · ${copy.billingEmptySeat}`}
               </div>
+              {seat.siteId ? (
+                <div className="mt-2 text-ink-soft">
+                  {seat.siteName ? <div>{seat.siteName}</div> : null}
+                  {href ? (
+                    <a className="text-purple break-all" href={href} rel="noreferrer" target="_blank">
+                      {href}
+                    </a>
+                  ) : (
+                    <span>{copy.billingEmptySeat}</span>
+                  )}
+                </div>
+              ) : (
+                <div className="mt-1 text-ink-soft">{copy.billingEmptySeat}</div>
+              )}
               {seat.siteId ? (
                 <button type="button" className="mt-3 text-purple" onClick={() => unbind(seat.id)} disabled={pending}>
                   {copy.rebind}
                 </button>
               ) : null}
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>

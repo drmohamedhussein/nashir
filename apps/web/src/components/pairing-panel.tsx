@@ -3,7 +3,17 @@
 import { useState } from "react";
 import { t, type Locale } from "@/lib/i18n";
 
-export function PairingPanel({ locale, appUrl }: { locale: Locale; appUrl: string }) {
+export function PairingPanel({
+  locale,
+  appUrl,
+  intendedSiteUrl,
+  intendedSiteName,
+}: {
+  locale: Locale;
+  appUrl: string;
+  intendedSiteUrl?: string | null;
+  intendedSiteName?: string;
+}) {
   const copy = t(locale);
   const [code, setCode] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -33,8 +43,15 @@ export function PairingPanel({ locale, appUrl }: { locale: Locale; appUrl: strin
   }
 
   return (
-    <div className="rounded-2xl border border-ink/10 bg-white p-6">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-ink/10 bg-white p-6">
       <h2 className="text-lg font-semibold">{copy.pairingTitle}</h2>
+      {intendedSiteUrl ? (
+        <p className="mt-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2 text-sm text-ink">
+          <strong className="block text-brand">{copy.intendedSiteTitle}</strong>
+          {copy.intendedSiteBody.replace("{url}", intendedSiteUrl)}
+          {intendedSiteName ? <span className="mt-1 block text-ink-soft">{intendedSiteName}</span> : null}
+        </p>
+      ) : null}
       <p className="mt-2 text-sm leading-7 text-ink-soft">{copy.pairingHint}</p>
       <ol className="mt-4 list-decimal space-y-2 ps-5 text-sm text-ink-soft">
         <li>{copy.pairingStep1}</li>
@@ -50,8 +67,10 @@ export function PairingPanel({ locale, appUrl }: { locale: Locale; appUrl: strin
         {pending ? copy.pending : copy.pairingCreate}
       </button>
       {code ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <p className="font-mono text-3xl tracking-[0.4em] text-leaf">{code}</p>
+        <div className="mt-4 min-w-0 space-y-3">
+          <p className="overflow-hidden rounded-xl bg-leaf/10 px-4 py-3 text-center font-mono text-3xl font-bold tracking-[0.45em] text-leaf">
+            {code}
+          </p>
           <button
             type="button"
             onClick={copyCode}

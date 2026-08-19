@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_ERRORS } from "@/lib/api-errors";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -28,7 +29,7 @@ const shareSchema = z.object({
 export async function GET(request: Request) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "يلزم تسجيل الدخول." }, { status: 401 });
+    return NextResponse.json({ error: API_ERRORS.LOGIN_REQUIRED }, { status: 401 });
   }
 
   const siteId = new URL(request.url).searchParams.get("siteId");
@@ -52,24 +53,24 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "يلزم تسجيل الدخول." }, { status: 401 });
+    return NextResponse.json({ error: API_ERRORS.LOGIN_REQUIRED }, { status: 401 });
   }
 
   const json = (await request.json().catch(() => null)) as { intent?: string } | null;
   if (!json) {
-    return NextResponse.json({ error: "طلب غير صالح." }, { status: 400 });
+    return NextResponse.json({ error: API_ERRORS.INVALID_REQUEST }, { status: 400 });
   }
 
   if (json.intent === "connect") {
     const parsed = connectSchema.safeParse(json);
     if (!parsed.success) {
-      return NextResponse.json({ error: "بيانات الحساب غير صالحة." }, { status: 400 });
+      return NextResponse.json({ error: API_ERRORS.INVALID_ACCOUNT }, { status: 400 });
     }
     const site = await prisma.site.findFirst({
       where: { id: parsed.data.siteId, workspaceId: session.workspaceId },
     });
     if (!site) {
-      return NextResponse.json({ error: "الموقع غير موجود." }, { status: 404 });
+      return NextResponse.json({ error: API_ERRORS.SITE_NOT_FOUND }, { status: 404 });
     }
     const account = await prisma.socialAccount.upsert({
       where: {
@@ -97,13 +98,13 @@ export async function POST(request: Request) {
   if (json.intent === "template") {
     const parsed = templateSchema.safeParse(json);
     if (!parsed.success) {
-      return NextResponse.json({ error: "القالب غير صالح." }, { status: 400 });
+      return NextResponse.json({ error: API_ERRORS.INVALID_TEMPLATE }, { status: 400 });
     }
     const site = await prisma.site.findFirst({
       where: { id: parsed.data.siteId, workspaceId: session.workspaceId },
     });
     if (!site) {
-      return NextResponse.json({ error: "الموقع غير موجود." }, { status: 404 });
+      return NextResponse.json({ error: API_ERRORS.SITE_NOT_FOUND }, { status: 404 });
     }
     const template = await prisma.socialTemplate.upsert({
       where: { siteId_platform: { siteId: site.id, platform: parsed.data.platform } },
@@ -116,17 +117,17 @@ export async function POST(request: Request) {
   if (json.intent === "share") {
     const parsed = shareSchema.safeParse(json);
     if (!parsed.success) {
-      return NextResponse.json({ error: "طلب المشاركة غير صالح." }, { status: 400 });
+      return NextResponse.json({ error: API_ERRORS.INVALID_SHARE }, { status: 400 });
     }
     const site = await prisma.site.findFirst({
       where: { id: parsed.data.siteId, workspaceId: session.workspaceId },
     });
     if (!site) {
-      return NextResponse.json({ error: "الموقع غير موجود." }, { status: 404 });
+      return NextResponse.json({ error: API_ERRORS.SITE_NOT_FOUND }, { status: 404 });
     }
     const job = await queueShare(parsed.data);
     return NextResponse.json({ ok: true, job });
   }
 
-  return NextResponse.json({ error: "نية غير معروفة." }, { status: 400 });
+  return NextResponse.json({ error: API_ERRORS.UNKNOWN_INTENT }, { status: 400 });
 }

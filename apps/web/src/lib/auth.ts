@@ -48,17 +48,29 @@ export async function getSession(): Promise<SessionUser | null> {
     return null;
   }
 
+  let payload: { id: string; name: string; email: string; workspaceId: string };
   try {
-    const { payload } = await jwtVerify(token, secretKey());
+    const verified = await jwtVerify(token, secretKey());
+    const data = verified.payload;
     if (
-      typeof payload.id !== "string" ||
-      typeof payload.email !== "string" ||
-      typeof payload.name !== "string" ||
-      typeof payload.workspaceId !== "string"
+      typeof data.id !== "string" ||
+      typeof data.email !== "string" ||
+      typeof data.name !== "string" ||
+      typeof data.workspaceId !== "string"
     ) {
       return null;
     }
+    payload = {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      workspaceId: data.workspaceId,
+    };
+  } catch {
+    return null;
+  }
 
+  try {
     const member = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
@@ -67,16 +79,23 @@ export async function getSession(): Promise<SessionUser | null> {
         },
       },
     });
-    if (!member) {
-      return null;
+    if (member) {
+      return payload;
     }
 
-    return {
-      id: payload.id,
-      name: payload.name,
-      email: payload.email,
-      workspaceId: payload.workspaceId,
-    };
+    const owned = await prisma.workspace.findFirst({
+      where: { ownerId: payload.id },
+      select: { id: true },
+    });
+    const workspaceId = owned?.id ?? payload.workspaceId;
+    await prisma.workspaceMember.upsert({
+      where: {
+        workspaceId_userId: { workspaceId, userId: payload.id },
+      },
+      create: { workspaceId, userId: payload.id, role: "owner" },
+      update: {},
+    });
+    return { ...payload, workspaceId };
   } catch {
     return null;
   }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_ERRORS } from "@/lib/api-errors";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -14,25 +15,25 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   if (!rateLimit(clientKey(request, "bridge-token"), 20, 15 * 60 * 1000)) {
-    return NextResponse.json({ error: "محاولات كثيرة. انتظر قليلاً." }, { status: 429 });
+    return NextResponse.json({ error: API_ERRORS.RATE_LIMIT }, { status: 429 });
   }
 
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "يلزم تسجيل الدخول." }, { status: 401 });
+    return NextResponse.json({ error: API_ERRORS.LOGIN_REQUIRED }, { status: 401 });
   }
 
   const json = await request.json().catch(() => null);
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "siteUrl مطلوب." }, { status: 400 });
+    return NextResponse.json({ error: API_ERRORS.SITE_URL_REQUIRED }, { status: 400 });
   }
 
   let origin: string;
   try {
     origin = normalizeOrigin(parsed.data.siteUrl);
   } catch {
-    return NextResponse.json({ error: "رابط ووردبريس غير صالح." }, { status: 400 });
+    return NextResponse.json({ error: API_ERRORS.INVALID_WP_URL }, { status: 400 });
   }
 
   const token = `rp_live_${randomToken(24)}`;

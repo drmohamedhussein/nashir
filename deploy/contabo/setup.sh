@@ -12,7 +12,7 @@ fi
 export NODE_ENV=production
 npm ci
 npx prisma generate
-npx prisma db push
+node "$ROOT/deploy/contabo/run-staging-schema-safe.cjs" "$ROOT/apps/web"
 npm run build
 
 pm2 start "$ROOT/deploy/contabo/ecosystem.config.cjs" || pm2 reload nashir

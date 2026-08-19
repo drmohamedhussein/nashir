@@ -25,4 +25,19 @@ describe("billing", () => {
     process.env.PAYPAL_CLIENT_SECRET = "";
     expect(isPayPalConfigured()).toBe(false);
   });
+
+  it("formats public prices as $9.99 not $9.90", async () => {
+    const { formatUsdFromCents, publicListPriceCents } = await import("./billing-display");
+    expect(publicListPriceCents(990)).toBe(999);
+    expect(formatUsdFromCents(999)).toBe("$9.99");
+    expect(formatUsdFromCents(9900)).toBe("$99");
+  });
+
+  it("strips spaces from stored site URLs", async () => {
+    const { siteDisplayUrl } = await import("./billing-display");
+    expect(siteDisplayUrl("https://dreamshaper dumoulin rh.zipwp.site")).toBe(
+      "https://dreamshaperdumoulinrh.zipwp.site",
+    );
+    expect(siteDisplayUrl(null)).toBeNull();
+  });
 });

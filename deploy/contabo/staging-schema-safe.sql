@@ -38,4 +38,8 @@ CREATE TABLE IF NOT EXISTS rp_sync_state (
 UPDATE rp_plan SET monthlyPriceCents=999, yearlyPriceCents=9900, isActive=1 WHERE id='starter';
 UPDATE rp_plan SET isActive=0 WHERE id IN ('growth','scale');
 
+SET @has_locale := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db AND TABLE_NAME='rp_user' AND COLUMN_NAME='locale');
+SET @ddl_locale := IF(@has_locale=1,'ALTER TABLE rp_user MODIFY locale VARCHAR(191) NOT NULL DEFAULT ''en''','SELECT 1');
+PREPARE sloc FROM @ddl_locale; EXECUTE sloc; DEALLOCATE PREPARE sloc;
+
 SELECT 'schema_ok' AS status;

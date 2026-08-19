@@ -1,6 +1,8 @@
 import { prisma } from "./db";
 import { callWordPress } from "./wordpress";
 import { DEFAULT_TEMPLATES, renderTemplate, type SocialPlatform } from "./social";
+import { API_ERRORS } from "./api-errors";
+import { isHqOrigin } from "./tenant-origin";
 
 export type WpPost = {
   wp_post_id: number;
@@ -8,6 +10,10 @@ export type WpPost = {
   status: string;
   post_type: string;
   permalink: string | null;
+  excerpt?: string | null;
+  seo_title?: string | null;
+  meta_description?: string | null;
+  keywords?: string[];
   scheduled_at: string | null;
   published_at: string | null;
   unpublish_at?: string | null;
@@ -39,6 +45,10 @@ export async function upsertPosts(siteId: string, posts: WpPost[]) {
         status: post.status,
         postType: post.post_type,
         permalink: post.permalink,
+        excerpt: post.excerpt ?? undefined,
+        seoTitle: post.seo_title ?? undefined,
+        metaDescription: post.meta_description ?? undefined,
+        keywords: post.keywords ? JSON.stringify(post.keywords) : undefined,
         scheduledAt,
         publishedAt,
         unpublishAt,
@@ -53,6 +63,10 @@ export async function upsertPosts(siteId: string, posts: WpPost[]) {
         status: post.status,
         postType: post.post_type,
         permalink: post.permalink,
+        excerpt: post.excerpt ?? null,
+        seoTitle: post.seo_title ?? null,
+        metaDescription: post.meta_description ?? null,
+        keywords: post.keywords ? JSON.stringify(post.keywords) : "[]",
         scheduledAt,
         publishedAt,
         unpublishAt,
@@ -180,6 +194,12 @@ export async function refreshSitePosts(siteId: string) {
   if (!site) {
     return;
   }
+  if (isHqOrigin(site.url) || isHqOrigin(site.restUrl)) {
+    throw new Error(API_ERRORS.HQ_SITE_BLOCKED);
+  }
+  if (isCloudUnreachableWpUrl(site.restUrl) || isCloudUnreachableWpUrl(site.url)) {
+    return;
+  }
 
   const payload = await callWordPress<{ posts: WpPost[] }>({
     restUrl: site.restUrl,
@@ -193,6 +213,24 @@ export async function refreshSitePosts(siteId: string) {
     where: { id: site.id },
     data: { lastSeenAt: new Date() },
   });
+}
+
+export function isCloudUnreachableWpUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return (
+      host === "localhost" ||
+      host.endsWith(".local") ||
+      host.endsWith(".localhost") ||
+      host === "127.0.0.1" ||
+      host === "::1" ||
+      host.startsWith("192.168.") ||
+      host.startsWith("10.") ||
+      /^172\.(1[6-9]|2\d|3[0-1])\./.test(host)
+    );
+  } catch {
+    return true;
+  }
 }
 
 export async function processDueJobs(options?: { siteId?: string; limit?: number }) {
@@ -225,7 +263,7 @@ export async function queuePostAction(input: {
 }) {
   const post = await prisma.editorialPost.findUnique({ where: { id: input.postId } });
   if (!post) {
-    throw new Error("المقال غير موجود.");
+    throw new Error(API_ERRORS.POST_NOT_FOUND);
   }
 
   const job = await prisma.scheduleJob.create({
@@ -376,7 +414,7 @@ async function processDueShareJobs(options?: { siteId?: string; limit?: number }
     if (!account) {
       await prisma.socialShareJob.update({
         where: { id: job.id },
-        data: { status: "failed", lastError: "لا يوجد حساب متصل لهذه المنصة." },
+        data: { status: "failed", lastError: API_ERRORS.SOCIAL_ACCOUNT_MISSING },
       });
       results.push({ id: job.id, ok: false, error: "no account" });
       continue;

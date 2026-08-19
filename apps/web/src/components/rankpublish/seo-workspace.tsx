@@ -55,7 +55,7 @@ function SeverityBadge({ severity }: { severity: string }) {
 
 export function SeoWorkspace({
   items,
-  locale,
+  locale: _locale,
   workspaceId,
 }: {
   items: SeoItem[];

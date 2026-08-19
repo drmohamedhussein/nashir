@@ -59,7 +59,28 @@ export function readSignedHeaders(request: Request): { timestamp: string; signat
 }
 
 export function hashSecret(value: string): string {
-  return createHmac("sha256", "nashir-api-key").update(value).digest("hex");
+  return hmacHex(apiKeyPepper(), value);
+}
+
+export function secretMatches(stored: string, value: string): boolean {
+  const candidates = [hmacHex(apiKeyPepper(), value), hmacHex(LEGACY_API_KEY_PEPPER, value)];
+  return candidates.some((candidate) => equalHex(stored, candidate));
+}
+
+const LEGACY_API_KEY_PEPPER = "nashir-api-key";
+
+function apiKeyPepper(): string {
+  return process.env.AUTH_SECRET || process.env.API_KEY_PEPPER || LEGACY_API_KEY_PEPPER;
+}
+
+function hmacHex(pepper: string, value: string): string {
+  return createHmac("sha256", pepper).update(value).digest("hex");
+}
+
+function equalHex(left: string, right: string): boolean {
+  const a = Buffer.from(left, "utf8");
+  const b = Buffer.from(right, "utf8");
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 export function digestToken(value: string): string {
