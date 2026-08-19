@@ -32,7 +32,6 @@ final class RankPublish_Site_Module_Embed {
 		add_filter( 'admin_body_class', array( $this, 'wrap_body_class' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_wrap_assets' ) );
 		add_action( 'admin_head', array( $this, 'print_scroll_unlock_head' ), 1 );
-		add_action( 'admin_footer', array( $this, 'print_scroll_unlock_footer' ), 99999 );
 	}
 
 	/**
@@ -86,14 +85,42 @@ final class RankPublish_Site_Module_Embed {
 
 		self::$wrap_context = isset( $_GET['rpsite_ctx'] ) ? sanitize_key( (string) wp_unslash( $_GET['rpsite_ctx'] ) ) : self::context_for_page( $page );
 
-		add_action( 'load-' . $page, array( $this, 'attach_output_buffer' ) );
+		$load_hook = self::admin_load_hook( $page );
+		add_action( 'load-' . $load_hook, array( $this, 'attach_output_buffer' ) );
+	}
+
+	/**
+	 * Resolve WordPress admin load-* hook (toplevel vs submenu).
+	 *
+	 * @param string $page Admin page slug.
+	 */
+	private static function admin_load_hook( string $page ): string {
+		if ( ! function_exists( 'get_plugin_page_hookname' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		$parent = isset( $_GET['parent'] ) ? sanitize_key( (string) wp_unslash( $_GET['parent'] ) ) : '';
+		$hook   = get_plugin_page_hookname( $page, $parent );
+		if ( is_string( $hook ) && '' !== $hook ) {
+			return $hook;
+		}
+
+		return 'toplevel_page_' . $page;
 	}
 
 	/**
 	 * Wrap the upstream page callback output.
 	 */
 	public function attach_output_buffer(): void {
-		$hook = isset( $GLOBALS['page_hook'] ) ? (string) $GLOBALS['page_hook'] : '';
+		global $hook_suffix;
+
+		$hook = '';
+		if ( isset( $hook_suffix ) && is_string( $hook_suffix ) && '' !== $hook_suffix ) {
+			$hook = $hook_suffix;
+		} elseif ( isset( $GLOBALS['page_hook'] ) ) {
+			$hook = (string) $GLOBALS['page_hook'];
+		}
+
 		if ( '' === $hook ) {
 			return;
 		}
@@ -372,50 +399,6 @@ final class RankPublish_Site_Module_Embed {
 		echo 'body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body>div{';
 		echo 'overflow:visible!important;height:auto!important;max-height:none!important;}';
 		echo '</style>';
-	}
-
-	/**
-	 * Inline bootstrap unlock — runs even if upstream dequeues admin-overrides.js.
-	 */
-	public function print_scroll_unlock_footer(): void {
-		if ( ! self::is_os_wrapped_request() ) {
-			return;
-		}
-		?>
-		<script id="rpsite-scroll-unlock-bootstrap">
-		(function () {
-			'use strict';
-			document.documentElement.classList.add('rpsite-module-screen');
-			function unlockEl(el) {
-				el.style.setProperty('overflow', 'visible', 'important');
-				el.style.setProperty('overflow-y', 'visible', 'important');
-				el.style.setProperty('height', 'auto', 'important');
-				el.style.setProperty('max-height', 'none', 'important');
-			}
-			function unlockAll() {
-				[
-					document.documentElement,
-					document.body,
-					document.getElementById('wpwrap'),
-					document.getElementById('wpbody'),
-					document.getElementById('wpbody-content'),
-					document.querySelector('.rpsite-os'),
-					document.querySelector('.rpsite-os-main'),
-					document.querySelector('.rpsite-os-body'),
-					document.querySelector('.rpsite-module-native'),
-				].filter(Boolean).forEach(unlockEl);
-				document.querySelectorAll('.tr-root, #wpsp-dashboard-body, .wpsp-admin-page').forEach(unlockEl);
-			}
-			if (document.readyState === 'loading') {
-				document.addEventListener('DOMContentLoaded', unlockAll, { once: true });
-			} else {
-				unlockAll();
-			}
-			window.setTimeout(unlockAll, 600);
-			window.setTimeout(unlockAll, 2000);
-		})();
-		</script>
-		<?php
 	}
 
 	public static function is_os_wrapped_request(): bool {

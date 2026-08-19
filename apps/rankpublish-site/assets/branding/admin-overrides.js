@@ -93,6 +93,9 @@
 	}
 
 	function moduleRoot() {
+		if (isModuleWrap) {
+			return document.querySelector('.rpsite-module-native');
+		}
 		return document.querySelector('.rpsite-module-native') || document;
 	}
 
@@ -371,7 +374,7 @@
 			if (!text) {
 				return;
 			}
-			if (/^(pro|go pro|book a free call|search settings|activate license|not activated|follow us|license)$/i.test(text)) {
+			if (/^(pro|go pro|book a free call|search settings|activate license|not activated|follow us)$/i.test(text)) {
 				hideElement(findClosestHideable(el) || el);
 				return;
 			}
@@ -513,13 +516,19 @@
 		}
 		document.body.classList.add('rankpublish-site-branded-admin');
 		var root = moduleRoot();
+		if (isModuleWrap && !root) {
+			return;
+		}
+		root = root || document;
 		swapImageSources(root);
 		replaceHeaderLogos(root);
 		hideUpstreamSidebars(root);
 		rewriteVendorLinks(root);
 		rewriteNoticeCopy(root);
-		hideVendorExtras(root);
-		hideVendorCards(root);
+		if (!isModuleWrap) {
+			hideVendorExtras(root);
+			hideVendorCards(root);
+		}
 		hideModuleUpsells(root);
 		unlockModuleScroll(root);
 		rebrandModuleCopy(root);

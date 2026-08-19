@@ -85,6 +85,10 @@ function check(label, pass, detail = "") {
     const css = fs.existsSync(cssPath) ? fs.readFileSync(cssPath, "utf8") : "";
     if (!check(`${key}: scroll unlock CSS present`, css.includes("document-level scroll"))) failed++;
 
+    const embedPhp = path.join(pluginRoot, "includes/class-module-embed.php");
+    const embed = fs.existsSync(embedPhp) ? fs.readFileSync(embedPhp, "utf8") : "";
+    if (!check(`${key}: PHP scroll bootstrap present`, embed.includes("admin_load_hook") || embed.includes("toplevel_page_"))) failed++;
+
     const host = key === "rankpublish-test" ? "rankpublish-test.local" : "rankpublish.local";
     const pages = [
       ["thinkrank", "/wp-admin/admin.php?page=thinkrank"],
@@ -96,6 +100,15 @@ function check(label, pass, detail = "") {
       "/wp-content/plugins/rankpublish-site/assets/branding/admin-overrides.js"
     );
     if (!check(`${key}: branding asset HTTP`, asset.status === 200, `${asset.url} -> HTTP ${asset.status || asset.error}`)) failed++;
+    if (
+      !check(
+        `${key}: branding asset unlockScrollOnElement`,
+        asset.body.includes("unlockScrollOnElement"),
+        asset.url
+      )
+    ) {
+      failed++;
+    }
 
     for (const [label, adminPath] of pages) {
       const page = await requestWithFallback(host, adminPath);
