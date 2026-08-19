@@ -24,11 +24,16 @@ final class RankPublish_Site_Module_Embed {
 	private static $wrap_context = null;
 
 	/**
+	 * @var bool
+	 */
+	private static $buffer_attached = false;
+
+	/**
 	 * Register hooks.
 	 */
 	public function init(): void {
 		add_action( 'admin_init', array( $this, 'maybe_redirect_core_module' ), 1 );
-		add_action( 'admin_init', array( $this, 'register_native_wrap' ), 20 );
+		add_action( 'current_screen', array( $this, 'register_native_wrap' ), 1 );
 		add_filter( 'admin_body_class', array( $this, 'wrap_body_class' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_wrap_assets' ) );
 	}
@@ -71,9 +76,12 @@ final class RankPublish_Site_Module_Embed {
 
 	/**
 	 * Buffer upstream admin output and render it inside the OS shell.
+	 *
+	 * WordPress fires `load-{$page_hook}` (e.g. load-toplevel_page_schedulepress),
+	 * not `load-{$page}`. `current_screen` runs after `$hook_suffix` is set.
 	 */
 	public function register_native_wrap(): void {
-		if ( ! self::is_os_wrapped_request() ) {
+		if ( wp_doing_ajax() || ! self::is_os_wrapped_request() ) {
 			return;
 		}
 
@@ -83,23 +91,30 @@ final class RankPublish_Site_Module_Embed {
 		}
 
 		self::$wrap_context = isset( $_GET['rpsite_ctx'] ) ? sanitize_key( (string) wp_unslash( $_GET['rpsite_ctx'] ) ) : self::context_for_page( $page );
-
-		add_action( 'load-' . $page, array( $this, 'attach_output_buffer' ) );
+		$this->attach_output_buffer();
 	}
 
 	/**
 	 * Wrap the upstream page callback output.
 	 */
 	public function attach_output_buffer(): void {
-		$hook = isset( $GLOBALS['page_hook'] ) ? (string) $GLOBALS['page_hook'] : '';
+		if ( self::$buffer_attached ) {
+			return;
+		}
+
+		$hook = isset( $GLOBALS['hook_suffix'] ) ? (string) $GLOBALS['hook_suffix'] : '';
+		if ( '' === $hook ) {
+			$hook = isset( $GLOBALS['page_hook'] ) ? (string) $GLOBALS['page_hook'] : '';
+		}
 		if ( '' === $hook ) {
 			return;
 		}
 
+		self::$buffer_attached = true;
 		add_action( $hook, array( self::class, 'buffer_start' ), 0 );
 		add_action(
 			$hook,
-			function (): void {
+			static function (): void {
 				self::buffer_finish();
 			},
 			PHP_INT_MAX
@@ -343,6 +358,9 @@ final class RankPublish_Site_Module_Embed {
 			RPSITE_VERSION,
 			true
 		);
+		if ( class_exists( 'RankPublish_Site_Admin' ) ) {
+			RankPublish_Site_Admin::localize_admin_script();
+		}
 
 		if ( class_exists( 'RankPublish_Site_Branding' ) ) {
 			( new RankPublish_Site_Branding() )->enqueue_admin_assets( '' );

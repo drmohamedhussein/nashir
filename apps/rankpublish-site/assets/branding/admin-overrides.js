@@ -25,6 +25,12 @@
 		[/WPDeveloper/g, name],
 	];
 
+	var applying = false;
+	var applyCount = 0;
+	var MAX_APPLIES = 12;
+	var timer = null;
+	var observer = null;
+
 	function isAdminTarget() {
 		return (
 			document.body.classList.contains('rankpublish-site-branded') ||
@@ -71,7 +77,7 @@
 	}
 
 	function moduleRoot() {
-		return document.querySelector('.rpsite-module-native') || document;
+		return document.querySelector('.rpsite-module-native') || document.getElementById('wpbody-content') || document;
 	}
 
 	function hideUpstreamSidebars(root) {
@@ -90,6 +96,9 @@
 
 		root.querySelectorAll('.wpsp-admin-header, .wpsp-modal--header--left').forEach(function (header) {
 			header.querySelectorAll('svg, img').forEach(function (el) {
+				if (el.getAttribute('data-rankpublish-logo') === '1') {
+					return;
+				}
 				el.style.setProperty('display', 'none', 'important');
 			});
 			injectImg(header, logo, 28, 28);
@@ -108,19 +117,15 @@
 				injectImg(link, logo, 32, 32);
 			}
 		});
-
-		root.querySelectorAll('.tr-root h1, .tr-root h2, .tr-root [class*="brand"], .tr-root [class*="logo"], .tr-root [class*="Logo"]').forEach(function (node) {
-			if (!UPSTREAM_RE.test(node.textContent || '')) {
-				return;
-			}
-			walkText(node);
-		});
 	}
 
 	function swapImageSources(root) {
 		root.querySelectorAll('img[src]').forEach(function (img) {
+			if (img.getAttribute('data-rankpublish-logo') === '1') {
+				return;
+			}
 			var src = img.getAttribute('src') || '';
-			if (UPSTREAM_RE.test(src)) {
+			if (UPSTREAM_RE.test(src) && img.src.indexOf('rankpublish') === -1) {
 				img.src = src.indexOf('full') !== -1 ? logoFull : logo;
 				img.alt = name;
 			}
@@ -129,6 +134,9 @@
 
 	function rewriteVendorLinks(root) {
 		root.querySelectorAll('a[href]').forEach(function (a) {
+			if (a.getAttribute('data-rankpublish-rewritten') === '1') {
+				return;
+			}
 			var href = a.getAttribute('href') || '';
 			if (!VENDOR_HREF.test(href)) {
 				return;
@@ -191,17 +199,10 @@
 			var wrap = frame.closest('.wprf-video, .wpsp-video, div, aside, section, article') || frame;
 			wrap.style.setProperty('display', 'none', 'important');
 		});
-
-		root.querySelectorAll('a[href*="youtube.com"], a[href*="youtu.be"]').forEach(function (a) {
-			if (/WPDeveloper|SchedulePress|ThinkRank|WP Scheduled/i.test(a.textContent || a.getAttribute('title') || '')) {
-				var wrap = a.closest('div, aside, section, article') || a;
-				wrap.style.setProperty('display', 'none', 'important');
-			}
-		});
 	}
 
 	function hideVendorCards(root) {
-		root.querySelectorAll('h2, h3, h4, strong, .title').forEach(function (h) {
+		root.querySelectorAll('.wpsp-sidebar-widget h2, .wpsp-sidebar-widget h3, .sidebar-widget h2, .sidebar-widget h3').forEach(function (h) {
 			var t = (h.textContent || '').replace(/\s+/g, ' ').trim();
 			if (!/Contribute to|Need Help\??|Show your Love|WPDeveloper Forum|Facebook Community|Watch The Video/i.test(t)) {
 				return;
@@ -218,6 +219,7 @@
 			return;
 		}
 		var host =
+			document.querySelector('.rpsite-module-native .wrap') ||
 			document.querySelector('.wrap') ||
 			document.querySelector('.wpsp-admin-header') ||
 			document.querySelector('.thinkrank-admin-page') ||
@@ -250,7 +252,7 @@
 		if (!isLicenseScreen()) {
 			return;
 		}
-		root.querySelectorAll('h1, h2, h3, p, li, button, label, span, a').forEach(function (el) {
+		root.querySelectorAll('h1, h2, h3, p, button, label').forEach(function (el) {
 			if (el.childElementCount > 4) {
 				return;
 			}
@@ -262,10 +264,7 @@
 		if (!isModuleWrap) {
 			return;
 		}
-		root.querySelectorAll('h1, h2, h3, h4, p, span, a, button, label, li, strong, em, div').forEach(function (el) {
-			if (el.childElementCount > 6) {
-				return;
-			}
+		root.querySelectorAll('h1, h2, h3, .wpsp-admin-header, .wpdeveloper-licensing-notice').forEach(function (el) {
 			if (!UPSTREAM_RE.test(el.textContent || '')) {
 				return;
 			}
@@ -274,55 +273,78 @@
 	}
 
 	function apply() {
-		if (!isAdminTarget()) {
+		if (applying || !document.body || !isAdminTarget() || applyCount >= MAX_APPLIES) {
 			return;
 		}
-		document.body.classList.add('rankpublish-site-branded-admin');
-		var root = moduleRoot();
-		swapImageSources(root);
-		replaceHeaderLogos(root);
-		hideUpstreamSidebars(root);
-		rewriteVendorLinks(root);
-		rewriteNoticeCopy(root);
-		hideVendorExtras(root);
-		hideVendorCards(root);
-		rebrandModuleCopy(root);
-		injectLicenseBanner();
-		rebrandLicenseHeadings(root);
+		applying = true;
+		applyCount += 1;
+		if (observer) {
+			observer.disconnect();
+		}
+		try {
+			document.body.classList.add('rankpublish-site-branded-admin');
+			var root = moduleRoot();
+			swapImageSources(root);
+			replaceHeaderLogos(root);
+			hideUpstreamSidebars(root);
+			rewriteVendorLinks(root);
+			rewriteNoticeCopy(root);
+			hideVendorExtras(root);
+			hideVendorCards(root);
+			rebrandModuleCopy(root);
+			injectLicenseBanner();
+			rebrandLicenseHeadings(root);
+		} finally {
+			applying = false;
+			observe();
+		}
 	}
 
-	var timer = null;
 	function schedule() {
+		if (applying || applyCount >= MAX_APPLIES) {
+			return;
+		}
 		if (timer) {
 			window.clearTimeout(timer);
 		}
-		timer = window.setTimeout(apply, isModuleWrap ? 16 : 40);
+		timer = window.setTimeout(apply, 80);
 	}
 
-	if (isModuleWrap) {
-		var burst = 0;
-		function burstApply() {
-			apply();
-			burst += 1;
-			if (burst < 40) {
-				window.requestAnimationFrame(burstApply);
-			}
+	function observe() {
+		if (!window.MutationObserver || applyCount >= MAX_APPLIES) {
+			return;
 		}
-		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', burstApply);
-		} else {
-			burstApply();
+		if (!observer) {
+			observer = new MutationObserver(function (mutations) {
+				if (applying) {
+					return;
+				}
+				for (var i = 0; i < mutations.length; i++) {
+					var t = mutations[i].target;
+					if (t && t.getAttribute && t.getAttribute('data-rankpublish-logo') === '1') {
+						continue;
+					}
+					schedule();
+					return;
+				}
+			});
 		}
-	} else if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', apply);
-	} else {
-		apply();
-	}
-
-	if (window.MutationObserver) {
-		new MutationObserver(schedule).observe(document.documentElement, {
+		var target = document.querySelector('.rpsite-module-native') || document.getElementById('wpbody-content') || document.documentElement;
+		observer.observe(target, {
 			childList: true,
 			subtree: true,
 		});
+	}
+
+	function boot() {
+		apply();
+		window.setTimeout(apply, 400);
+		window.setTimeout(apply, 1600);
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', boot);
+	} else {
+		boot();
 	}
 })();

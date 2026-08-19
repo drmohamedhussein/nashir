@@ -68,12 +68,12 @@ if (fs.existsSync(archive)) {
   fs.unlinkSync(archive);
 }
 
-const parent = path.dirname(localPlugin);
-const pack = spawnSync(
-  "tar",
-  ["-a", "-cf", archive, "-C", parent, "--exclude=node_modules", "--exclude=.git", "rankpublish"],
-  { stdio: "inherit", windowsHide: true }
-);
+const packer = path.join(__dirname, "..", "local", "pack-rankpublish-product.cjs");
+const pack = spawnSync(process.execPath, [packer, archive], {
+  stdio: "inherit",
+  windowsHide: true,
+  env: { ...process.env, RANKPUBLISH_PLUGIN_DIR: localPlugin },
+});
 if (pack.status !== 0) {
   console.error("zip pack failed");
   process.exit(pack.status || 1);

@@ -148,6 +148,7 @@ conn
           `${wp} option update rankpublish_cloud_url '${stagingUrl}'`,
           `${wp} rewrite flush`,
           `${wp} cache flush || true`,
+          `${wp} litespeed-purge all || true`,
         ].join(" && ")
       );
 

@@ -112,12 +112,20 @@ final class RankPublish_Site_Admin {
 			RPSITE_VERSION,
 			true
 		);
+		self::localize_admin_script();
+	}
+
+	public static function localize_admin_script(): void {
+		$host = wp_parse_url( home_url(), PHP_URL_HOST );
 		wp_localize_script(
 			'rankpublish-site-admin',
 			'rpsiteAdmin',
 			array(
-				'copied' => __( 'Copied', 'rankpublish-site' ),
-				'copyFailed' => __( 'Could not copy', 'rankpublish-site' ),
+				'copied'       => __( 'Copied', 'rankpublish-site' ),
+				'copyFailed'   => __( 'Could not copy', 'rankpublish-site' ),
+				'invalidWpUrl' => __( 'Enter a valid WordPress URL, including https://', 'rankpublish-site' ),
+				'hqUrlBlocked' => __( 'This is the RankPublish HQ site. Enter the customer WordPress URL instead.', 'rankpublish-site' ),
+				'hqHost'       => is_string( $host ) ? strtolower( $host ) : '',
 			)
 		);
 	}

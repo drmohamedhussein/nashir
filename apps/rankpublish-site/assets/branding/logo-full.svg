@@ -1,20 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" role="img" aria-label="RankPublish">
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="48" viewBox="0 0 220 48" role="img" aria-label="RankPublish">
   <defs>
-    <linearGradient id="rpf-bg" x1="5" y1="4" x2="39" y2="44" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#6366f1"/>
-      <stop offset="1" stop-color="#2563eb"/>
-    </linearGradient>
-    <linearGradient id="rpf-bars" x1="22" y1="36" x2="36" y2="12" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22d3ee"/>
-      <stop offset="1" stop-color="#a5b4fc"/>
+    <linearGradient id="rpf-mark-bg" x1="8" y1="6" x2="40" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#4451FF"/>
     </linearGradient>
   </defs>
-  <rect x="4" y="4" width="40" height="40" rx="11" fill="url(#rpf-bg)"/>
-  <rect x="11" y="13" width="12" height="18" rx="2.6" fill="#fff" fill-opacity="0.97"/>
-  <rect x="13.2" y="16.2" width="7.8" height="1.8" rx="0.9" fill="#4338ca" fill-opacity="0.2"/>
-  <rect x="13.2" y="19.5" width="7.8" height="1.8" rx="0.9" fill="#4338ca" fill-opacity="0.14"/>
-  <rect x="24.5" y="27" width="3" height="6" rx="1.5" fill="url(#rpf-bars)" fill-opacity="0.75"/>
-  <rect x="28.5" y="22.5" width="3" height="10.5" rx="1.5" fill="url(#rpf-bars)" fill-opacity="0.9"/>
-  <rect x="32.5" y="17.5" width="3" height="15.5" rx="1.5" fill="url(#rpf-bars)"/>
+  <rect x="4" y="4" width="40" height="40" rx="10" fill="url(#rpf-mark-bg)"/>
+  <path fill="#fff" transform="translate(4 4) scale(1.25)" d="M3.8 7.2h4.88c2.52 0 4.16 1.48 4.16 3.58 0 1.64-.96 2.92-2.52 3.4L12.8 24.8H9.95L7.42 16.16H6.32V24.8H3.8V7.2Zm2.56 2.2v5h2.24c1.28 0 2.02-.74 2.02-2.5 0-1.72-.74-2.5-2.02-2.5H6.36Z"/>
+  <path fill="#fff" transform="translate(4 4) scale(1.25)" d="M13.25 7.2h4.72c2.6 0 4.3 1.54 4.3 3.84s-1.7 3.84-4.3 3.84H15.8V24.8h-2.55V7.2Zm2.55 2.2v3.26h1.96c1.34 0 2.12-.7 2.12-1.63 0-.96-.78-1.63-2.12-1.63H15.8Z"/>
+  <rect x="32.4" y="26.7" width="2.7" height="8.3" rx="1.1" fill="#A5F3FC"/>
+  <rect x="35.7" y="21.4" width="2.7" height="13.6" rx="1.1" fill="#67E8F9"/>
+  <rect x="39" y="15.4" width="2.7" height="19.6" rx="1.1" fill="#ECFEFF"/>
   <text x="54" y="31" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="22" font-weight="800" fill="#0b1638" letter-spacing="-0.04em">RankPublish</text>
 </svg>

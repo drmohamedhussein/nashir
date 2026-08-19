@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         ],
       },
+      {
+        source: "/app",
+        headers: [{ key: "Cache-Control", value: "private, no-store" }],
+      },
+      {
+        source: "/app/:path*",
+        headers: [{ key: "Cache-Control", value: "private, no-store" }],
+      },
     ];
   },
 };

@@ -95,7 +95,7 @@ final class RankPublish_Site_Branding {
 				return self::url( 'logo-full.svg' );
 			}
 
-			return self::url( 'logo-icon.svg' );
+			return self::url( 'logo-menu.svg' );
 		}
 
 		return $url;
@@ -311,19 +311,27 @@ final class RankPublish_Site_Branding {
 		$css   = '
 			#adminmenu .toplevel_page_schedulepress .wp-menu-image,
 			#adminmenu .toplevel_page_thinkrank .wp-menu-image,
-			#adminmenu .toplevel_page_rankpublish .wp-menu-image {
+			#adminmenu .toplevel_page_rankpublish .wp-menu-image,
+			#adminmenu .toplevel_page_rankpublish-core .wp-menu-image {
 				background-image: url("' . $icon . '") !important;
 				background-size: 20px 20px !important;
 				background-repeat: no-repeat !important;
-				background-position: center 8px !important;
+				background-position: center 6px !important;
 			}
 			#adminmenu .toplevel_page_schedulepress .wp-menu-image img,
 			#adminmenu .toplevel_page_thinkrank .wp-menu-image img,
 			#adminmenu .toplevel_page_rankpublish .wp-menu-image img,
+			#adminmenu .toplevel_page_rankpublish-core .wp-menu-image img,
 			#adminmenu .toplevel_page_schedulepress .wp-menu-image::before,
 			#adminmenu .toplevel_page_thinkrank .wp-menu-image::before,
-			#adminmenu .toplevel_page_rankpublish .wp-menu-image::before {
-				opacity: 0 !important;
+			#adminmenu .toplevel_page_rankpublish .wp-menu-image::before,
+			#adminmenu .toplevel_page_rankpublish-core .wp-menu-image::before {
+				display: none !important;
+				width: 0 !important;
+				height: 0 !important;
+				padding: 0 !important;
+				margin: 0 !important;
+				overflow: hidden !important;
 			}
 		';
 

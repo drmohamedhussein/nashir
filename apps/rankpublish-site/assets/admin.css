@@ -396,12 +396,13 @@ body.rpsite-os .update-nag {
 	display: none;
 	width: 36px;
 	height: 36px;
-	margin-right: 12px;
+	margin-inline-end: 12px;
 	border: 0;
 	border-radius: 8px;
 	background: transparent;
 	color: var(--rp-ink);
 	cursor: pointer;
+	touch-action: manipulation;
 }
 
 .rpsite-os-status {
@@ -959,8 +960,7 @@ body.rpsite-os .update-nag {
 	padding-top: 4px;
 }
 
-.rpsite-os-queue li,
-.rpsite-os-ents li {
+.rpsite-os-queue li {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -969,6 +969,43 @@ body.rpsite-os .update-nag {
 	border: 1px solid #f1f5f9;
 	border-radius: 12px;
 	margin-bottom: 10px;
+}
+
+.rpsite-os-ents li {
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 12px;
+	padding: 12px;
+	border: 1px solid #f1f5f9;
+	border-radius: 12px;
+	margin-bottom: 10px;
+}
+
+.rpsite-os-ents .rpsite-os-icon-blob {
+	flex-shrink: 0;
+}
+
+.rpsite-os-ents li > div {
+	flex: 1 1 auto;
+	min-width: 12rem;
+	max-width: 100%;
+	text-align: start;
+	overflow: visible;
+}
+
+.rpsite-os-ents li strong {
+	display: block;
+	font-size: 13px;
+	line-height: 1.35;
+	color: #0f172a;
+}
+
+.rpsite-os-ents li p {
+	margin: 4px 0 0;
+	font-size: 12px;
+	line-height: 1.45;
+	color: #64748b;
 }
 
 .rpsite-os-queue li:last-child,
@@ -1349,10 +1386,6 @@ body.rpsite-os .update-nag {
 	padding-left: 18px;
 }
 
-.rpsite-os-modal[hidden] {
-	display: none;
-}
-
 .rpsite-os-modal {
 	position: fixed;
 	inset: 0;
@@ -1360,6 +1393,10 @@ body.rpsite-os .update-nag {
 	display: grid;
 	place-items: center;
 	padding: 16px;
+}
+
+.rpsite-os-modal[hidden] {
+	display: none;
 }
 
 .rpsite-os-modal__backdrop {
@@ -1384,9 +1421,27 @@ body.rpsite-os .update-nag {
 	padding: 24px;
 	border-radius: 22px 22px 0 0;
 	display: grid;
-	grid-template-columns: auto 1fr;
+	grid-template-columns: auto 1fr auto;
 	gap: 12px;
 	align-items: start;
+}
+
+.rpsite-os-modal__close {
+	display: grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border: 0;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.08);
+	color: #e2e8f0;
+	cursor: pointer;
+	pointer-events: auto;
+}
+
+.rpsite-os-modal__close:hover {
+	background: rgba(255, 255, 255, 0.16);
+	color: #fff;
 }
 
 .rpsite-os-modal__head .rpsite-os-icon-blob {
@@ -1448,7 +1503,11 @@ body.rpsite-os .update-nag {
 	border: 1px solid #e2e8f0;
 	border-radius: 12px;
 	padding: 0 12px;
-	background: #f8fafc;
+	background: #fff;
+	color: #0f172a;
+	pointer-events: auto;
+	user-select: text;
+	-webkit-user-select: text;
 }
 
 .rpsite-os-modal__body em {
@@ -1545,6 +1604,16 @@ body.rpsite-os .update-nag {
 		transform: none;
 	}
 
+	.rpsite-os[dir="rtl"] .rpsite-os-sidebar {
+		left: auto;
+		right: 0;
+		transform: translateX(105%);
+	}
+
+	.rpsite-os[dir="rtl"].is-nav-open .rpsite-os-sidebar {
+		transform: none;
+	}
+
 	.rpsite-os.is-nav-open .rpsite-os-scrim {
 		display: block;
 		position: fixed;
@@ -1572,11 +1641,19 @@ body.rpsite-os .update-nag {
 	}
 }
 
-#adminmenu .toplevel_page_rankpublish-core .wp-menu-image img {
-	width: 20px;
-	height: 20px;
-	padding: 6px 0 0;
-	opacity: 1;
+#adminmenu .toplevel_page_rankpublish-core .wp-menu-image {
+	background-image: url("branding/logo-menu.svg") !important;
+	background-repeat: no-repeat !important;
+	background-position: center 6px !important;
+	background-size: 20px 20px !important;
+}
+
+#adminmenu .toplevel_page_rankpublish-core .wp-menu-image img,
+#adminmenu .toplevel_page_rankpublish-core .wp-menu-image::before {
+	display: none !important;
+	width: 0 !important;
+	height: 0 !important;
+	padding: 0 !important;
 }
 
 /* Native module workspace (Scheduler / SEO — no iframe) */
@@ -1679,13 +1756,16 @@ body.rpsite-os-module-wrap .rpsite-os-main {
 .rpsite-module-native .tr-root {
 	max-width: none !important;
 	margin: 0 !important;
+	min-height: 100%;
+	height: 100% !important;
+	overflow: auto !important;
 }
 
-.rpsite-module-native #wpsp-dashboard-body,
-.rpsite-module-native .tr-root {
-	min-height: auto !important;
-	height: auto !important;
-	overflow: visible !important;
+body.rpsite-os-module-wrap #wpbody,
+body.rpsite-os-module-wrap #wpbody-content {
+	height: 100%;
+	min-height: 0;
+	overflow: hidden;
 }
 
 /* Native RankPublish workspace (no upstream embed) */
