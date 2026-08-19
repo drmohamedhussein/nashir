@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  OpenSSH + SSH key for Cloud Agent (no Windows password — Microsoft account OK).
+  OpenSSH + SSH key for Cloud Agent (no Windows password; Microsoft account OK).
 
   Run: .\deploy\local\rp-local.cmd setup-ssh
 #>
@@ -15,7 +15,7 @@ function Write-Log([string]$Message) {
   try {
     $dir = Split-Path $LogFile -Parent
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
-    Add-Content -Path $LogFile -Value $line -Encoding utf8
+    Add-Content -Path $LogFile -Value $line -Encoding ascii
   } catch { }
 }
 
@@ -25,9 +25,29 @@ function Wait-Exit {
   Read-Host | Out-Null
 }
 
+function Write-SecretsFile([string]$Path, [string]$User, [string]$HostIp, [string]$PublicPath, [string]$KeyPath, [string]$PrivateKey) {
+  $out = New-Object System.Collections.Generic.List[string]
+  $out.Add("RankPublish - Cursor Cloud Agent Secrets")
+  $out.Add("Generated: $(Get-Date)")
+  $out.Add("")
+  $out.Add("Add in Cursor > Settings > Cloud Agents > Secrets:")
+  $out.Add("")
+  $out.Add("RANKPUBLISH_WIN_SSH_USER = $User")
+  $out.Add("RANKPUBLISH_WIN_SSH_HOST = $HostIp")
+  $out.Add("RANKPUBLISH_WIN_PUBLIC = $PublicPath")
+  $out.Add("")
+  $out.Add("RANKPUBLISH_WIN_SSH_PRIVATE_KEY =")
+  $out.Add($PrivateKey.Trim())
+  $out.Add("")
+  $out.Add("Do NOT add RANKPUBLISH_WIN_SSH_PASS - key auth only (Microsoft account OK)")
+  $out.Add("")
+  $out.Add("Test: ssh -i `"$KeyPath`" ${User}@localhost")
+  [System.IO.File]::WriteAllLines($Path, $out.ToArray())
+}
+
 try {
   Write-Log ""
-  Write-Log "RankPublish — Windows SSH setup (key auth, no password)"
+  Write-Log "RankPublish - Windows SSH setup (key auth, no password)"
   Write-Log ("=" * 50)
 
   $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
@@ -39,7 +59,6 @@ try {
     exit 1
   }
 
-  # 1. OpenSSH Server
   Write-Log "Checking OpenSSH Server..."
   $cap = Get-WindowsCapability -Online -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "OpenSSH.Server*" }
   if ($cap -and $cap.State -ne "Installed") {
@@ -47,15 +66,13 @@ try {
     $result = Add-WindowsCapability -Online -Name "OpenSSH.Server~~~~0.0.1.0"
     Write-Log "Install state: $($result.RestartNeeded)"
   } else {
-    Write-Log "OpenSSH Server already installed (or capability check skipped)."
+    Write-Log "OpenSSH Server already installed."
   }
 
-  # 2. sshd service
   $sshd = Get-Service -Name sshd -ErrorAction SilentlyContinue
   if (-not $sshd) {
     Write-Log "Installing sshd service..."
-    $programData = $env:ProgramData
-    $installScript = Join-Path $programData "Windows\OpenSSH\Install-sshd.ps1"
+    $installScript = Join-Path $env:ProgramData "Windows\OpenSSH\Install-sshd.ps1"
     if (Test-Path $installScript) {
       & powershell -ExecutionPolicy Bypass -File $installScript
     } else {
@@ -67,7 +84,6 @@ try {
   Start-Service sshd -ErrorAction Stop
   Write-Log "sshd service: running"
 
-  # 3. Firewall
   $ruleName = "OpenSSH-Server-In-TCP"
   if (-not (Get-NetFirewallRule -Name $ruleName -ErrorAction SilentlyContinue)) {
     New-NetFirewallRule -Name $ruleName `
@@ -78,12 +94,11 @@ try {
     Write-Log "Firewall rule already exists."
   }
 
-  # 4. SSH key
   $user = $env:USERNAME
   $sshDir = Join-Path $env:USERPROFILE ".ssh"
   $keyPath = Join-Path $sshDir "rankpublish_cloud_agent"
   $authKeys = Join-Path $sshDir "authorized_keys"
-  $sshdConfig = "$env:ProgramData\ssh\sshd_config"
+  $sshdConfig = Join-Path $env:ProgramData "ssh\sshd_config"
 
   New-Item -ItemType Directory -Force -Path $sshDir | Out-Null
 
@@ -101,7 +116,7 @@ try {
   if (Test-Path $authKeys) {
     $existing = Get-Content $authKeys -Raw -ErrorAction SilentlyContinue
     if ($existing -notlike "*rankpublish-cloud-agent*") {
-      Add-Content -Path $authKeys -Value $pubKeyLine
+      Add-Content -Path $authKeys -Value $pubKeyLine -Encoding ascii
     }
   } else {
     Set-Content -Path $authKeys -Value $pubKeyLine -Encoding ascii
@@ -110,83 +125,57 @@ try {
   icacls $authKeys /inheritance:r /grant "${env:USERNAME}:F" /grant "SYSTEM:F" | Out-Null
 
   if (Test-Path $sshdConfig) {
-    $lines = Get-Content $sshdConfig
+    $lines = @(Get-Content $sshdConfig)
     $changed = $false
-    if ($lines -notmatch "^\s*PubkeyAuthentication\s+yes") {
+    if (-not ($lines -match "^\s*PubkeyAuthentication\s+yes")) {
       $lines += "PubkeyAuthentication yes"
       $changed = $true
     }
-    $lines = $lines | ForEach-Object {
-      if ($_ -match "^\s*PasswordAuthentication\s+yes") {
+    $newLines = New-Object System.Collections.Generic.List[string]
+    foreach ($line in $lines) {
+      if ($line -match "^\s*PasswordAuthentication\s+yes") {
+        $newLines.Add("PasswordAuthentication no")
         $changed = $true
-        "PasswordAuthentication no"
-      } else { $_ }
+      } else {
+        $newLines.Add($line)
+      }
     }
     if ($changed) {
-      Set-Content -Path $sshdConfig -Value $lines -Encoding ascii
+      [System.IO.File]::WriteAllLines($sshdConfig, $newLines.ToArray())
       Restart-Service sshd
       Write-Log "sshd_config updated (pubkey auth on)"
     }
   }
 
-  # 5. Network
   $localIp = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
     Where-Object { $_.IPAddress -notlike "127.*" -and $_.PrefixOrigin -ne "WellKnown" } |
     Select-Object -First 1).IPAddress
   if (-not $localIp) { $localIp = "YOUR-LOCAL-IP" }
 
-  try {
-    $publicIp = (Invoke-RestMethod -Uri "https://ifconfig.me/ip" -TimeoutSec 8).Trim()
-  } catch {
-    $publicIp = "(open https://ifconfig.me)"
-  }
-
   $publicPath = Join-Path $env:USERPROFILE "Local Sites\rankpublish\app\public"
   if (-not (Test-Path $publicPath)) {
     $publicPath = "C:/Users/$user/Local Sites/rankpublish/app/public"
   }
-  $publicPathUnix = $publicPath -replace '\\', '/'
+  $publicPathUnix = ($publicPath -replace '\\', '/')
 
   $privateKeyContent = Get-Content $keyPath -Raw
+  Write-SecretsFile -Path $SecretsFile -User $user -HostIp $localIp -PublicPath $publicPathUnix -KeyPath $keyPath -PrivateKey $privateKeyContent
 
-  $secretsText = @"
-RankPublish — Cursor Cloud Agent Secrets
-Generated: $(Get-Date)
-
-Add in Cursor → Settings → Cloud Agents → Secrets:
-
-RANKPUBLISH_WIN_SSH_USER = $user
-RANKPUBLISH_WIN_SSH_HOST = $localIp
-RANKPUBLISH_WIN_PUBLIC = $publicPathUnix
-
-RANKPUBLISH_WIN_SSH_PRIVATE_KEY =
-$privateKeyContent
-
-(Do NOT add RANKPUBLISH_WIN_SSH_PASS — key auth only, works with Microsoft account)
-
-Test: ssh -i "$keyPath" $user@localhost
-"@
-
-  Set-Content -Path $SecretsFile -Value $secretsText -Encoding utf8
   Write-Log "Secrets saved to: $SecretsFile"
   Write-Log "Log file: $LogFile"
 
   Write-Host ""
-  Write-Host "SUCCESS — copy secrets from this file:" -ForegroundColor Green
+  Write-Host "SUCCESS - secrets file opened in Notepad:" -ForegroundColor Green
   Write-Host "  $SecretsFile" -ForegroundColor Yellow
   Write-Host ""
-  Write-Host "Or copy from below:" -ForegroundColor Green
-  Write-Host $secretsText
-  Write-Host ""
 
-  # Open secrets file in Notepad
   Start-Process notepad.exe $SecretsFile
 
 } catch {
   Write-Host ""
   Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
   Write-Log "ERROR: $($_.Exception.Message)"
-  Write-Log $_.ScriptStackTrace
+  if ($_.ScriptStackTrace) { Write-Log $_.ScriptStackTrace }
   Write-Host ""
   Write-Host "Full log: $LogFile" -ForegroundColor Yellow
 }
