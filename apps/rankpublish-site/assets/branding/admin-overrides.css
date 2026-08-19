@@ -2,6 +2,32 @@
  * RankPublish overrides for upstream SchedulePress / ThinkRank admin chrome.
  */
 
+/* OS wrap: document-level scroll (React apps often lock html/body) */
+html.rpsite-module-screen,
+html.rpsite-module-screen body,
+body.rpsite-os-module-wrap,
+body.rpsite-os-module-wrap #wpwrap,
+body.rpsite-os-module-wrap #wpbody,
+body.rpsite-os-module-wrap #wpbody-content,
+body.rpsite-os-module-wrap .rpsite-os,
+body.rpsite-os-module-wrap .rpsite-os-main,
+body.rpsite-os-module-wrap .rpsite-os-body {
+	overflow: visible !important;
+	height: auto !important;
+	max-height: none !important;
+	min-height: 0 !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native,
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root,
+body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body,
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-admin-page {
+	overflow: visible !important;
+	height: auto !important;
+	max-height: none !important;
+	min-height: 0 !important;
+}
+
 body.rankpublish-site-branded-admin .wpsp-admin-header svg,
 body.rankpublish-site-branded-admin .wpsp-admin-header img,
 body.rankpublish-site-branded-admin .wpsp-modal--header--left svg,

@@ -1589,43 +1589,42 @@ body.rpsite-os-module-wrap #wpbody-content > .wpdeveloper-licensing-notice {
 body.rpsite-os-module-wrap .rpsite-os-body {
 	max-width: none;
 	padding: 24px 32px 32px;
-	flex: 1;
+	flex: 1 1 auto;
 	min-height: 0;
-	overflow: visible;
-	display: flex;
-	flex-direction: column;
+	overflow: visible !important;
+	display: block;
 }
 
-body.rpsite-os-module-wrap #wpwrap {
-	overflow-x: hidden;
-	overflow-y: auto;
-	height: auto;
-	min-height: calc(100vh - 32px);
+body.rpsite-os-module-wrap #wpwrap,
+body.rpsite-os-module-wrap #wpbody,
+body.rpsite-os-module-wrap #wpbody-content {
+	overflow: visible !important;
+	height: auto !important;
+	max-height: none !important;
 }
 
 body.rpsite-os-module-wrap .rpsite-os {
-	height: auto;
+	height: auto !important;
 	min-height: calc(100vh - 32px);
-	overflow: visible;
+	overflow: visible !important;
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: stretch;
 }
 
 body.rpsite-os-module-wrap .rpsite-os-main {
-	flex: 1;
+	flex: 1 1 auto;
 	min-height: 0;
-	display: flex;
-	flex-direction: column;
-	overflow: visible;
+	display: block;
+	overflow: visible !important;
 }
 
 body.rpsite-os-module-wrap .rpsite-module-native {
-	overflow-x: hidden !important;
-	overflow-y: auto !important;
-	-webkit-overflow-scrolling: touch;
-	overscroll-behavior: contain;
-	flex: 1 1 auto;
-	min-height: 320px;
+	overflow: visible !important;
+	flex: none;
+	min-height: 0;
 	max-height: none;
-	touch-action: pan-y;
+	height: auto !important;
 }
 
 .rpsite-os-module-tabs {

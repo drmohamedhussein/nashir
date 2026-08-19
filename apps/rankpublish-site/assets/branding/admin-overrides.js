@@ -350,8 +350,9 @@
 		hideByTextInScope(
 			bodyScope,
 			'h1, h2, h3, h4, p, strong, span, a, button',
-			/activate your (?:thinkrank|schedulepress|wp scheduled posts) pro license/i
+			/activate your (?:rankpublish|thinkrank|schedulepress|wp scheduled posts)(?: pro)? license/i
 		);
+		hideByTextInScope(bodyScope, 'a, button, span, p, strong', /^manage license$/i);
 		hideByTextInScope(bodyScope, 'a, button, span, p', /^activate license$/i);
 		hideByTextInScope(bodyScope, 'span, p, strong, div[class*="status"]', /^not activated$/i);
 		hideByTextInScope(bodyScope, 'h2, h3, h4, strong, span, p', /^follow us$/i);
@@ -362,27 +363,83 @@
 			hideElement(el);
 		});
 
-		root.querySelectorAll('a, button, span, strong, small, em, h2, h3, h4').forEach(function (el) {
-			if (el.childElementCount > 2) {
+		root.querySelectorAll('a, button, span, strong, small, em, h2, h3, h4, p, label').forEach(function (el) {
+			if (el.childElementCount > 4) {
 				return;
 			}
 			var text = textOf(el);
 			if (!text) {
 				return;
 			}
-			if (/^(pro|go pro|book a free call|search settings|activate license|not activated|follow us)$/i.test(text)) {
-				hideElement(el);
+			if (/^(pro|go pro|book a free call|search settings|activate license|not activated|follow us|license)$/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+				return;
+			}
+			if (/^manage license$/i.test(text)) {
+				var licenseCard = el.closest(
+					'[class*="card"], [class*="Card"], [class*="license"], [class*="License"], section, article, aside, .wpsp-sidebar-widget, .wpsp-layout-sidebar, [class*="sidebar"]'
+				);
+				if (licenseCard && !shouldSkipHide(licenseCard)) {
+					hideElement(licenseCard);
+				} else {
+					hideElement(findClosestHideable(el) || el);
+				}
 				return;
 			}
 			if (/^v\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/i.test(text)) {
 				hideElement(el);
 				return;
 			}
-			if (/activate your (?:thinkrank|schedulepress|wp scheduled posts) pro license/i.test(text)) {
-				var card = el.closest('[class*="card"], [class*="Card"], [class*="license"], [class*="License"], section, article, aside, .wpsp-sidebar-widget');
-				if (card && card.childElementCount < 20) {
+			if (/activate your (?:rankpublish|thinkrank|schedulepress|wp scheduled posts)(?: pro)? license/i.test(text)) {
+				var card = el.closest(
+					'[class*="card"], [class*="Card"], [class*="license"], [class*="License"], section, article, aside, .wpsp-sidebar-widget'
+				);
+				if (card && !shouldSkipHide(card)) {
 					hideElement(card);
 				}
+			}
+		});
+	}
+
+	function unlockModuleScroll(root) {
+		if (!isModuleWrap && !document.body.classList.contains('rpsite-os-module-wrap')) {
+			return;
+		}
+
+		var shell = [
+			document.documentElement,
+			document.body,
+			document.getElementById('wpwrap'),
+			document.getElementById('wpbody'),
+			document.getElementById('wpbody-content'),
+			document.querySelector('.rpsite-os'),
+			document.querySelector('.rpsite-os-main'),
+			document.querySelector('.rpsite-os-body'),
+			document.querySelector('.rpsite-module-native'),
+		];
+
+		shell.forEach(function (el) {
+			if (!el) {
+				return;
+			}
+			el.style.setProperty('overflow', 'visible', 'important');
+			el.style.setProperty('overflow-y', 'visible', 'important');
+			el.style.setProperty('height', 'auto', 'important');
+			el.style.setProperty('max-height', 'none', 'important');
+		});
+
+		root.querySelectorAll('.tr-root, #wpsp-dashboard-body, .wpsp-admin-page, .tr-root > div, #wpsp-dashboard-body > div').forEach(function (el) {
+			if (shouldSkipHide(el)) {
+				return;
+			}
+			var style = window.getComputedStyle(el);
+			if (style.overflow === 'hidden' || style.overflowY === 'hidden' || style.overflow === 'clip') {
+				el.style.setProperty('overflow', 'visible', 'important');
+				el.style.setProperty('overflow-y', 'visible', 'important');
+			}
+			if (/100vh|100%/.test(style.height) || /100vh|100%/.test(style.maxHeight)) {
+				el.style.setProperty('height', 'auto', 'important');
+				el.style.setProperty('max-height', 'none', 'important');
 			}
 		});
 	}
@@ -461,6 +518,7 @@
 		hideVendorExtras(root);
 		hideVendorCards(root);
 		hideModuleUpsells(root);
+		unlockModuleScroll(root);
 		rebrandModuleCopy(root);
 		injectLicenseBanner();
 		rebrandLicenseHeadings(root);
@@ -482,6 +540,10 @@
 		}
 		window.setTimeout(apply, 250);
 		window.setTimeout(apply, 1000);
+		window.setTimeout(apply, 2500);
+		window.setInterval(function () {
+			unlockModuleScroll(moduleRoot());
+		}, 1500);
 	} else if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', apply);
 	} else {

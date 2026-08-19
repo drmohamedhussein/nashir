@@ -73,6 +73,11 @@ function check(label, pass, detail = "") {
     if (!check(`${key}: rankpublish-site synced`, fs.existsSync(pluginRoot), pluginRoot)) failed++;
     if (!check(`${key}: hideModuleUpsells present`, js.includes("hideModuleUpsells"))) failed++;
     if (!check(`${key}: shouldSkipHide present`, js.includes("shouldSkipHide"))) failed++;
+    if (!check(`${key}: unlockModuleScroll present`, js.includes("unlockModuleScroll"))) failed++;
+
+    const cssPath = path.join(pluginRoot, "assets/branding/admin-overrides.css");
+    const css = fs.existsSync(cssPath) ? fs.readFileSync(cssPath, "utf8") : "";
+    if (!check(`${key}: scroll unlock CSS present`, css.includes("document-level scroll"))) failed++;
 
     const host = key === "rankpublish-test" ? "rankpublish-test.local" : "rankpublish.local";
     const pages = [

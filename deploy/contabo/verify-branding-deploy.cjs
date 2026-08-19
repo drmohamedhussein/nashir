@@ -96,11 +96,12 @@ if (!host || !username || !password) {
     if (!check("thinkrank active", thinkrankStatus.trim() === "active", thinkrankStatus)) failed++;
 
     const jsPath = `${remoteRoot}/wp-content/plugins/rankpublish-site/assets/branding/admin-overrides.js`;
-    const remoteJs = await exec(conn, `grep -E 'hideThinkRankUpsells|shouldSkipHide|PROTECTED_ROOT_SELECTORS|isThinkRankSettingsScreen' ${jsPath}`);
+    const remoteJs = await exec(conn, `grep -E 'hideModuleUpsells|hideModuleUpsellsSafe|shouldSkipHide|unlockModuleScroll|isUpstreamModuleScreen' ${jsPath}`);
     const markers = [
       "hideModuleUpsells",
       "hideModuleUpsellsSafe",
       "shouldSkipHide",
+      "unlockModuleScroll",
       "PROTECTED_ROOT_SELECTORS",
       "isUpstreamModuleScreen",
     ];
