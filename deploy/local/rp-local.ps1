@@ -14,7 +14,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover", "setup-ssh")]
+    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover", "setup-ssh", "setup-ssh-key")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -65,6 +65,9 @@ switch ($Command) {
     "setup-ssh" {
         & (Join-Path $PSScriptRoot "setup-win-ssh.cmd")
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    }
+    "setup-ssh-key" {
+        & powershell -NoProfile -ExecutionPolicy Bypass -NoExit -File (Join-Path $PSScriptRoot "setup-win-ssh.ps1") -KeysOnly
     }
     default {
         Write-Host @"
