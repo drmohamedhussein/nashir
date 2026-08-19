@@ -181,3 +181,10 @@ html.rpsite-thinkrank-screen .tr-root a[href*="thinkrank.ai"],
 html.rpsite-thinkrank-screen .tr-root [class*="version"] {
 	display: none !important;
 }
+
+/* OS wrap: CSS-only upsell chrome (keeps React scroll intact) */
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root a[href*="cal.com"],
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root a[href*="calendly.com"],
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root [class*="version"] {
+	display: none !important;
+}

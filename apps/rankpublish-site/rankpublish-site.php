@@ -3,7 +3,7 @@
  * Plugin Name:       RankPublish Site Core
  * Plugin URI:        https://rankpublish.com
  * Description:       RankPublish site core: marketing UI, branding, upstream merge watch, and (later) product update channel for rankpublish.
- * Version:           1.7.6
+ * Version:           1.7.7
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            WPDevLtd
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'RPSITE_VERSION', '1.7.6' );
+define( 'RPSITE_VERSION', '1.7.7' );
 define( 'RPSITE_FILE', __FILE__ );
 define( 'RPSITE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'RPSITE_URL', plugin_dir_url( __FILE__ ) );

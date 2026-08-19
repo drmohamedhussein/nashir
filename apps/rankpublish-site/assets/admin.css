@@ -1615,6 +1615,16 @@ body.rpsite-os-module-wrap .rpsite-os-main {
 	overflow: hidden;
 }
 
+body.rpsite-os-module-wrap .rpsite-module-native {
+	overflow-x: hidden !important;
+	overflow-y: auto !important;
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior: contain;
+	flex: 1 1 auto;
+	min-height: 0;
+	max-height: none;
+}
+
 .rpsite-os-module-tabs {
 	display: flex;
 	flex-wrap: wrap;
@@ -1685,7 +1695,21 @@ body.rpsite-os-module-wrap .rpsite-os-main {
 .rpsite-module-native .tr-root {
 	min-height: auto !important;
 	height: auto !important;
+	max-height: none !important;
 	overflow: visible !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root,
+body.rpsite-os-module-wrap .rpsite-module-native .thinkrank-admin-page {
+	min-height: 0 !important;
+	height: auto !important;
+	max-height: none !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div {
+	height: auto !important;
+	max-height: none !important;
+	min-height: 0 !important;
 }
 
 /* Native RankPublish workspace (no upstream embed) */

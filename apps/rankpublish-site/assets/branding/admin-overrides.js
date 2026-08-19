@@ -306,6 +306,11 @@
 		}
 		document.documentElement.classList.add('rpsite-thinkrank-screen');
 
+		if (isModuleWrap) {
+			hideThinkRankUpsellsSafe(root);
+			return;
+		}
+
 		root.querySelectorAll('a[href*="cal.com"], a[href*="calendly.com"]').forEach(function (el) {
 			hideElement(findClosestHideable(el) || el);
 		});
@@ -327,6 +332,36 @@
 		hideByTextInScope(bodyScope, 'a, button, span, p', /^activate license$/i);
 		hideByTextInScope(bodyScope, 'span, p, strong, div[class*="status"]', /^not activated$/i);
 		hideByTextInScope(bodyScope, 'h2, h3, h4, strong, span, p', /^follow us$/i);
+	}
+
+	function hideThinkRankUpsellsSafe(root) {
+		root.querySelectorAll('a[href*="cal.com"], a[href*="calendly.com"]').forEach(function (el) {
+			hideElement(el);
+		});
+
+		root.querySelectorAll('a, button, span, strong, small, em, h2, h3, h4').forEach(function (el) {
+			if (el.childElementCount > 2) {
+				return;
+			}
+			var text = textOf(el);
+			if (!text) {
+				return;
+			}
+			if (/^(pro|book a free call|search settings|activate license|not activated|follow us)$/i.test(text)) {
+				hideElement(el);
+				return;
+			}
+			if (/^v\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/i.test(text)) {
+				hideElement(el);
+				return;
+			}
+			if (/activate your thinkrank pro license/i.test(text)) {
+				var card = el.closest('[class*="card"], [class*="Card"], [class*="license"], [class*="License"], section, article, aside');
+				if (card && card.childElementCount < 20) {
+					hideElement(card);
+				}
+			}
+		});
 	}
 
 	function injectLicenseBanner() {
@@ -417,27 +452,26 @@
 	}
 
 	if (isModuleWrap) {
-		var burst = 0;
-		function burstApply() {
-			apply();
-			burst += 1;
-			if (burst < 40) {
-				window.requestAnimationFrame(burstApply);
-			}
-		}
 		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', burstApply);
+			document.addEventListener('DOMContentLoaded', apply);
 		} else {
-			burstApply();
+			apply();
 		}
+		window.setTimeout(apply, 250);
+		window.setTimeout(apply, 1000);
 	} else if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', apply);
 	} else {
 		apply();
 	}
 
-	if (window.MutationObserver) {
+	if (window.MutationObserver && !isModuleWrap) {
 		new MutationObserver(schedule).observe(document.documentElement, {
+			childList: true,
+			subtree: true,
+		});
+	} else if (window.MutationObserver && isModuleWrap) {
+		new MutationObserver(schedule).observe(document.querySelector('.rpsite-module-native') || document.documentElement, {
 			childList: true,
 			subtree: true,
 		});
