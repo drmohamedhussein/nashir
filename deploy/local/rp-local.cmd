@@ -55,11 +55,19 @@ if /I "%CMD%"=="recover" (
   exit /b %ERRORLEVEL%
 )
 if /I "%CMD%"=="setup-ssh" (
-  call "%SCRIPT_DIR%setup-win-ssh.cmd"
+  call "%SCRIPT_DIR%setup-agent-access.cmd"
   exit /b %ERRORLEVEL%
 )
 if /I "%CMD%"=="setup-ssh-key" (
-  powershell -NoProfile -ExecutionPolicy Bypass -NoExit -File "%SCRIPT_DIR%setup-win-ssh.ps1" -KeysOnly
+  call "%SCRIPT_DIR%setup-agent-access.cmd"
+  exit /b %ERRORLEVEL%
+)
+if /I "%CMD%"=="agent-setup" (
+  call "%SCRIPT_DIR%setup-agent-access.cmd"
+  exit /b %ERRORLEVEL%
+)
+if /I "%CMD%"=="agent-wp" (
+  node "%REPO_ROOT%\deploy\local\create-wp-agent-user.cjs" %*
   exit /b %ERRORLEVEL%
 )
 
@@ -82,8 +90,9 @@ echo   setup-test First-time test site setup
 echo   sync       Sync rankpublish-site plugin to Local site
 echo   verify     Verify local ThinkRank branding (no PHP required)
 echo   recover    Fix HTTP 500 / imagick warnings / show PHP log
-echo   setup-ssh  One-time OpenSSH setup for Cloud Agent (Admin UAC once)
-echo   setup-ssh-key  Generate SSH keys only (if OpenSSH install hangs)
+echo   agent-setup  Create rp-cursor Windows user + SSH key (Admin UAC once)
+echo   agent-wp     Create rp-cursor WordPress admin + app password
+echo   setup-ssh    Alias for agent-setup
 echo.
 echo Examples:
 echo   .\rp-local.cmd sync --site rankpublish-test

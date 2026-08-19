@@ -14,7 +14,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover", "setup-ssh", "setup-ssh-key")]
+    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover", "setup-ssh", "setup-ssh-key", "agent-setup", "agent-wp")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]

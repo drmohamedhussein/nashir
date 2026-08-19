@@ -12,7 +12,7 @@ const { Client } = require("../contabo/lib/ssh2-client.cjs");
 const repoRoot = path.resolve(__dirname, "../..");
 const source = path.join(repoRoot, "apps/rankpublish-site");
 const host = process.env.RANKPUBLISH_WIN_SSH_HOST;
-const username = process.env.RANKPUBLISH_WIN_SSH_USER || process.env.USERNAME || "drmoh";
+const username = process.env.RANKPUBLISH_WIN_SSH_USER || "rp-cursor";
 const password = process.env.RANKPUBLISH_WIN_SSH_PASS;
 
 function resolvePrivateKey() {
