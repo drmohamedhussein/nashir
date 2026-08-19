@@ -7,7 +7,9 @@
  */
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 const { resolveSite, DEFAULT_SITES, loadEnvrc, wp } = require("./lib/local-wp.cjs");
+const dockerWp = require("./lib/docker-wp.cjs");
 
 const repoRoot = path.resolve(__dirname, "../..");
 const source = path.join(repoRoot, "apps/rankpublish-site");
@@ -25,13 +27,21 @@ function copyDir(src, dest) {
   fs.cpSync(src, dest, { recursive: true, filter: (p) => !p.includes("node_modules") });
 }
 
+function parseVersion(version) {
+  const parts = String(version).split(".").map((n) => parseInt(n, 10) || 0);
+  return parts[0] * 10000 + (parts[1] || 0) * 100 + (parts[2] || 0);
+}
+
 function verifySyncedPlugin(dest, key) {
   const mainPhp = path.join(dest, "rankpublish-site.php");
   const jsPath = path.join(dest, "assets/branding/admin-overrides.js");
-  const cssPath = path.join(dest, "assets/branding/admin-overrides.css");
+  const cssPaths = [
+    path.join(dest, "assets/branding/admin-overrides.css"),
+    path.join(dest, "assets/admin.css"),
+  ];
   const php = fs.existsSync(mainPhp) ? fs.readFileSync(mainPhp, "utf8") : "";
   const js = fs.existsSync(jsPath) ? fs.readFileSync(jsPath, "utf8") : "";
-  const css = fs.existsSync(cssPath) ? fs.readFileSync(cssPath, "utf8") : "";
+  const css = cssPaths.filter((p) => fs.existsSync(p)).map((p) => fs.readFileSync(p, "utf8")).join("\n");
   const version = (php.match(/define\(\s*'RPSITE_VERSION',\s*'([^']+)'/) || [])[1] || "?";
 
   const markers = [
@@ -41,7 +51,7 @@ function verifySyncedPlugin(dest, key) {
     ["normalizeModuleLayout", js.includes("normalizeModuleLayout")],
     ["layout: transparent module wrap", css.includes("background: transparent") && css.includes("rpsite-module-native .tr-root")],
     ["scroll unlock CSS", css.includes("document-level scroll")],
-    ["version >= 1.8.5", version !== "?" && parseFloat(version) >= 1.85],
+    ["version >= 1.8.5", version !== "?" && parseVersion(version) >= parseVersion("1.8.5")],
   ];
 
   console.log(`\nVerify synced plugin on ${key} (v${version}):`);
@@ -56,6 +66,21 @@ function verifySyncedPlugin(dest, key) {
 }
 
 function refreshPluginRuntime(publicPath, key) {
+  if (key === "cloud-local") {
+    try {
+      dockerWp.wp(["plugin", "deactivate", "rankpublish-site"]);
+      dockerWp.wp(["plugin", "activate", "rankpublish-site"]);
+      try {
+        dockerWp.wp(["cache", "flush"]);
+      } catch {
+        /* optional */
+      }
+      console.log(`Refreshed rankpublish-site runtime on ${key} (docker)`);
+    } catch (error) {
+      console.warn(`Runtime refresh skipped on ${key}: ${error.message || error}`);
+    }
+    return;
+  }
   try {
     const { env, ok } = loadEnvrc(publicPath);
     if (!ok) {

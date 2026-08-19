@@ -40,3 +40,4 @@ apps/plugin/**/.DS_Store
 .cache/
 .tmp-rankpublish-design/
 .tmp-github-rankpublish/
+.cloud-local-wp/

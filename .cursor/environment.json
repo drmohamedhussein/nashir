@@ -1,0 +1,11 @@
+{
+  "name": "RankPublish Dev",
+  "install": "npm install --prefix apps/web 2>/dev/null || true",
+  "start": "node deploy/local/bootstrap-cloud-wp.cjs --sync",
+  "terminals": [
+    {
+      "name": "cloud-wp",
+      "command": "docker compose -f deploy/local/docker/docker-compose.yml logs -f wordpress"
+    }
+  ]
+}

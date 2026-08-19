@@ -32,6 +32,7 @@ function resolveWpPharPath() {
 const DEFAULT_SITES = {
   rankpublish: "C:/Users/drmoh/Local Sites/rankpublish/app/public",
   "rankpublish-test": "C:/Users/drmoh/Local Sites/rankpublish-test/app/public",
+  "cloud-local": path.resolve(__dirname, "../../../.cloud-local-wp/public"),
 };
 
 const DEV_ACTIVE = [
