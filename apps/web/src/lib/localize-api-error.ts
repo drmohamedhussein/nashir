@@ -15,6 +15,7 @@ const MESSAGE_KEYS = {
   [API_ERRORS.INVALID_SIGNATURE]: "errorInvalidSignature",
   [API_ERRORS.SITE_URL_REQUIRED]: "errorSiteUrlRequired",
   [API_ERRORS.INVALID_WP_URL]: "errorInvalidWpUrl",
+  [API_ERRORS.HQ_SITE_BLOCKED]: "errorHqSiteBlocked",
   [API_ERRORS.INVALID_POST_ID]: "errorInvalidPostId",
   [API_ERRORS.CONNECTOR_REQUIRED]: "errorConnectorRequired",
   [API_ERRORS.POST_NOT_FOUND]: "errorPostNotFound",

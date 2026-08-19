@@ -46,6 +46,9 @@ final class RankPublish_Site_Module_Embed {
 		if ( ! is_admin() || wp_doing_ajax() ) {
 			return;
 		}
+		if ( ! RankPublish_Site_Admin_Os::is_dev_mode() ) {
+			return;
+		}
 
 		$page = isset( $_GET['page'] ) ? sanitize_key( (string) wp_unslash( $_GET['page'] ) ) : '';
 		if ( ! in_array( $page, array( 'rankpublish-core-scheduler', 'rankpublish-core-seo' ), true ) ) {
@@ -137,6 +140,7 @@ final class RankPublish_Site_Module_Embed {
 		$panels   = 'scheduler' === $context ? self::scheduler_panels() : self::seo_panels();
 
 		RankPublish_Site_Admin_Os::start( $core );
+		RankPublish_Site_Admin_Os::hq_banner();
 		self::render_heading( $context );
 		self::render_tabs( $panels, $page, $context );
 		echo '<div class="rpsite-module-native">';

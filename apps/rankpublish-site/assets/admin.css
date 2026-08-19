@@ -218,6 +218,26 @@ body.rpsite-os .update-nag {
 	color: #fff;
 }
 
+.rpsite-os-cloud-cta {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 8px 12px 0;
+	height: 40px;
+	padding: 0 12px;
+	border-radius: 12px;
+	color: #7dd3fc;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	border: 1px solid rgba(125, 211, 252, 0.18);
+}
+
+.rpsite-os-cloud-cta:hover {
+	background: rgba(125, 211, 252, 0.08);
+	color: #fff;
+}
+
 .rpsite-os-sidebar__foot {
 	margin-top: auto;
 	padding: 12px;
@@ -1548,6 +1568,22 @@ body.rpsite-os .update-nag {
 	margin: 16px 0 0;
 	font-size: 11px;
 	color: #64748b;
+}
+
+.rpsite-hq-banner {
+	margin: 0 0 1.25rem;
+	padding: 0.9rem 1rem;
+	border-radius: 14px;
+	background: #fff7ed;
+	border: 1px solid #fdba74;
+	color: #9a3412;
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+.rpsite-hq-banner a {
+	color: #9a3412;
+	font-weight: 700;
 }
 
 .rpsite-os-toast {

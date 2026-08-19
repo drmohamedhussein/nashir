@@ -99,6 +99,7 @@ export function AppDashboardShell({
   workspaceId,
   logoutLabel,
   labels,
+  hasConnectedSite = false,
   children,
 }: {
   locale: Locale;
@@ -106,6 +107,7 @@ export function AppDashboardShell({
   workspaceId: string;
   logoutLabel: string;
   labels: Record<string, string>;
+  hasConnectedSite?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -139,6 +141,9 @@ export function AppDashboardShell({
   }, [navOpen]);
 
   const closeNav = () => setNavOpen(false);
+  const workspaceItems = workspaceNav(labels).filter(
+    (item) => item.href !== "/app/getting-started" || !hasConnectedSite,
+  );
 
   return (
     <div className="flex min-h-screen bg-[#f6f7fb]" dir={dir}>
@@ -175,7 +180,7 @@ export function AppDashboardShell({
         <nav className="flex flex-1 flex-col px-3 pb-6">
           <NavGroup
             title={labels.workspaceKicker ?? "Workspace"}
-            items={workspaceNav(labels)}
+            items={workspaceItems}
             pathname={pathname}
             onNavigate={closeNav}
           />

@@ -14,6 +14,8 @@ export const API_ERRORS = {
   INVALID_SIGNATURE: "Invalid signature.",
   SITE_URL_REQUIRED: "siteUrl is required.",
   INVALID_WP_URL: "Invalid WordPress URL.",
+  HQ_SITE_BLOCKED:
+    "This is the RankPublish HQ site, not a customer WordPress site. Pair the customer origin instead.",
   INVALID_POST_ID: "Invalid post ID.",
   CONNECTOR_REQUIRED: "Site does not use RankPublish Connector.",
   POST_NOT_FOUND: "Post not found.",

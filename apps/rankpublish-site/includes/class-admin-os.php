@@ -38,19 +38,25 @@ final class RankPublish_Site_Admin_Os {
 		$s   = self::SLUG;
 		$nav = array(
 			'workspace' => array(
-				$s                 => __( 'Overview', 'rankpublish-site' ),
-				$s . '-sites'      => __( 'Connected sites', 'rankpublish-site' ),
-				$s . '-scheduler'  => __( 'Scheduler', 'rankpublish-site' ),
-				$s . '-seo'        => __( 'SEO', 'rankpublish-site' ),
-				$s . '-activity'   => __( 'Activity', 'rankpublish-site' ),
+				$s => __( 'Overview', 'rankpublish-site' ),
 			),
 			'manage'    => array(
-				$s . '-team'     => __( 'Team', 'rankpublish-site' ),
-				$s . '-billing'  => __( 'Billing', 'rankpublish-site' ),
 				$s . '-settings' => __( 'Settings', 'rankpublish-site' ),
 			),
 		);
 		if ( self::is_dev_mode() ) {
+			$nav['workspace'] = array(
+				$s                => __( 'Overview', 'rankpublish-site' ),
+				$s . '-sites'     => __( 'Connected sites', 'rankpublish-site' ),
+				$s . '-scheduler' => __( 'Scheduler', 'rankpublish-site' ),
+				$s . '-seo'       => __( 'SEO', 'rankpublish-site' ),
+				$s . '-activity'  => __( 'Activity', 'rankpublish-site' ),
+			);
+			$nav['manage'] = array(
+				$s . '-team'     => __( 'Team', 'rankpublish-site' ),
+				$s . '-billing'  => __( 'Billing', 'rankpublish-site' ),
+				$s . '-settings' => __( 'Settings', 'rankpublish-site' ),
+			);
 			$nav['core'] = array(
 				$s . '-merge'      => __( 'Merge audit', 'rankpublish-site' ),
 				$s . '-stack'      => __( 'Dev stack', 'rankpublish-site' ),
@@ -110,7 +116,8 @@ final class RankPublish_Site_Admin_Os {
 			'user_email'     => $email,
 			'user_initial'   => strtoupper( substr( ( $name !== '' ? $name : $email ) !== '' ? ( $name !== '' ? $name : $email ) : 'U', 0, 1 ) ),
 			'cloud_url'      => $cloud,
-			'account_url'    => $cloud . '/app',
+			'account_url'    => $cloud . '/app/getting-started',
+			'cloud_app_url'  => $cloud . '/app',
 			'billing_url'    => $cloud . '/app/billing',
 			'guide_url'      => home_url( '/guide/' ),
 			'logout_url'     => wp_logout_url( admin_url() ),
@@ -221,6 +228,11 @@ final class RankPublish_Site_Admin_Os {
 				</nav>
 			<?php endforeach; ?>
 
+			<a class="rpsite-os-cloud-cta" href="<?php echo esc_url( (string) ( $ctx['cloud_app_url'] ?? $ctx['account_url'] ) ); ?>">
+				<?php echo self::icon( 'external' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<span><?php esc_html_e( 'RankPublish Cloud', 'rankpublish-site' ); ?></span>
+			</a>
+
 			<div class="rpsite-os-sidebar__foot">
 				<div class="rpsite-os-help">
 					<?php echo self::icon( 'help' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -259,7 +271,7 @@ final class RankPublish_Site_Admin_Os {
 					<?php echo self::icon( 'menu' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</button>
 				<div>
-					<p><?php esc_html_e( 'Workspace', 'rankpublish-site' ); ?></p>
+					<p><?php esc_html_e( 'HQ Site Core', 'rankpublish-site' ); ?></p>
 					<strong><?php echo esc_html( (string) $ctx['workspace_name'] ); ?></strong>
 				</div>
 			</div>
@@ -322,6 +334,15 @@ final class RankPublish_Site_Admin_Os {
 			</div>
 		</div>
 		<?php
+	}
+
+	public static function hq_banner(): void {
+		$cloud = rpsite_cloud_url() . '/app';
+		echo '<div class="rpsite-hq-banner" role="status">';
+		echo '<strong>' . esc_html__( 'This HQ WordPress — not a customer seat.', 'rankpublish-site' ) . '</strong> ';
+		esc_html_e( 'Customer accounts, pairing, and synced calendars live in RankPublish Cloud. Engines on this site operate on HQ posts only.', 'rankpublish-site' );
+		echo ' <a href="' . esc_url( $cloud ) . '">' . esc_html__( 'Open RankPublish Cloud', 'rankpublish-site' ) . '</a>';
+		echo '</div>';
 	}
 
 	public static function heading( string $eyebrow, string $title, string $description, string $action_html = '' ): void {

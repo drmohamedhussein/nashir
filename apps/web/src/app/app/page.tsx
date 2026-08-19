@@ -62,7 +62,7 @@ export default async function AppHomePage() {
         <Link href="/app/billing" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
           {copy.billingTeaser}
         </Link>
-        <ConnectionWizard locale={locale} appUrl={cloudAppUrl} />
+        {sites.length === 0 ? <ConnectionWizard locale={locale} appUrl={cloudAppUrl} /> : null}
         <a href="/wp-content/uploads/rankpublish/rankpublish.zip" className="block rounded-2xl border border-ink/10 bg-white p-6 text-sm text-ink-soft shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
           {copy.download}
         </a>

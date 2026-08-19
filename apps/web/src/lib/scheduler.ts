@@ -2,6 +2,7 @@ import { prisma } from "./db";
 import { callWordPress } from "./wordpress";
 import { DEFAULT_TEMPLATES, renderTemplate, type SocialPlatform } from "./social";
 import { API_ERRORS } from "./api-errors";
+import { isHqOrigin } from "./tenant-origin";
 
 export type WpPost = {
   wp_post_id: number;
@@ -192,6 +193,9 @@ export async function refreshSitePosts(siteId: string) {
   const site = await prisma.site.findUnique({ where: { id: siteId } });
   if (!site) {
     return;
+  }
+  if (isHqOrigin(site.url) || isHqOrigin(site.restUrl)) {
+    throw new Error(API_ERRORS.HQ_SITE_BLOCKED);
   }
   if (isCloudUnreachableWpUrl(site.restUrl) || isCloudUnreachableWpUrl(site.url)) {
     return;

@@ -4,7 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n";
 
-export function ConnectionWizard({ locale, appUrl }: { locale: Locale; appUrl: string }) {
+export function ConnectionWizard({
+  locale,
+  appUrl,
+  intendedSiteUrl,
+  intendedSiteName,
+}: {
+  locale: Locale;
+  appUrl: string;
+  intendedSiteUrl?: string | null;
+  intendedSiteName?: string;
+}) {
   const copy = t(locale);
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -49,6 +59,13 @@ export function ConnectionWizard({ locale, appUrl }: { locale: Locale; appUrl: s
         {copy.gettingStarted ?? "Getting started"} · {step}/3
       </p>
       <h2 className="mt-2 text-lg font-semibold">{copy.pairingTitle}</h2>
+      {intendedSiteUrl ? (
+        <p className="mt-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2 text-sm text-ink">
+          <strong className="block text-brand">{copy.intendedSiteTitle}</strong>
+          {copy.intendedSiteBody.replace("{url}", intendedSiteUrl)}
+          {intendedSiteName ? <span className="mt-1 block text-ink-soft">{intendedSiteName}</span> : null}
+        </p>
+      ) : null}
 
       {step === 1 ? (
         <div className="mt-4 space-y-3">

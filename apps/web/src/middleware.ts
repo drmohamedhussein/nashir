@@ -41,9 +41,11 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/register");
 
   if (isApp && !valid) {
+    const nextTarget = request.nextUrl.pathname + request.nextUrl.search;
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", request.nextUrl.pathname);
+    url.search = "";
+    url.searchParams.set("next", nextTarget);
     const response = NextResponse.redirect(url);
     if (request.cookies.get(COOKIE)) {
       response.cookies.set(COOKIE, "", { path: "/", maxAge: 0 });

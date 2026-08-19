@@ -37,6 +37,7 @@ final class Connector {
 		require_once RANKPUBLISH_PATH . 'includes/connector/class-onboarding.php';
 		require_once RANKPUBLISH_PATH . 'includes/connector/class-admin.php';
 		require_once RANKPUBLISH_PATH . 'includes/connector/class-workspace-admin.php';
+		require_once RANKPUBLISH_PATH . 'includes/connector/class-engine-shell.php';
 
 		Service_User::ensure();
 
@@ -48,6 +49,7 @@ final class Connector {
 		if ( is_admin() ) {
 			( new Admin() )->register();
 			( new Workspace_Admin() )->register();
+			( new Engine_Shell() )->register();
 		}
 	}
 }

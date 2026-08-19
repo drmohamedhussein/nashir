@@ -2,10 +2,7 @@
 import { hashSecret, randomToken, verifyPassword } from "./crypto";
 import { isSubscriptionLive, PLANS, trialEnd } from "./plans";
 import { API_ERRORS } from "./api-errors";
-
-function normalizeUrl(value: string): string {
-  return value.replace(/\/+$/, "");
-}
+import { customerSiteUrlOrError, rejectHqOrigin } from "./tenant-origin";
 
 export class LicenseError extends Error {
   constructor(
@@ -34,7 +31,15 @@ export async function activateByLogin(input: {
   }
 
   const workspaceId = user.workspace.id;
-  const url = normalizeUrl(input.site_url);
+  const siteUrl = customerSiteUrlOrError(input.site_url);
+  if (!siteUrl.ok) {
+    throw new LicenseError(siteUrl.error, 400);
+  }
+  const restBlocked = rejectHqOrigin(input.rest_url);
+  if (restBlocked) {
+    throw new LicenseError(restBlocked, 400);
+  }
+  const url = siteUrl.url;
 
   const existingSite = await prisma.site.findUnique({
     where: { workspaceId_url: { workspaceId, url } },

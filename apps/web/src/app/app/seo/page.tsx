@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { isCloudUnreachableWpUrl, refreshSitePosts } from "@/lib/scheduler";
+import { isHqOrigin } from "@/lib/tenant-origin";
 import { redirect } from "next/navigation";
 import { SeoWorkspace } from "@/components/rankpublish/seo-workspace";
 import { EngineWorkspace } from "@/components/rankpublish/engine-workspace";
@@ -21,7 +22,7 @@ export default async function SeoPage() {
 
   const syncErrors: string[] = [];
   for (const site of sites) {
-    if (isCloudUnreachableWpUrl(site.url) || isCloudUnreachableWpUrl(site.restUrl)) {
+    if (isHqOrigin(site.url) || isHqOrigin(site.restUrl) || isCloudUnreachableWpUrl(site.url) || isCloudUnreachableWpUrl(site.restUrl)) {
       syncErrors.push(site.name);
       continue;
     }
@@ -57,7 +58,9 @@ export default async function SeoPage() {
     updatedAt: p.updatedAt.toISOString(),
   }));
 
-  const syncError = items.length === 0 && syncErrors[0] ? copy.engineSyncSeo : null;
+  const syncError = syncErrors.length
+    ? copy.engineSyncFailed.replace("{site}", syncErrors.join(", "))
+    : null;
 
   return (
     <div>

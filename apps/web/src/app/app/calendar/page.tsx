@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { getLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { isCloudUnreachableWpUrl, refreshSitePosts } from "@/lib/scheduler";
+import { isHqOrigin } from "@/lib/tenant-origin";
 import { redirect } from "next/navigation";
 
 export default async function CalendarPage() {
@@ -22,7 +23,7 @@ export default async function CalendarPage() {
 
   const syncErrors: string[] = [];
   for (const site of sites) {
-    if (isCloudUnreachableWpUrl(site.url) || isCloudUnreachableWpUrl(site.restUrl)) {
+    if (isHqOrigin(site.url) || isHqOrigin(site.restUrl) || isCloudUnreachableWpUrl(site.url) || isCloudUnreachableWpUrl(site.restUrl)) {
       syncErrors.push(site.name);
       continue;
     }
@@ -49,7 +50,9 @@ export default async function CalendarPage() {
 
   const locale = await getLocale();
   const copy = t(locale);
-  const syncError = mapped.length === 0 && syncErrors[0] ? copy.engineSyncCalendar : null;
+  const syncError = syncErrors.length
+    ? copy.engineSyncFailed.replace("{site}", syncErrors.join(", "))
+    : null;
 
   return (
     <div>

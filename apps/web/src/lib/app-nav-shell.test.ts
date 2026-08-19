@@ -15,7 +15,8 @@ describe("cloud app mobile navigation", () => {
     expect(shell).toMatch(/max-lg:hidden/);
     expect(shell).toMatch(/touch-manipulation/);
     expect(shell).not.toMatch(/\binert=/);
-    expect(shell).not.toMatch(/aside className="hidden w-\[248px\]/);
+    expect(shell).toMatch(/hasConnectedSite/);
+    expect(shell).toMatch(/\/app\/getting-started/);
     expect(shell).not.toMatch(/"flex w-\[248px\]/);
   });
 });

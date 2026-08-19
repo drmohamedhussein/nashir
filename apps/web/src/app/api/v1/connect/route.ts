@@ -5,6 +5,7 @@ import { hashSecret, randomToken } from "@/lib/crypto";
 import { isSubscriptionLive, PLANS, trialEnd } from "@/lib/plans";
 import { API_ERRORS } from "@/lib/api-errors";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
+import { customerSiteUrlOrError, rejectHqOrigin } from "@/lib/tenant-origin";
 
 const schema = z.object({
   code: z.string().trim().min(6).max(6),
@@ -13,10 +14,6 @@ const schema = z.object({
   rest_url: z.string().url(),
   wp_version: z.string().max(20).optional(),
 });
-
-function normalizeUrl(value: string): string {
-  return value.replace(/\/+$/, "");
-}
 
 export async function POST(request: Request) {
   if (!rateLimit(clientKey(request, "connect"), 20, 15 * 60 * 1000)) {
@@ -34,7 +31,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: API_ERRORS.EXPIRED_PAIRING }, { status: 400 });
   }
 
-  const url = normalizeUrl(parsed.data.site_url);
+  const siteUrl = customerSiteUrlOrError(parsed.data.site_url);
+  if (!siteUrl.ok) {
+    return NextResponse.json({ error: siteUrl.error }, { status: 400 });
+  }
+  const restBlocked = rejectHqOrigin(parsed.data.rest_url);
+  if (restBlocked) {
+    return NextResponse.json({ error: restBlocked }, { status: 400 });
+  }
+
+  const url = siteUrl.url;
   const apiKey = randomToken(24);
   const signingSecret = randomToken(32);
 

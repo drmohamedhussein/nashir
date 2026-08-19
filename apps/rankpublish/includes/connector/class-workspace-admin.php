@@ -133,11 +133,22 @@ final class Workspace_Admin {
 		echo '<div class="wrap rankpublish-workspace">';
 		echo '<h1>' . esc_html( $title ) . '</h1>';
 		echo '<p>' . esc_html( $lede ) . '</p>';
+		echo '<p><em>' . esc_html(
+			sprintf(
+				/* translators: %s: this site home URL */
+				__( 'Engines on this screen belong to %s — not RankPublish HQ.', 'rankpublish' ),
+				home_url()
+			)
+		) . '</em></p>';
 
 		echo '<table class="widefat striped" style="max-width:880px">';
 		echo '<thead><tr><th>' . esc_html__( 'Tool', 'rankpublish' ) . '</th><th>' . esc_html__( 'What it does', 'rankpublish' ) . '</th></tr></thead><tbody>';
 		foreach ( $links as $link ) {
-			$url = admin_url( 'admin.php?page=' . rawurlencode( $link['page'] ) );
+			$url = add_query_arg(
+				'rp_os',
+				'1',
+				admin_url( 'admin.php?page=' . rawurlencode( $link['page'] ) )
+			);
 			echo '<tr><td><a class="button button-primary" href="' . esc_url( $url ) . '">' . esc_html( $link['label'] ) . '</a></td>';
 			echo '<td>' . esc_html( $link['note'] ) . '</td></tr>';
 		}

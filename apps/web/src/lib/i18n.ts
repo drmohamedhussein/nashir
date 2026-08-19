@@ -244,6 +244,15 @@ export const dictionaries = {
       "السحابة لا تصل إلى ووردبريس المحلي. افتح لوحة الموقع مرة واحدة حتى يدفع RankPublish التقويم والمحتوى إلى السحابة، أو استخدم تبويبات المحركات أعلاه على الموقع المرتبط.",
     engineSyncSeo:
       "السحابة لا تصل إلى ووردبريس المحلي. افتح لوحة الموقع المرتبط مرة واحدة حتى تُزامَن بيانات SEO، أو افتح تبويبات المحركات أعلاه.",
+    engineSyncFailed:
+      "تعذر مزامنة {site}. تحقق من REST والتوقيع وأن إضافة RankPublish مثبتة على الموقع المرتبط — وليست مقالات المقر.",
+    engineHqBlocked:
+      "هذا أصل مقر RankPublish وليس ووردبريس العميل. افتح لوحة الموقع المرتبط.",
+    enginePickSite: "الموقع",
+    intendedSiteTitle: "الموقع المقصود",
+    intendedSiteBody: "ستربط {url} بحسابك. ثبّت إضافة RankPublish هناك ثم الصق رمز الربط.",
+    intendedSiteBlocked:
+      "nashir.satest.top هو مقر RankPublish وليس موقع عميل. أدخل رابط ووردبريس العميل.",
     errorRateLimit: "محاولات كثيرة. انتظر قليلاً.",
     errorLoginRequired: "يلزم تسجيل الدخول.",
     errorIncomplete: "بيانات غير مكتملة.",
@@ -257,6 +266,7 @@ export const dictionaries = {
     errorInvalidSignature: "توقيع غير صالح.",
     errorSiteUrlRequired: "siteUrl مطلوب.",
     errorInvalidWpUrl: "رابط ووردبريس غير صالح.",
+    errorHqSiteBlocked: "لا يمكن ربط موقع المقر كمقعد عميل. استخدم أصل ووردبريس العميل.",
     errorInvalidPostId: "معرّف المقال غير صالح.",
     errorConnectorRequired: "الموقع لا يستخدم RankPublish Connector.",
     errorPostNotFound: "المقال غير موجود.",
@@ -583,6 +593,15 @@ export const dictionaries = {
       "The cloud cannot reach local WordPress. Open the site admin once so RankPublish pushes the calendar and content to the cloud, or use the engine tabs above on the connected site.",
     engineSyncSeo:
       "The cloud cannot reach local WordPress. Open the connected site admin once to sync SEO data, or use the engine tabs above.",
+    engineSyncFailed:
+      "Could not sync {site}. Check REST, the signing secret, and that the RankPublish plugin is installed on the connected site — not HQ posts.",
+    engineHqBlocked:
+      "That origin is RankPublish HQ, not the customer WordPress site. Open the connected site admin instead.",
+    enginePickSite: "Site",
+    intendedSiteTitle: "Intended site",
+    intendedSiteBody: "You will pair {url} with this account. Install RankPublish there, then paste the pairing code.",
+    intendedSiteBlocked:
+      "nashir.satest.top is RankPublish HQ, not a customer site. Enter the customer WordPress URL.",
     errorRateLimit: "Too many attempts. Wait a moment.",
     errorLoginRequired: "Login required.",
     errorIncomplete: "Incomplete data.",
@@ -596,6 +615,8 @@ export const dictionaries = {
     errorInvalidSignature: "Invalid signature.",
     errorSiteUrlRequired: "siteUrl is required.",
     errorInvalidWpUrl: "Invalid WordPress URL.",
+    errorHqSiteBlocked:
+      "This is the RankPublish HQ site, not a customer WordPress site. Pair the customer origin instead.",
     errorInvalidPostId: "Invalid post ID.",
     errorConnectorRequired: "Site does not use RankPublish Connector.",
     errorPostNotFound: "Post not found.",
