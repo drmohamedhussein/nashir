@@ -8,6 +8,9 @@
 #
 # Or with full path from Local Site Shell:
 #   powershell -File C:\Users\drmoh\Projects\nashir\deploy\local\rp-local.ps1 fix-db --site rankpublish-test
+#
+# If PowerShell blocks .ps1 scripts, use the CMD wrapper instead:
+#   deploy\local\rp-local.cmd sync --site rankpublish-test
 
 param(
     [Parameter(Position = 0)]

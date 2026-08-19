@@ -38,6 +38,13 @@ node deploy/local/switch-product-mode.cjs product --site rankpublish-test --sync
 node deploy/local/switch-product-mode.cjs status --site rankpublish-test
 ```
 
+If PowerShell blocks `.ps1` scripts (`UnauthorizedAccess`), use the CMD wrapper from repo root:
+
+```cmd
+deploy\local\rp-local.cmd sync --site rankpublish-test
+deploy\local\rp-local.cmd qa --site rankpublish-test
+```
+
 ### First-time test site setup
 
 1. Create site in Local (e.g. `rankpublish-test.local`).
