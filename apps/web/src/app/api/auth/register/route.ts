@@ -43,50 +43,54 @@ export async function POST(request: Request) {
     .replace(/^-|-$/g, "")
     .slice(0, 60) + "-" + randomToken(4);
 
-  const user = await prisma.user.create({
-    data: {
-      name: parsed.data.name,
-      email,
-      passwordHash: await hashPassword(parsed.data.password),
-      workspace: {
-        create: { name: parsed.data.name, slug },
+  try {
+    const user = await prisma.user.create({
+      data: {
+        name: parsed.data.name,
+        email,
+        passwordHash: await hashPassword(parsed.data.password),
+        workspace: {
+          create: { name: parsed.data.name, slug },
+        },
       },
-    },
-    include: { workspace: true },
-  });
+      include: { workspace: true },
+    });
 
-  await prisma.workspaceMember.create({
-    data: {
-      workspaceId: user.workspace!.id,
-      userId: user.id,
-      role: "owner",
-    },
-  });
+    await prisma.workspaceMember.create({
+      data: {
+        workspaceId: user.workspace!.id,
+        userId: user.id,
+        role: "owner",
+      },
+    });
 
-  const joinedWorkspaceId = await acceptPendingInvites(user.id, email);
-  const sessionWorkspaceId = joinedWorkspaceId ?? user.workspace!.id;
+    const joinedWorkspaceId = await acceptPendingInvites(user.id, email);
+    const sessionWorkspaceId = joinedWorkspaceId ?? user.workspace!.id;
 
-  await createSession({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    workspaceId: sessionWorkspaceId,
-  });
+    await createSession({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      workspaceId: sessionWorkspaceId,
+    });
 
-  if (joinedWorkspaceId) {
-    return NextResponse.json({ ok: true, joinedWorkspace: true });
+    if (joinedWorkspaceId) {
+      return NextResponse.json({ ok: true, joinedWorkspace: true });
+    }
+
+    await prisma.subscription.create({
+      data: {
+        workspaceId: user.workspace!.id,
+        planId: "starter",
+        interval: PLANS.monthly.interval,
+        status: "trial",
+        priceCents: PLANS.monthly.priceCents,
+        currentPeriodEnd: trialEnd(),
+      },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: API_ERRORS.DATABASE_UNAVAILABLE }, { status: 503 });
   }
-
-  await prisma.subscription.create({
-    data: {
-      workspaceId: user.workspace!.id,
-      planId: "starter",
-      interval: PLANS.monthly.interval,
-      status: "trial",
-      priceCents: PLANS.monthly.priceCents,
-      currentPeriodEnd: trialEnd(),
-    },
-  });
-
-  return NextResponse.json({ ok: true });
 }

@@ -56,7 +56,7 @@ function rpsite_cloud_url(): string {
 	if ( '' !== $cloud ) {
 		return $cloud;
 	}
-	return $local ? $staging : $staging;
+	return $local ? 'http://localhost:3000' : $staging;
 }
 
 /**

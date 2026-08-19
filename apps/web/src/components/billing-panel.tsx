@@ -54,11 +54,19 @@ export function BillingPanel({
 
     void (async () => {
       setPending(true);
-      await fetch("/api/v1/billing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "capture", subscriptionId }),
-      });
+      try {
+        const res = await fetch("/api/v1/billing", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "capture", subscriptionId }),
+        });
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+          setError(data.error?.message ?? copy.billingError);
+        }
+      } catch {
+        setError(copy.billingError);
+      }
       setPending(false);
       router.replace("/app/billing");
       router.refresh();
@@ -123,7 +131,15 @@ export function BillingPanel({
       return;
     }
     setPending(true);
-    await fetch(`/api/v1/subscriptions/${id}/unbind`, { method: "POST" });
+    try {
+      const res = await fetch(`/api/v1/subscriptions/${id}/unbind`, { method: "POST" });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+        setError(data.error?.message ?? copy.billingError);
+      }
+    } catch {
+      setError(copy.billingError);
+    }
     setPending(false);
     router.refresh();
   }
