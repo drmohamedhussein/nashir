@@ -38,11 +38,26 @@ node deploy/local/switch-product-mode.cjs product --site rankpublish-test --sync
 node deploy/local/switch-product-mode.cjs status --site rankpublish-test
 ```
 
-If PowerShell blocks `.ps1` scripts (`UnauthorizedAccess`), use the CMD wrapper from repo root:
+If PowerShell blocks `.ps1` scripts (`UnauthorizedAccess`), use the CMD wrapper from repo root.
+In PowerShell you **must** prefix with `.\` (otherwise PowerShell treats `deploy` as a module name):
+
+```powershell
+.\rp-local.cmd sync --site rankpublish-test
+.\rp-local.cmd qa --site rankpublish-test
+```
+
+Or from CMD:
 
 ```cmd
-deploy\local\rp-local.cmd sync --site rankpublish-test
-deploy\local\rp-local.cmd qa --site rankpublish-test
+rp-local.cmd sync --site rankpublish-test
+rp-local.cmd qa --site rankpublish-test
+```
+
+Direct Node (works everywhere):
+
+```powershell
+node deploy/local/sync-rankpublish-site.cjs --site rankpublish-test
+node deploy/local/qa-rankpublish.cjs --site rankpublish-test
 ```
 
 ### First-time test site setup

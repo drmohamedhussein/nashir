@@ -66,7 +66,9 @@ echo   setup-test First-time test site setup
 echo   sync       Sync rankpublish-site plugin to Local site
 echo.
 echo Examples:
-echo   deploy\local\rp-local.cmd sync --site rankpublish-test
-echo   deploy\local\rp-local.cmd qa --site rankpublish
+echo   .\rp-local.cmd sync --site rankpublish-test
+echo   .\rp-local.cmd qa --site rankpublish
+echo.
+echo PowerShell note: use .\ prefix, e.g. .\rp-local.cmd sync --site rankpublish-test
 echo.
 exit /b 1
