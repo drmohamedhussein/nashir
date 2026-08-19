@@ -83,21 +83,61 @@ function commentImagickLines(text) {
     .replace(/^(\s*)zend_extension\s*=\s*.*imagick.*$/gim, "$1; zend_extension=imagick (disabled)");
 }
 
-function fixImagickIni() {
-  const { env } = loadEnvrc(publicPath);
-  const candidates = [
-    env.PHPRC,
-    path.join(siteRoot, "conf", "php", "php.ini"),
-    path.join(siteRoot, "conf", "php", "php.ini.hbs"),
-  ].filter(Boolean);
+function resolvePhpIniCandidates(env, phpExe) {
+  const candidates = [];
+  const push = (p) => {
+    if (!p || candidates.includes(p)) return;
+    candidates.push(p);
+  };
 
-  const seen = new Set();
+  push(path.join(siteRoot, "conf", "php", "php.ini"));
+  push(path.join(siteRoot, "conf", "php", "php.ini.hbs"));
+
+  if (phpExe) {
+    const phpDir = path.dirname(phpExe);
+    push(path.join(phpDir, "php.ini"));
+    push(path.join(phpDir, "..", "php.ini"));
+    push(path.join(phpDir, "..", "conf", "php.ini"));
+  }
+
+  const phpRc = env.PHPRC;
+  if (phpRc) {
+    try {
+      if (fs.statSync(phpRc).isDirectory()) {
+        push(path.join(phpRc, "php.ini"));
+        push(path.join(phpRc, "php.ini.hbs"));
+      } else {
+        push(phpRc);
+      }
+    } catch {
+      push(phpRc);
+    }
+  }
+
+  const confPhp = path.join(siteRoot, "conf", "php");
+  if (fs.existsSync(confPhp)) {
+    for (const name of fs.readdirSync(confPhp)) {
+      if (/\.ini(\.hbs)?$/i.test(name)) {
+        push(path.join(confPhp, name));
+      }
+    }
+  }
+
+  return candidates.filter((p) => {
+    try {
+      return fs.statSync(p).isFile();
+    } catch {
+      return false;
+    }
+  });
+}
+
+function fixImagickIni() {
+  const { env, phpExe } = loadEnvrc(publicPath);
+  const candidates = resolvePhpIniCandidates(env, phpExe);
+
   let fixed = 0;
   for (const phpIni of candidates) {
-    if (!phpIni || seen.has(phpIni) || !fs.existsSync(phpIni)) {
-      continue;
-    }
-    seen.add(phpIni);
     const before = fs.readFileSync(phpIni, "utf8");
     const after = commentImagickLines(before);
     if (after === before) {
