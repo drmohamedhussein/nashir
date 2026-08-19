@@ -438,30 +438,9 @@
 
 		// Must unlock upstream React roots (.tr-root was incorrectly skipped via shouldSkipHide).
 		var scope = root || document;
-		scope.querySelectorAll(
-			'.tr-root, #wpsp-dashboard-body, .wpsp-admin-page, .tr-root > div, #wpsp-dashboard-body > div, .tr-root main, .tr-root [class*="layout"], .tr-root [class*="content"], #wpsp-dashboard-body [class*="layout"]'
-		).forEach(function (el) {
-			var style = window.getComputedStyle(el);
-			if (
-				style.overflow === 'hidden' ||
-				style.overflowY === 'hidden' ||
-				style.overflow === 'clip' ||
-				/100vh|100%/.test(style.height) ||
-				/100vh|100%/.test(style.maxHeight)
-			) {
-				unlockScrollOnElement(el);
-			}
+		scope.querySelectorAll('.tr-root, #wpsp-dashboard-body, .wpsp-admin-page').forEach(function (el) {
+			unlockScrollOnElement(el);
 		});
-	}
-
-	function ensureWindowScroll() {
-		if (!document.body.classList.contains('rpsite-os-module-wrap')) {
-			return;
-		}
-		if (document.documentElement.scrollHeight > window.innerHeight + 8) {
-			return;
-		}
-		unlockModuleScroll(moduleRoot());
 	}
 
 	function injectLicenseBanner() {
@@ -525,6 +504,10 @@
 	}
 
 	function apply() {
+		if (applyCount >= MAX_APPLY) {
+			return;
+		}
+		applyCount++;
 		if (!isAdminTarget()) {
 			return;
 		}
@@ -545,27 +528,30 @@
 	}
 
 	var timer = null;
+	var applyCount = 0;
+	var MAX_APPLY = 14;
+
 	function schedule() {
+		if (applyCount >= MAX_APPLY) {
+			return;
+		}
 		if (timer) {
 			window.clearTimeout(timer);
 		}
-		timer = window.setTimeout(apply, isModuleWrap ? 16 : 40);
+		timer = window.setTimeout(apply, isModuleWrap ? 120 : 40);
 	}
 
 	if (isModuleWrap) {
 		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', apply);
+			document.addEventListener('DOMContentLoaded', apply, { once: true });
 		} else {
 			apply();
 		}
-		window.setTimeout(apply, 250);
-		window.setTimeout(apply, 1000);
-		window.setTimeout(apply, 2500);
-		window.setInterval(function () {
+		window.setTimeout(apply, 400);
+		window.setTimeout(apply, 1500);
+		window.setTimeout(function () {
 			unlockModuleScroll(moduleRoot());
-			ensureWindowScroll();
-		}, 700);
-		window.addEventListener('resize', ensureWindowScroll, { passive: true });
+		}, 2500);
 	} else if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', apply);
 	} else {
@@ -578,9 +564,13 @@
 			subtree: true,
 		});
 	} else if (window.MutationObserver && isModuleWrap) {
-		new MutationObserver(schedule).observe(document.querySelector('.rpsite-module-native') || document.documentElement, {
-			childList: true,
-			subtree: true,
-		});
+		var nativeRoot = document.querySelector('.rpsite-module-native');
+		if (nativeRoot) {
+			var observer = new MutationObserver(schedule);
+			observer.observe(nativeRoot, { childList: true, subtree: true });
+			window.setTimeout(function () {
+				observer.disconnect();
+			}, 12000);
+		}
 	}
 })();

@@ -385,8 +385,15 @@ final class RankPublish_Site_Module_Embed {
 		<script id="rpsite-scroll-unlock-bootstrap">
 		(function () {
 			'use strict';
-			function targets() {
-				return [
+			document.documentElement.classList.add('rpsite-module-screen');
+			function unlockEl(el) {
+				el.style.setProperty('overflow', 'visible', 'important');
+				el.style.setProperty('overflow-y', 'visible', 'important');
+				el.style.setProperty('height', 'auto', 'important');
+				el.style.setProperty('max-height', 'none', 'important');
+			}
+			function unlockAll() {
+				[
 					document.documentElement,
 					document.body,
 					document.getElementById('wpwrap'),
@@ -396,31 +403,16 @@ final class RankPublish_Site_Module_Embed {
 					document.querySelector('.rpsite-os-main'),
 					document.querySelector('.rpsite-os-body'),
 					document.querySelector('.rpsite-module-native'),
-				].filter(Boolean);
+				].filter(Boolean).forEach(unlockEl);
+				document.querySelectorAll('.tr-root, #wpsp-dashboard-body, .wpsp-admin-page').forEach(unlockEl);
 			}
-			function unlockEl(el) {
-				el.style.setProperty('overflow', 'visible', 'important');
-				el.style.setProperty('overflow-y', 'visible', 'important');
-				el.style.setProperty('height', 'auto', 'important');
-				el.style.setProperty('max-height', 'none', 'important');
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', unlockAll, { once: true });
+			} else {
+				unlockAll();
 			}
-			function unlockModuleRoots(scope) {
-				(scope || document).querySelectorAll('.tr-root, #wpsp-dashboard-body, .wpsp-admin-page, .tr-root > div, #wpsp-dashboard-body > div, .tr-root main, .tr-root [class*="content"]').forEach(unlockEl);
-			}
-			function unlockAll() {
-				document.documentElement.classList.add('rpsite-module-screen');
-				if (document.body) {
-					document.body.style.setProperty('overflow', 'visible', 'important');
-				}
-				targets().forEach(unlockEl);
-				unlockModuleRoots(document);
-			}
-			unlockAll();
-			document.addEventListener('DOMContentLoaded', unlockAll);
-			window.setInterval(unlockAll, 700);
-			if (window.MutationObserver) {
-				new MutationObserver(unlockAll).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
-			}
+			window.setTimeout(unlockAll, 600);
+			window.setTimeout(unlockAll, 2000);
 		})();
 		</script>
 		<?php
