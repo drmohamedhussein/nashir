@@ -40,11 +40,13 @@ export default async function CalendarPage() {
     orderBy: { scheduledAt: "asc" },
   });
 
+  const unreachableSet = new Set(syncErrors);
   const mapped = posts.map((post) => ({
     id: post.id,
     title: post.title,
     status: post.status,
     siteName: post.site.name,
+    siteReachable: !unreachableSet.has(post.site.name),
     date: (post.scheduledAt ?? post.publishedAt ?? post.syncedAt).toISOString(),
   }));
 

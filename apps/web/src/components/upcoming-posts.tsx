@@ -10,6 +10,7 @@ type Item = {
   title: string;
   status: string;
   siteName: string;
+  siteReachable?: boolean;
 };
 
 export function UpcomingPosts({ posts, locale }: { posts: Item[]; locale: Locale }) {
@@ -52,20 +53,26 @@ export function UpcomingPosts({ posts, locale }: { posts: Item[]; locale: Locale
                 {post.siteName} · {post.status}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => run(post.id, "publish")} disabled={Boolean(busy)} className="rounded-full bg-leaf px-3 py-1 text-xs font-semibold text-white disabled:opacity-60">
-                {copy.publishNow}
-              </button>
-              <button type="button" onClick={() => run(post.id, "publish_keep_date")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
-                {copy.publishKeepDate}
-              </button>
-              <button type="button" onClick={() => run(post.id, "unpublish")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
-                {copy.unpublish}
-              </button>
-              <button type="button" onClick={() => run(post.id, "republish")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
-                {copy.republish}
-              </button>
-            </div>
+            {post.siteReachable === false ? (
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-800">
+                {copy.engineSyncCalendar?.slice(0, 60) ?? "Site unreachable from cloud"}
+              </span>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => run(post.id, "publish")} disabled={Boolean(busy)} className="rounded-full bg-leaf px-3 py-1 text-xs font-semibold text-white disabled:opacity-60">
+                  {copy.publishNow}
+                </button>
+                <button type="button" onClick={() => run(post.id, "publish_keep_date")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
+                  {copy.publishKeepDate}
+                </button>
+                <button type="button" onClick={() => run(post.id, "unpublish")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
+                  {copy.unpublish}
+                </button>
+                <button type="button" onClick={() => run(post.id, "republish")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
+                  {copy.republish}
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ul>
