@@ -99,10 +99,11 @@ describe("HQ operator shell is not a customer clone", () => {
 });
 
 describe("cloud pairing and engine chrome", () => {
-  it("hides the Sites wizard when a site already exists", () => {
+  it("redirects to getting-started when no site is connected", () => {
     const home = read("apps/web/src/app/app/page.tsx");
-    expect(home).toMatch(/ConnectionWizard/);
-    expect(home).toMatch(/sites\.length === 0 \? <ConnectionWizard/);
+    expect(home).not.toMatch(/ConnectionWizard/);
+    expect(home).toMatch(/sites\.length === 0/);
+    expect(home).toMatch(/redirect.*getting-started/);
   });
 
   it("calendar and SEO deep-link only to the customer WordPress admin", () => {

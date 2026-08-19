@@ -25,13 +25,20 @@ import type { Locale } from "@/lib/i18n";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
 
-const workspaceNav = (copy: Record<string, string>): NavItem[] => [
-  { href: "/app", label: copy.sites ?? "Sites", icon: LayoutDashboard },
-  { href: "/app/getting-started", label: copy.gettingStarted ?? "Getting Started", icon: Rocket },
-  { href: "/app/calendar", label: copy.scheduler ?? copy.calendar ?? "Calendar", icon: CalendarDays },
-  { href: "/app/seo", label: copy.seo ?? "SEO", icon: SearchCheck },
-  { href: "/app/social", label: copy.social ?? "Social", icon: Share2 },
-];
+const workspaceNav = (copy: Record<string, string>, hasConnectedSite: boolean): NavItem[] => {
+  const items: NavItem[] = [];
+  if (hasConnectedSite) {
+    items.push({ href: "/app", label: copy.sites ?? "Sites", icon: LayoutDashboard });
+  } else {
+    items.push({ href: "/app/getting-started", label: copy.gettingStarted ?? "Getting Started", icon: Rocket });
+  }
+  items.push(
+    { href: "/app/calendar", label: copy.scheduler ?? copy.calendar ?? "Calendar", icon: CalendarDays },
+    { href: "/app/seo", label: copy.seo ?? "SEO", icon: SearchCheck },
+    { href: "/app/social", label: copy.social ?? "Social", icon: Share2 },
+  );
+  return items;
+};
 
 const manageNav = (copy: Record<string, string>): NavItem[] => [
   { href: "/app/team", label: copy.team ?? "Team", icon: UsersRound },
@@ -141,9 +148,7 @@ export function AppDashboardShell({
   }, [navOpen]);
 
   const closeNav = () => setNavOpen(false);
-  const workspaceItems = workspaceNav(labels).filter(
-    (item) => item.href !== "/app/getting-started" || !hasConnectedSite,
-  );
+  const workspaceItems = workspaceNav(labels, hasConnectedSite);
 
   return (
     <div className="flex min-h-screen bg-[#f6f7fb]" dir={dir}>
