@@ -31,6 +31,8 @@ final class RankPublish_Site_Module_Embed {
 		add_action( 'admin_init', array( $this, 'register_native_wrap' ), 20 );
 		add_filter( 'admin_body_class', array( $this, 'wrap_body_class' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_wrap_assets' ) );
+		add_action( 'admin_head', array( $this, 'print_scroll_unlock_head' ), 1 );
+		add_action( 'admin_footer', array( $this, 'print_scroll_unlock_footer' ), 99999 );
 	}
 
 	/**
@@ -347,6 +349,81 @@ final class RankPublish_Site_Module_Embed {
 		if ( class_exists( 'RankPublish_Site_Branding' ) ) {
 			( new RankPublish_Site_Branding() )->enqueue_admin_assets( '' );
 		}
+	}
+
+	/**
+	 * Critical scroll CSS in head (cannot be dequeued by upstream React screens).
+	 */
+	public function print_scroll_unlock_head(): void {
+		if ( ! self::is_os_wrapped_request() ) {
+			return;
+		}
+		echo '<style id="rpsite-scroll-unlock-critical">';
+		echo 'html.rpsite-module-screen,html.rpsite-module-screen body,body.rpsite-os-module-wrap,';
+		echo 'body.rpsite-os-module-wrap #wpwrap,body.rpsite-os-module-wrap #wpbody,';
+		echo 'body.rpsite-os-module-wrap #wpbody-content,body.rpsite-os-module-wrap .rpsite-os,';
+		echo 'body.rpsite-os-module-wrap .rpsite-os-main,body.rpsite-os-module-wrap .rpsite-os-body,';
+		echo 'body.rpsite-os-module-wrap .rpsite-module-native,';
+		echo 'body.rpsite-os-module-wrap .rpsite-module-native .tr-root,';
+		echo 'body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body,';
+		echo 'body.rpsite-os-module-wrap .rpsite-module-native .wpsp-admin-page{';
+		echo 'overflow:visible!important;height:auto!important;max-height:none!important;min-height:0!important;}';
+		echo 'body.rpsite-os-module-wrap .rpsite-module-native .tr-root>div,';
+		echo 'body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body>div{';
+		echo 'overflow:visible!important;height:auto!important;max-height:none!important;}';
+		echo '</style>';
+	}
+
+	/**
+	 * Inline bootstrap unlock — runs even if upstream dequeues admin-overrides.js.
+	 */
+	public function print_scroll_unlock_footer(): void {
+		if ( ! self::is_os_wrapped_request() ) {
+			return;
+		}
+		?>
+		<script id="rpsite-scroll-unlock-bootstrap">
+		(function () {
+			'use strict';
+			function targets() {
+				return [
+					document.documentElement,
+					document.body,
+					document.getElementById('wpwrap'),
+					document.getElementById('wpbody'),
+					document.getElementById('wpbody-content'),
+					document.querySelector('.rpsite-os'),
+					document.querySelector('.rpsite-os-main'),
+					document.querySelector('.rpsite-os-body'),
+					document.querySelector('.rpsite-module-native'),
+				].filter(Boolean);
+			}
+			function unlockEl(el) {
+				el.style.setProperty('overflow', 'visible', 'important');
+				el.style.setProperty('overflow-y', 'visible', 'important');
+				el.style.setProperty('height', 'auto', 'important');
+				el.style.setProperty('max-height', 'none', 'important');
+			}
+			function unlockModuleRoots(scope) {
+				(scope || document).querySelectorAll('.tr-root, #wpsp-dashboard-body, .wpsp-admin-page, .tr-root > div, #wpsp-dashboard-body > div, .tr-root main, .tr-root [class*="content"]').forEach(unlockEl);
+			}
+			function unlockAll() {
+				document.documentElement.classList.add('rpsite-module-screen');
+				if (document.body) {
+					document.body.style.setProperty('overflow', 'visible', 'important');
+				}
+				targets().forEach(unlockEl);
+				unlockModuleRoots(document);
+			}
+			unlockAll();
+			document.addEventListener('DOMContentLoaded', unlockAll);
+			window.setInterval(unlockAll, 700);
+			if (window.MutationObserver) {
+				new MutationObserver(unlockAll).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+			}
+		})();
+		</script>
+		<?php
 	}
 
 	public static function is_os_wrapped_request(): bool {

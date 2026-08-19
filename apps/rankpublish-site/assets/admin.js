@@ -6,6 +6,11 @@
 		return;
 	}
 
+	if (document.body.classList.contains('rpsite-os-module-wrap')) {
+		document.body.style.overflow = '';
+		document.documentElement.style.overflow = '';
+	}
+
 	var strings = window.rpsiteAdmin || {};
 
 	function qs(sel, scope) {

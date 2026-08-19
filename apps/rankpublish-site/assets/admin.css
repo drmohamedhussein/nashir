@@ -1627,6 +1627,10 @@ body.rpsite-os-module-wrap .rpsite-module-native {
 	height: auto !important;
 }
 
+body.rpsite-os-module-wrap .rpsite-module-native.rpsite-module-native {
+	overflow: visible !important;
+}
+
 .rpsite-os-module-tabs {
 	display: flex;
 	flex-wrap: wrap;
@@ -1705,9 +1709,10 @@ body.rpsite-os-module-wrap .rpsite-module-native .tr-root,
 body.rpsite-os-module-wrap .rpsite-module-native .thinkrank-admin-page,
 body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body,
 body.rpsite-os-module-wrap .rpsite-module-native .wpsp-admin-page {
-	min-height: 0 !important;
+	min-height: auto !important;
 	height: auto !important;
 	max-height: none !important;
+	overflow: visible !important;
 }
 
 body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div,

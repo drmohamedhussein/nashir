@@ -25,6 +25,34 @@ function copyDir(src, dest) {
   fs.cpSync(src, dest, { recursive: true, filter: (p) => !p.includes("node_modules") });
 }
 
+function verifySyncedPlugin(dest, key) {
+  const mainPhp = path.join(dest, "rankpublish-site.php");
+  const jsPath = path.join(dest, "assets/branding/admin-overrides.js");
+  const cssPath = path.join(dest, "assets/branding/admin-overrides.css");
+  const php = fs.existsSync(mainPhp) ? fs.readFileSync(mainPhp, "utf8") : "";
+  const js = fs.existsSync(jsPath) ? fs.readFileSync(jsPath, "utf8") : "";
+  const css = fs.existsSync(cssPath) ? fs.readFileSync(cssPath, "utf8") : "";
+  const version = (php.match(/define\(\s*'RPSITE_VERSION',\s*'([^']+)'/) || [])[1] || "?";
+
+  const markers = [
+    ["unlockModuleScroll", js.includes("unlockModuleScroll")],
+    ["unlockScrollOnElement", js.includes("unlockScrollOnElement")],
+    ["hideModuleUpsells", js.includes("hideModuleUpsells")],
+    ["scroll unlock CSS", css.includes("document-level scroll")],
+    ["PHP scroll bootstrap", php.includes("RPSITE_VERSION")],
+  ];
+
+  console.log(`\nVerify synced plugin on ${key} (v${version}):`);
+  let failed = 0;
+  for (const [label, pass] of markers) {
+    console.log(`${pass ? "PASS" : "FAIL"}  ${label}`);
+    if (!pass) failed++;
+  }
+  if (failed) {
+    throw new Error(`Sync verification failed on ${key}: ${failed} marker(s) missing`);
+  }
+}
+
 function refreshPluginRuntime(publicPath, key) {
   try {
     const { env, ok } = loadEnvrc(publicPath);
@@ -54,6 +82,7 @@ if (siteArg) {
   const dest = path.join(publicPath, "wp-content/plugins/rankpublish-site");
   console.log("Sync rankpublish-site →", dest);
   copyDir(source, dest);
+  verifySyncedPlugin(dest, key);
   refreshPluginRuntime(publicPath, key);
 } else {
   for (const [key, publicPath] of Object.entries(DEFAULT_SITES)) {
@@ -64,6 +93,7 @@ if (siteArg) {
     const dest = path.join(publicPath, "wp-content/plugins/rankpublish-site");
     console.log("Sync rankpublish-site →", dest);
     copyDir(source, dest);
+    verifySyncedPlugin(dest, key);
     refreshPluginRuntime(publicPath, key);
   }
 }

@@ -401,12 +401,26 @@
 		});
 	}
 
+	function unlockScrollOnElement(el) {
+		if (!el || el.nodeType !== 1) {
+			return;
+		}
+		el.style.setProperty('overflow', 'visible', 'important');
+		el.style.setProperty('overflow-y', 'visible', 'important');
+		el.style.setProperty('overflow-x', 'hidden', 'important');
+		el.style.setProperty('height', 'auto', 'important');
+		el.style.setProperty('max-height', 'none', 'important');
+		el.style.setProperty('min-height', '0', 'important');
+	}
+
 	function unlockModuleScroll(root) {
 		if (!isModuleWrap && !document.body.classList.contains('rpsite-os-module-wrap')) {
 			return;
 		}
 
-		var shell = [
+		document.documentElement.classList.add('rpsite-module-screen');
+
+		[
 			document.documentElement,
 			document.body,
 			document.getElementById('wpwrap'),
@@ -416,32 +430,38 @@
 			document.querySelector('.rpsite-os-main'),
 			document.querySelector('.rpsite-os-body'),
 			document.querySelector('.rpsite-module-native'),
-		];
-
-		shell.forEach(function (el) {
-			if (!el) {
-				return;
+		].forEach(function (el) {
+			if (el) {
+				unlockScrollOnElement(el);
 			}
-			el.style.setProperty('overflow', 'visible', 'important');
-			el.style.setProperty('overflow-y', 'visible', 'important');
-			el.style.setProperty('height', 'auto', 'important');
-			el.style.setProperty('max-height', 'none', 'important');
 		});
 
-		root.querySelectorAll('.tr-root, #wpsp-dashboard-body, .wpsp-admin-page, .tr-root > div, #wpsp-dashboard-body > div').forEach(function (el) {
-			if (shouldSkipHide(el)) {
-				return;
-			}
+		// Must unlock upstream React roots (.tr-root was incorrectly skipped via shouldSkipHide).
+		var scope = root || document;
+		scope.querySelectorAll(
+			'.tr-root, #wpsp-dashboard-body, .wpsp-admin-page, .tr-root > div, #wpsp-dashboard-body > div, .tr-root main, .tr-root [class*="layout"], .tr-root [class*="content"], #wpsp-dashboard-body [class*="layout"]'
+		).forEach(function (el) {
 			var style = window.getComputedStyle(el);
-			if (style.overflow === 'hidden' || style.overflowY === 'hidden' || style.overflow === 'clip') {
-				el.style.setProperty('overflow', 'visible', 'important');
-				el.style.setProperty('overflow-y', 'visible', 'important');
-			}
-			if (/100vh|100%/.test(style.height) || /100vh|100%/.test(style.maxHeight)) {
-				el.style.setProperty('height', 'auto', 'important');
-				el.style.setProperty('max-height', 'none', 'important');
+			if (
+				style.overflow === 'hidden' ||
+				style.overflowY === 'hidden' ||
+				style.overflow === 'clip' ||
+				/100vh|100%/.test(style.height) ||
+				/100vh|100%/.test(style.maxHeight)
+			) {
+				unlockScrollOnElement(el);
 			}
 		});
+	}
+
+	function ensureWindowScroll() {
+		if (!document.body.classList.contains('rpsite-os-module-wrap')) {
+			return;
+		}
+		if (document.documentElement.scrollHeight > window.innerHeight + 8) {
+			return;
+		}
+		unlockModuleScroll(moduleRoot());
 	}
 
 	function injectLicenseBanner() {
@@ -543,7 +563,9 @@
 		window.setTimeout(apply, 2500);
 		window.setInterval(function () {
 			unlockModuleScroll(moduleRoot());
-		}, 1500);
+			ensureWindowScroll();
+		}, 700);
+		window.addEventListener('resize', ensureWindowScroll, { passive: true });
 	} else if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', apply);
 	} else {

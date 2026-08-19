@@ -71,9 +71,15 @@ function check(label, pass, detail = "") {
     const js = fs.existsSync(jsPath) ? fs.readFileSync(jsPath, "utf8") : "";
 
     if (!check(`${key}: rankpublish-site synced`, fs.existsSync(pluginRoot), pluginRoot)) failed++;
+    const version = (fs.existsSync(path.join(pluginRoot, "rankpublish-site.php"))
+      ? fs.readFileSync(path.join(pluginRoot, "rankpublish-site.php"), "utf8")
+      : ""
+    ).match(/define\(\s*'RPSITE_VERSION',\s*'([^']+)'/);
+    if (!check(`${key}: plugin version`, version && version[1], version ? version[1] : "unknown")) failed++;
     if (!check(`${key}: hideModuleUpsells present`, js.includes("hideModuleUpsells"))) failed++;
     if (!check(`${key}: shouldSkipHide present`, js.includes("shouldSkipHide"))) failed++;
     if (!check(`${key}: unlockModuleScroll present`, js.includes("unlockModuleScroll"))) failed++;
+    if (!check(`${key}: unlockScrollOnElement present`, js.includes("unlockScrollOnElement"))) failed++;
 
     const cssPath = path.join(pluginRoot, "assets/branding/admin-overrides.css");
     const css = fs.existsSync(cssPath) ? fs.readFileSync(cssPath, "utf8") : "";
