@@ -7,7 +7,7 @@
  */
 const fs = require("fs");
 const path = require("path");
-const { resolveSite, DEFAULT_SITES } = require("./lib/local-wp.cjs");
+const { resolveSite, DEFAULT_SITES, loadEnvrc, wp } = require("./lib/local-wp.cjs");
 
 const repoRoot = path.resolve(__dirname, "../..");
 const source = path.join(repoRoot, "apps/rankpublish-site");
@@ -25,6 +25,26 @@ function copyDir(src, dest) {
   fs.cpSync(src, dest, { recursive: true, filter: (p) => !p.includes("node_modules") });
 }
 
+function refreshPluginRuntime(publicPath, key) {
+  try {
+    const { env, ok } = loadEnvrc(publicPath);
+    if (!ok) {
+      console.warn(`Skip runtime refresh for ${key}: LocalWP env not ready`);
+      return;
+    }
+    wp(publicPath, ["plugin", "deactivate", "rankpublish-site"], env);
+    wp(publicPath, ["plugin", "activate", "rankpublish-site"], env);
+    try {
+      wp(publicPath, ["cache", "flush"], env);
+    } catch {
+      /* optional */
+    }
+    console.log(`Refreshed rankpublish-site runtime on ${key}`);
+  } catch (error) {
+    console.warn(`Runtime refresh skipped on ${key}: ${error.message || error}`);
+  }
+}
+
 if (siteArg) {
   const { publicPath, key } = resolveSite(siteArg);
   if (!fs.existsSync(publicPath)) {
@@ -34,6 +54,7 @@ if (siteArg) {
   const dest = path.join(publicPath, "wp-content/plugins/rankpublish-site");
   console.log("Sync rankpublish-site →", dest);
   copyDir(source, dest);
+  refreshPluginRuntime(publicPath, key);
 } else {
   for (const [key, publicPath] of Object.entries(DEFAULT_SITES)) {
     if (!fs.existsSync(publicPath)) {
@@ -43,6 +64,7 @@ if (siteArg) {
     const dest = path.join(publicPath, "wp-content/plugins/rankpublish-site");
     console.log("Sync rankpublish-site →", dest);
     copyDir(source, dest);
+    refreshPluginRuntime(publicPath, key);
   }
 }
 
