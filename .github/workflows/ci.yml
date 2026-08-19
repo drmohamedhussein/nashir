@@ -32,4 +32,9 @@ jobs:
             echo "Refusing SQL that drops wp_* tables"
             exit 1
           fi
+      - run: npm run lint
       - run: npm test
+      - name: Next.js build
+        env:
+          DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ci
+        run: npx next build
