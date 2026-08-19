@@ -9,10 +9,25 @@ const WP_BAT = path.join(
   "C:/Program Files (x86)/Local/resources/extraResources/bin/wp-cli/win32",
   "wp.bat"
 );
-const WP_PHAR = path.join(
-  "C:/Program Files (x86)/Local/resources/extraResources/bin/wp-cli",
-  "wp-cli.phar"
-);
+const WP_PHAR = resolveWpPharPath();
+
+function resolveWpPharPath() {
+  const candidates = [
+    path.join(
+      process.env["ProgramFiles(x86)"] || "C:/Program Files (x86)",
+      "Local/resources/extraResources/bin/wp-cli/wp-cli.phar"
+    ),
+    path.join(
+      process.env.LOCALAPPDATA || "",
+      "Programs/Local/resources/extraResources/bin/wp-cli/wp-cli.phar"
+    ),
+    path.join(
+      process.env.ProgramFiles || "C:/Program Files",
+      "Local/resources/extraResources/bin/wp-cli/wp-cli.phar"
+    ),
+  ];
+  return candidates.find((candidate) => fs.existsSync(candidate)) || candidates[0];
+}
 
 const DEFAULT_SITES = {
   rankpublish: "C:/Users/drmoh/Local Sites/rankpublish/app/public",
@@ -90,6 +105,26 @@ function listLocalPhpCandidates(publicPath, env) {
   const candidates = [];
   const parts = (env.PATH || "").split(path.delimiter).filter(Boolean);
   candidates.push(...parts);
+
+  const siteRoot = siteRootFromPublic(publicPath);
+  for (const jsonName of ["site.json", "local-site.json", path.join("conf", "site.json")]) {
+    const jsonPath = path.join(siteRoot, jsonName);
+    if (!fs.existsSync(jsonPath)) continue;
+    try {
+      const data = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+      const phpVersion = data.phpVersion || data.php_version || data?.services?.php?.version;
+      if (phpVersion) {
+        candidates.push(
+          path.join(
+            process.env.LOCALAPPDATA || "",
+            "Programs/Local/lightning-services/php-" + phpVersion + "/bin/win64"
+          )
+        );
+      }
+    } catch {
+      /* ignore malformed site json */
+    }
+  }
 
   if (env.PHPRC) {
     let cursor = path.dirname(env.PHPRC);
@@ -187,31 +222,26 @@ function stripWpOutput(output) {
 
 function wp(publicPath, args, env, capture = false) {
   const phpExe = env.WP_CLI_PHP || resolvePhpExe(env, publicPath);
-  if (!phpExe) {
+  if (!phpExe || !fs.existsSync(phpExe)) {
     throw new Error(
-      "PHP not found for LocalWP. Start the site in Local (Running), then retry from repo root."
+      "PHP not found for LocalWP. Start the site in Local (Running), then run: node deploy/local/doctor.cjs --site <name>"
     );
   }
   if (!fs.existsSync(WP_PHAR)) {
     throw new Error(`WP-CLI phar not found: ${WP_PHAR}`);
   }
 
-  const quoted = (s) => (/\s/.test(s) ? `"${s}"` : s);
-  const command = [
-    quoted(phpExe),
-    quoted(WP_PHAR),
-    ...args.map(quoted),
-    quoted(`--path=${publicPath}`),
-  ].join(" ");
-
   const runEnv = { ...env, WP_CLI_PHP: phpExe };
-  const r = spawnSync(command, {
+  const wpArgs = [WP_PHAR, ...args, `--path=${publicPath}`];
+  const r = spawnSync(phpExe, wpArgs, {
     encoding: "utf8",
     windowsHide: true,
-    shell: true,
     env: runEnv,
     stdio: capture ? "pipe" : "inherit",
   });
+  if (r.error) {
+    throw r.error;
+  }
   if (r.status) {
     const err = (r.stderr || r.stdout || "").trim();
     throw new Error(err || `wp ${args.join(" ")} failed (${r.status})`);
@@ -277,6 +307,7 @@ module.exports = {
   ALWAYS_OFF,
   loadEnvrc,
   resolvePhpExe,
+  resolveWpPharPath,
   wp,
   pluginInstalled,
   resolveSite,

@@ -61,21 +61,26 @@ function check(label, pass, detail = "") {
     if (!check(`${key}: shouldSkipHide present`, js.includes("shouldSkipHide"))) failed++;
 
     const host = key === "rankpublish-test" ? "rankpublish-test.local" : "rankpublish.local";
-    const thinkrankUrl = `https://${host}/wp-admin/admin.php?page=thinkrank`;
+    const pages = [
+      ["thinkrank", `https://${host}/wp-admin/admin.php?page=thinkrank`],
+      ["schedulepress", `https://${host}/wp-admin/admin.php?page=schedulepress&rpsite_os=1&rpsite_ctx=scheduler`],
+    ];
     const assetUrl = `https://${host}/wp-content/plugins/rankpublish-site/assets/branding/admin-overrides.js`;
 
     const asset = await request(assetUrl);
     if (!check(`${key}: branding asset HTTP`, asset.status === 200, `HTTP ${asset.status || asset.error}`)) failed++;
 
-    const page = await request(thinkrankUrl);
-    if (
-      !check(
-        `${key}: thinkrank admin reachable`,
-        page.status === 200 || page.status === 302,
-        page.status ? `HTTP ${page.status}` : page.error
-      )
-    ) {
-      failed++;
+    for (const [label, thinkrankUrl] of pages) {
+      const page = await request(thinkrankUrl);
+      if (
+        !check(
+          `${key}: ${label} admin reachable`,
+          page.status === 200 || page.status === 302,
+          page.status ? `HTTP ${page.status}` : page.error
+        )
+      ) {
+        failed++;
+      }
     }
   }
 

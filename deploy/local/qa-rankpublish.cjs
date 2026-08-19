@@ -28,10 +28,12 @@ function stripWpOutput(output) {
 
 const siteArg = process.argv.find((a, i) => process.argv[i - 1] === "--site");
 const { key, publicPath } = resolveSite(siteArg || "rankpublish-test");
-const { env, ok } = loadEnvrc(publicPath);
+const { env, ok, phpExe, envrcPath } = loadEnvrc(publicPath);
 
-if (!ok) {
-  console.error("Start the Local site once so .envrc exists.");
+if (!ok || !phpExe) {
+  console.error("LocalWP PHP not ready.");
+  console.error("envrc:", envrcPath);
+  console.error("Run: node deploy/local/doctor.cjs --site " + key);
   process.exit(1);
 }
 
