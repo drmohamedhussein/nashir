@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { BrandMark } from "@/components/rankpublish/brand-mark";
 import { t, type Locale } from "@/lib/i18n";
+import { localizeApiError } from "@/lib/localize-api-error";
 
 type Props = {
   mode: "login" | "register";
@@ -41,21 +42,13 @@ export function AuthForm({ mode, locale }: Props) {
     setPending(false);
 
     if (!response.ok) {
-      setError(
-        data.error ??
-          (response.status === 503
-            ? locale === "ar"
-              ? "الخادم لا يتصل بقاعدة البيانات. راجع إعدادات DATABASE_URL."
-              : "Server cannot reach the database. Check DATABASE_URL."
-            : locale === "ar"
-              ? "تعذر إتمام العملية."
-              : "Could not complete that."),
-      );
+      const fallback =
+        response.status === 503 ? copy.errorDatabase : copy.errorGeneric;
+      setError(localizeApiError(data.error ?? fallback, locale));
       return;
     }
 
-    router.push(isRegister ? "/app/getting-started" : "/app");
-    router.refresh();
+    window.location.assign(isRegister ? "/app/getting-started" : "/app");
   }
 
   return (

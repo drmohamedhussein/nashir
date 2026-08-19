@@ -7,7 +7,15 @@ body.rankpublish-site-branded-admin .wpsp-admin-header img,
 body.rankpublish-site-branded-admin .wpsp-modal--header--left svg,
 body.rankpublish-site-branded-admin .wpsp-modal--header--left img,
 body.rankpublish-site-branded-admin img[src*="wpsp-logo"],
-body.rankpublish-site-branded-admin img[src*="schedulepress"] {
+body.rankpublish-site-branded-admin img[src*="schedulepress"],
+body.rpsite-os-module-wrap .wpsp-admin-header svg,
+body.rpsite-os-module-wrap .wpsp-admin-header img,
+body.rpsite-os-module-wrap .wpsp-modal--header--left svg,
+body.rpsite-os-module-wrap .wpsp-modal--header--left img,
+body.rpsite-os-module-wrap img[src*="wpsp-logo"],
+body.rpsite-os-module-wrap img[src*="schedulepress"],
+body.rpsite-os-module-wrap img[src*="thinkrank-logo"],
+body.rpsite-os-module-wrap img[src*="thinkrank-icon"] {
 	opacity: 0 !important;
 	width: 0 !important;
 	height: 0 !important;
@@ -17,13 +25,23 @@ body.rankpublish-site-branded-admin img[src*="schedulepress"] {
 }
 
 body.rankpublish-site-branded-admin .wpsp-admin-header,
-body.rankpublish-site-branded-admin .wpsp-modal--header--left {
+body.rankpublish-site-branded-admin .wpsp-modal--header--left,
+body.rpsite-os-module-wrap .wpsp-admin-header,
+body.rpsite-os-module-wrap .wpsp-modal--header--left {
 	position: relative;
 	min-height: 48px;
 }
 
+body.rpsite-os-module-wrap .wpsp-admin-header,
+body.rpsite-os-module-wrap .wpsp-modal--header--left {
+	color: transparent;
+	font-size: 0;
+}
+
 body.rankpublish-site-branded-admin .wpsp-admin-header::before,
-body.rankpublish-site-branded-admin .wpsp-modal--header--left::before {
+body.rankpublish-site-branded-admin .wpsp-modal--header--left::before,
+body.rpsite-os-module-wrap .wpsp-admin-header::before,
+body.rpsite-os-module-wrap .wpsp-modal--header--left::before {
 	content: "RankPublish";
 	position: absolute;
 	left: 20px;
@@ -33,7 +51,7 @@ body.rankpublish-site-branded-admin .wpsp-modal--header--left::before {
 	font-weight: 650;
 	color: #1b3a4b;
 	letter-spacing: -0.02em;
-	background: url("logo.svg") no-repeat left center;
+	background: url("logo.png") no-repeat left center;
 	background-size: 28px 28px;
 	padding-left: 36px;
 	line-height: 28px;
@@ -42,7 +60,11 @@ body.rankpublish-site-branded-admin .wpsp-modal--header--left::before {
 }
 
 body.rankpublish-site-branded-admin .tr-root aside a svg:first-of-type,
-body.rankpublish-site-branded-admin .tr-root nav a svg:first-of-type {
+body.rankpublish-site-branded-admin .tr-root nav a svg:first-of-type,
+body.rpsite-os-module-wrap .tr-root aside a svg:first-of-type,
+body.rpsite-os-module-wrap .tr-root nav a svg:first-of-type,
+body.rpsite-os-module-wrap .tr-root header svg,
+body.rpsite-os-module-wrap .tr-root [class*="logo"] svg {
 	opacity: 0 !important;
 	width: 0 !important;
 	height: 0 !important;
@@ -50,14 +72,22 @@ body.rankpublish-site-branded-admin .tr-root nav a svg:first-of-type {
 }
 
 body.rankpublish-site-branded-admin .tr-root aside a:has(svg),
-body.rankpublish-site-branded-admin .tr-root nav a:has(svg) {
+body.rankpublish-site-branded-admin .tr-root nav a:has(svg),
+body.rpsite-os-module-wrap .tr-root aside a:has(svg),
+body.rpsite-os-module-wrap .tr-root nav a:has(svg),
+body.rpsite-os-module-wrap .tr-root header a:has(svg),
+body.rpsite-os-module-wrap .tr-root [class*="logo"]:has(svg) {
 	position: relative;
 	min-width: 32px;
 	min-height: 32px;
 }
 
 body.rankpublish-site-branded-admin .tr-root aside a:has(svg)::before,
-body.rankpublish-site-branded-admin .tr-root nav a:has(svg)::before {
+body.rankpublish-site-branded-admin .tr-root nav a:has(svg)::before,
+body.rpsite-os-module-wrap .tr-root aside a:has(svg)::before,
+body.rpsite-os-module-wrap .tr-root nav a:has(svg)::before,
+body.rpsite-os-module-wrap .tr-root header a:has(svg)::before,
+body.rpsite-os-module-wrap .tr-root [class*="logo"]:has(svg)::before {
 	content: "";
 	position: absolute;
 	left: 0;
@@ -65,7 +95,7 @@ body.rankpublish-site-branded-admin .tr-root nav a:has(svg)::before {
 	transform: translateY(-50%);
 	width: 28px;
 	height: 28px;
-	background: url("logo.svg") no-repeat center;
+	background: url("logo.png") no-repeat center;
 	background-size: contain;
 }
 
@@ -88,13 +118,42 @@ body.rankpublish-site-branded-admin .tr-root nav a:has(svg)::before {
 }
 
 body.rankpublish-site-branded-admin iframe[src*="youtube.com"],
-body.rankpublish-site-branded-admin iframe[src*="youtu.be"] {
+body.rankpublish-site-branded-admin iframe[src*="youtu.be"],
+body.rpsite-os-module-wrap iframe[src*="youtube.com"],
+body.rpsite-os-module-wrap iframe[src*="youtu.be"] {
 	display: none !important;
+}
+
+/* Native OS wrap: upstream side nav is replaced by Core tabs + sidebar */
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root aside {
+	display: none !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div:first-child {
+	margin-left: 0 !important;
+	padding-left: 0 !important;
 }
 
 #the-list a[href*="wpdeveloper.com"],
 #the-list a[href*="schedulepress.com"],
 #the-list a[href*="thinkrank.ai"] {
+	display: none !important;
+}
+
+/* Hide ThinkRank branding logos in the React app header (top-right) */
+body.rankpublish-site-branded-admin .tr-root a[href*="thinkrank.ai"],
+body.rpsite-os-module-wrap .tr-root a[href*="thinkrank.ai"],
+body.rankpublish-site-branded-admin .tr-root a[href*="cal.com"],
+body.rpsite-os-module-wrap .tr-root a[href*="cal.com"],
+body.rankpublish-site-branded-admin .tr-root [class*="version"],
+body.rpsite-os-module-wrap .tr-root [class*="version"] {
+	display: none !important;
+}
+
+body.rankpublish-site-branded-admin .tr-root header svg[width="29"],
+body.rpsite-os-module-wrap .tr-root header svg[width="29"],
+body.rankpublish-site-branded-admin .tr-root header svg[viewBox*="29"],
+body.rpsite-os-module-wrap .tr-root header svg[viewBox*="29"] {
 	display: none !important;
 }
 
@@ -113,4 +172,26 @@ body.rankpublish-site-branded-admin iframe[src*="youtu.be"] {
 
 .rankpublish-license-banner .button {
 	margin: 8px 8px 0 0;
+}
+
+/* ThinkRank screen white-label fallbacks (without relying on body classes) */
+html.rpsite-thinkrank-screen .tr-root a[href*="cal.com"],
+html.rpsite-thinkrank-screen .tr-root a[href*="calendly.com"],
+html.rpsite-thinkrank-screen .tr-root a[href*="thinkrank.ai"],
+html.rpsite-thinkrank-screen .tr-root [class*="version"] {
+	display: none !important;
+}
+
+/* OS wrap: CSS-only upsell chrome (keeps React scroll intact) */
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root a[href*="cal.com"],
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root a[href*="calendly.com"],
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root [class*="version"],
+body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body a[href*="wpdeveloper.com"],
+body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body a[href*="schedulepress.com"] {
+	display: none !important;
+}
+
+html.rpsite-schedulepress-screen .rpsite-module-native a[href*="wpdeveloper.com"],
+html.rpsite-schedulepress-screen .rpsite-module-native a[href*="schedulepress.com"] {
+	display: none !important;
 }

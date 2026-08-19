@@ -15,10 +15,9 @@ Local `npm run dev` on `:3000` is for developers editing code only — not the u
 
 ## Setup (developers only)
 
-1. Start Postgres: `docker compose -f deploy/local/docker-compose.yml up -d`
-2. Copy `apps/web/.env.example` to `apps/web/.env`
-3. Set `DATABASE_URL=...` and `APP_URL=https://nashir.satest.top`
-4. `cd apps/web && npm install && npx prisma db push && npm run dev`
+1. Copy `apps/web/.env.example` to `apps/web/.env`
+2. Set `DATABASE_URL` to LocalWP MySQL (or the shared WordPress DB on staging)
+3. `cd apps/web && npm install && npx prisma generate && node ../../deploy/contabo/run-staging-schema-safe.cjs . && npm run dev`
 
 WordPress customer test site: `rankpublish-test.local` with RankPublish plugin 0.9+.
 
@@ -39,6 +38,31 @@ node deploy/local/switch-product-mode.cjs product --site rankpublish-test --sync
 node deploy/local/switch-product-mode.cjs status --site rankpublish-test
 ```
 
+If PowerShell blocks `.ps1` scripts (`UnauthorizedAccess`), use the CMD wrapper from repo root.
+In PowerShell you **must** prefix with `.\` (otherwise PowerShell treats `deploy` as a module name):
+
+```powershell
+.\rp-local.cmd sync --site rankpublish-test
+.\rp-local.cmd qa --site rankpublish-test
+```
+
+Or from CMD:
+
+```cmd
+rp-local.cmd sync --site rankpublish-test
+rp-local.cmd qa --site rankpublish-test
+```
+
+Direct Node (works everywhere):
+
+```powershell
+node deploy/local/sync-rankpublish-site.cjs --site rankpublish-test
+node deploy/local/verify-thinkrank-local.cjs --site rankpublish-test
+node deploy/local/qa-rankpublish.cjs --site rankpublish-test
+```
+
+`verify-thinkrank-local.cjs` does not require PHP/WP-CLI (use it when QA fails with `'php' is not recognized`).
+
 ### First-time test site setup
 
 1. Create site in Local (e.g. `rankpublish-test.local`).
@@ -48,10 +72,16 @@ node deploy/local/switch-product-mode.cjs status --site rankpublish-test
 ### QA checklist (automated)
 
 ```powershell
+# Product-only site (rankpublish-test.local)
 node deploy/local/qa-rankpublish.cjs --site rankpublish-test
+
+# Dev stack site (rankpublish.local — upstream + rankpublish-site)
+node deploy/local/qa-rankpublish.cjs --site rankpublish
 ```
 
-Report: `deploy/local/reports/qa-rankpublish-test-YYYY-MM-DD.json`
+Reports: `deploy/local/reports/qa-<site>-YYYY-MM-DD.json`
+
+The QA script auto-detects **product** vs **dev** mode and runs the matching checklist. Dev mode validates `rankpublish-site` + upstream ThinkRank/SchedulePress; product mode validates the unified `rankpublish` plugin.
 
 ### Connector tests
 

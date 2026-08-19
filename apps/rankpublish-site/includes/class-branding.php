@@ -90,15 +90,15 @@ final class RankPublish_Site_Branding {
 			return $url;
 		}
 
-		if ( ! preg_match( '#/(wpsp-logo(?:-full)?|wpsp-icon|wpps-icon|wpsp-dark|wpsp-el-editor-modal-logo|wpsp)\.(svg|png)$#i', $path ) ) {
-			return $url;
+		if ( preg_match( '#/(wpsp-logo(?:-full)?|wpsp-icon|wpps-icon|wpsp-dark|wpsp-el-editor-modal-logo|wpsp|thinkrank-logo|thinkrank-icon|rankpublish-menu|tr-logo)\.(svg|png)$#i', $path ) ) {
+			if ( str_contains( $path, 'logo-full' ) || str_contains( $path, 'full' ) ) {
+				return self::url( 'logo-full.png' );
+			}
+
+			return self::url( 'logo-menu.png' );
 		}
 
-		if ( str_contains( $path, 'logo-full' ) ) {
-			return self::url( 'logo-full.svg' );
-		}
-
-		return self::url( 'logo-icon.svg' );
+		return $url;
 	}
 
 	/**
@@ -129,14 +129,18 @@ final class RankPublish_Site_Branding {
 	public function rename_upstream_menus(): void {
 		global $menu, $submenu;
 
+		$icon_url = self::url( 'logo-menu.png' );
+
 		if ( is_array( $menu ) ) {
 			foreach ( $menu as $index => $item ) {
 				$slug = isset( $item[2] ) ? (string) $item[2] : '';
 				if ( 'thinkrank' === $slug ) {
 					$menu[ $index ][0] = __( 'RankPublish SEO', 'rankpublish-site' );
+					$menu[ $index ][6] = $icon_url;
 				}
 				if ( 'schedulepress' === $slug ) {
 					$menu[ $index ][0] = __( 'RankPublish Scheduler', 'rankpublish-site' );
+					$menu[ $index ][6] = $icon_url;
 				}
 			}
 		}
@@ -306,24 +310,32 @@ final class RankPublish_Site_Branding {
 	public function enqueue_admin_assets( string $hook_suffix ): void {
 		unset( $hook_suffix );
 
-		$icon  = esc_url( self::url( 'logo-menu.svg' ) );
+		$icon  = esc_url( self::url( 'logo-menu.png' ) );
 		$cloud = rpsite_cloud_url();
 		$css   = '
 			#adminmenu .toplevel_page_schedulepress .wp-menu-image,
 			#adminmenu .toplevel_page_thinkrank .wp-menu-image,
-			#adminmenu .toplevel_page_rankpublish .wp-menu-image {
+			#adminmenu .toplevel_page_rankpublish .wp-menu-image,
+			#adminmenu .toplevel_page_rankpublish-core .wp-menu-image {
 				background-image: url("' . $icon . '") !important;
 				background-size: 20px 20px !important;
 				background-repeat: no-repeat !important;
-				background-position: center 8px !important;
+				background-position: center 6px !important;
 			}
 			#adminmenu .toplevel_page_schedulepress .wp-menu-image img,
 			#adminmenu .toplevel_page_thinkrank .wp-menu-image img,
 			#adminmenu .toplevel_page_rankpublish .wp-menu-image img,
+			#adminmenu .toplevel_page_rankpublish-core .wp-menu-image img,
 			#adminmenu .toplevel_page_schedulepress .wp-menu-image::before,
 			#adminmenu .toplevel_page_thinkrank .wp-menu-image::before,
-			#adminmenu .toplevel_page_rankpublish .wp-menu-image::before {
-				opacity: 0 !important;
+			#adminmenu .toplevel_page_rankpublish .wp-menu-image::before,
+			#adminmenu .toplevel_page_rankpublish-core .wp-menu-image::before {
+				display: none !important;
+				width: 0 !important;
+				height: 0 !important;
+				padding: 0 !important;
+				margin: 0 !important;
+				overflow: hidden !important;
 			}
 		';
 
@@ -348,12 +360,13 @@ final class RankPublish_Site_Branding {
 			'rankpublish-site-admin-overrides',
 			'rankpublishSiteBrand',
 			array(
-				'logoUrl'     => self::url( 'logo.svg' ),
-				'logoFullUrl' => self::url( 'logo-full.svg' ),
-				'name'        => 'RankPublish',
-				'cloudUrl'    => $cloud,
-				'plansUrl'    => $cloud . '/register',
-				'guideUrl'    => $cloud . '/guide/',
+				'logoUrl'      => self::url( 'logo.png' ),
+				'logoFullUrl'  => self::url( 'logo-full.png' ),
+				'name'         => 'RankPublish',
+				'cloudUrl'     => $cloud,
+				'plansUrl'     => $cloud . '/register',
+				'guideUrl'     => $cloud . '/guide/',
+				'isModuleWrap' => class_exists( 'RankPublish_Site_Module_Embed', false ) && RankPublish_Site_Module_Embed::is_os_wrapped_request(),
 			)
 		);
 	}

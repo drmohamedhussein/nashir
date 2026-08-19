@@ -11,6 +11,8 @@
 	var plansUrl = cfg.plansUrl || (cfg.cloudUrl || '') + '/register';
 	var guideUrl = cfg.guideUrl || (cfg.cloudUrl || '') + '/guide/';
 	var cloudUrl = cfg.cloudUrl || 'https://nashir.satest.top';
+	var isModuleWrap = !!cfg.isModuleWrap;
+	var PROTECTED_ROOT_SELECTORS = ['.tr-root', '#wpsp-dashboard-body', 'body', '#wpwrap', '#wpbody-content'];
 
 	var UPSTREAM_RE = /schedulepress|thinkrank|wpdeveloper|wpsp-logo|wp-scheduled/i;
 	var VENDOR_HREF = /wpdeveloper\.com|schedulepress\.com|thinkrank\.ai|calendly\.com/i;
@@ -25,11 +27,35 @@
 	];
 
 	function isAdminTarget() {
-		return document.body.classList.contains('rankpublish-site-branded');
+		if (isUpstreamModuleScreen()) {
+			return true;
+		}
+		return (
+			document.body.classList.contains('rankpublish-site-branded') ||
+			document.body.classList.contains('rpsite-os-module-wrap')
+		);
+	}
+
+	function isUpstreamModuleScreen() {
+		var href = window.location.href || '';
+		return /[?&]page=(thinkrank|schedulepress|schedulepress-calendar)(?:&|$)/.test(href);
+	}
+
+	function isThinkRankSettingsScreen() {
+		var href = window.location.href || '';
+		return /[?&]page=thinkrank(?:&|$)/.test(href);
+	}
+
+	function isSchedulePressScreen() {
+		var href = window.location.href || '';
+		return /[?&]page=schedulepress(?:&|$)/.test(href) || /[?&]page=schedulepress-calendar(?:&|$)/.test(href);
 	}
 
 	function isLicenseScreen() {
 		var href = window.location.href;
+		if (isModuleWrap) {
+			return /page=thinkrank-license(?:&|$)/.test(href);
+		}
 		return /page=(thinkrank-license|schedulepress-calendar|schedulepress)(&|$)/.test(href);
 	}
 
@@ -66,6 +92,101 @@
 		parent.insertBefore(img, parent.firstChild);
 	}
 
+	function moduleRoot() {
+		return document.querySelector('.rpsite-module-native') || document;
+	}
+
+	function isProtectedRoot(el) {
+		if (!el || el.nodeType !== 1) {
+			return false;
+		}
+		for (var i = 0; i < PROTECTED_ROOT_SELECTORS.length; i++) {
+			if (el.matches(PROTECTED_ROOT_SELECTORS[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function shouldSkipHide(el) {
+		if (!el || el.nodeType !== 1) {
+			return true;
+		}
+		if (isProtectedRoot(el)) {
+			return true;
+		}
+		if (el.querySelector && (el.querySelector('.tr-root') || el.querySelector('#wpsp-dashboard-body'))) {
+			return true;
+		}
+		if (el.childElementCount > 30) {
+			return true;
+		}
+		if (((el.textContent || '').length || 0) > 1500) {
+			return true;
+		}
+		if (
+			(el.closest('.tr-root') || el.closest('#wpsp-dashboard-body')) &&
+			(el.closest('.tr-root') === el ||
+				el.closest('#wpsp-dashboard-body') === el ||
+				el.matches('.tr-root, #wpsp-dashboard-body, body, #wpwrap, #wpbody-content'))
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	function hideElement(el) {
+		if (shouldSkipHide(el)) {
+			return;
+		}
+		el.style.setProperty('display', 'none', 'important');
+	}
+
+	function textOf(el) {
+		return ((el && el.textContent) || '').replace(/\s+/g, ' ').trim();
+	}
+
+	function findClosestHideable(el) {
+		if (!el || el.nodeType !== 1) {
+			return null;
+		}
+		var candidate =
+			el.closest(
+				'[class*="card"], [class*="Card"], [class*="widget"], [class*="panel"], [class*="license"], [class*="License"], [class*="status"], [class*="badge"], [class*="chip"], section, article, aside, li, a, button'
+			) ||
+			el.parentElement;
+		if (!candidate || shouldSkipHide(candidate)) {
+			return null;
+		}
+		return candidate;
+	}
+
+	function hideByTextInScope(scope, selector, pattern) {
+		scope.querySelectorAll(selector).forEach(function (el) {
+			var text = textOf(el);
+			if (!text || !pattern.test(text)) {
+				return;
+			}
+			var target = findClosestHideable(el);
+			if (target) {
+				hideElement(target);
+				return;
+			}
+			if (el.matches('a, button, span, strong, small')) {
+				hideElement(el);
+			}
+		});
+	}
+
+	function hideUpstreamSidebars(root) {
+		if (!isModuleWrap) {
+			return;
+		}
+		root.querySelectorAll('.tr-root aside').forEach(function (aside) {
+			aside.style.setProperty('display', 'none', 'important');
+		});
+	}
+
 	function replaceHeaderLogos(root) {
 		if (!logo) {
 			return;
@@ -78,13 +199,25 @@
 			injectImg(header, logo, 28, 28);
 		});
 
-		root.querySelectorAll('.tr-root aside a, .tr-root nav a').forEach(function (link) {
+		root.querySelectorAll('.tr-root aside a, .tr-root nav a, .tr-root header a, .tr-root [class*="logo"], .tr-root [class*="Logo"]').forEach(function (link) {
 			var svg = link.querySelector('svg');
-			if (!svg || !isUpstreamSvg(svg)) {
+			var img = link.querySelector('img');
+			if (img && UPSTREAM_RE.test(img.getAttribute('src') || '')) {
+				img.src = logo;
+				img.alt = name;
 				return;
 			}
-			svg.style.setProperty('display', 'none', 'important');
-			injectImg(link, logo, 32, 32);
+			if (svg && (isModuleWrap || isUpstreamSvg(svg))) {
+				svg.style.setProperty('display', 'none', 'important');
+				injectImg(link, logo, 32, 32);
+			}
+		});
+
+		root.querySelectorAll('.tr-root h1, .tr-root h2, .tr-root [class*="brand"], .tr-root [class*="logo"], .tr-root [class*="Logo"]').forEach(function (node) {
+			if (!UPSTREAM_RE.test(node.textContent || '')) {
+				return;
+			}
+			walkText(node);
 		});
 	}
 
@@ -159,14 +292,14 @@
 
 	function hideVendorExtras(root) {
 		root.querySelectorAll('iframe[src*="youtube"], iframe[src*="youtu.be"]').forEach(function (frame) {
-			var wrap = frame.closest('.wprf-video, .wpsp-video, div, aside, section, article') || frame;
-			wrap.style.setProperty('display', 'none', 'important');
+			var wrap = frame.closest('.wprf-video, .wpsp-video, aside, section, article, li') || frame;
+			hideElement(wrap);
 		});
 
 		root.querySelectorAll('a[href*="youtube.com"], a[href*="youtu.be"]').forEach(function (a) {
 			if (/WPDeveloper|SchedulePress|ThinkRank|WP Scheduled/i.test(a.textContent || a.getAttribute('title') || '')) {
-				var wrap = a.closest('div, aside, section, article') || a;
-				wrap.style.setProperty('display', 'none', 'important');
+				var wrap = a.closest('.wpsp-sidebar-widget, .sidebar-widget, aside, section, article, li') || a;
+				hideElement(wrap);
 			}
 		});
 	}
@@ -178,8 +311,78 @@
 				return;
 			}
 			var card = h.closest('.wpsp-sidebar-widget, .sidebar-widget, aside, section, article, li, .wprf-control') || h.parentElement;
-			if (card) {
-				card.style.setProperty('display', 'none', 'important');
+			hideElement(card);
+		});
+	}
+
+	function hideModuleUpsells(root) {
+		if (!isUpstreamModuleScreen()) {
+			return;
+		}
+		document.documentElement.classList.add('rpsite-module-screen');
+		if (isThinkRankSettingsScreen()) {
+			document.documentElement.classList.add('rpsite-thinkrank-screen');
+		}
+		if (isSchedulePressScreen()) {
+			document.documentElement.classList.add('rpsite-schedulepress-screen');
+		}
+
+		if (isModuleWrap) {
+			hideModuleUpsellsSafe(root);
+			return;
+		}
+
+		root.querySelectorAll('a[href*="cal.com"], a[href*="calendly.com"]').forEach(function (el) {
+			hideElement(findClosestHideable(el) || el);
+		});
+
+		var appRoot = root.querySelector('.tr-root') || root.querySelector('#wpsp-dashboard-body') || root;
+		var headerScope =
+			appRoot.querySelector('header') || appRoot.querySelector('.wpsp-admin-header') || appRoot;
+		var bodyScope = appRoot;
+
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^pro$/i);
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^go pro$/i);
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^book a free call$/i);
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^search settings$/i);
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^v\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/i);
+
+		hideByTextInScope(
+			bodyScope,
+			'h1, h2, h3, h4, p, strong, span, a, button',
+			/activate your (?:thinkrank|schedulepress|wp scheduled posts) pro license/i
+		);
+		hideByTextInScope(bodyScope, 'a, button, span, p', /^activate license$/i);
+		hideByTextInScope(bodyScope, 'span, p, strong, div[class*="status"]', /^not activated$/i);
+		hideByTextInScope(bodyScope, 'h2, h3, h4, strong, span, p', /^follow us$/i);
+	}
+
+	function hideModuleUpsellsSafe(root) {
+		root.querySelectorAll('a[href*="cal.com"], a[href*="calendly.com"], a[href*="wpdeveloper.com"], a[href*="schedulepress.com"]').forEach(function (el) {
+			hideElement(el);
+		});
+
+		root.querySelectorAll('a, button, span, strong, small, em, h2, h3, h4').forEach(function (el) {
+			if (el.childElementCount > 2) {
+				return;
+			}
+			var text = textOf(el);
+			if (!text) {
+				return;
+			}
+			if (/^(pro|go pro|book a free call|search settings|activate license|not activated|follow us)$/i.test(text)) {
+				hideElement(el);
+				return;
+			}
+			if (/^v\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/i.test(text)) {
+				hideElement(el);
+				return;
+			}
+			if (/activate your (?:thinkrank|schedulepress|wp scheduled posts) pro license/i.test(text)) {
+				var card = el.closest('[class*="card"], [class*="Card"], [class*="license"], [class*="License"], section, article, aside, .wpsp-sidebar-widget');
+				if (card && card.childElementCount < 20) {
+					hideElement(card);
+				}
 			}
 		});
 	}
@@ -229,19 +432,38 @@
 		});
 	}
 
+	function rebrandModuleCopy(root) {
+		if (!isModuleWrap) {
+			return;
+		}
+		root.querySelectorAll('h1, h2, h3, h4, p, span, a, button, label, li, strong, em, div').forEach(function (el) {
+			if (el.childElementCount > 6) {
+				return;
+			}
+			if (!UPSTREAM_RE.test(el.textContent || '')) {
+				return;
+			}
+			walkText(el);
+		});
+	}
+
 	function apply() {
 		if (!isAdminTarget()) {
 			return;
 		}
 		document.body.classList.add('rankpublish-site-branded-admin');
-		swapImageSources(document);
-		replaceHeaderLogos(document);
-		rewriteVendorLinks(document);
-		rewriteNoticeCopy(document);
-		hideVendorExtras(document);
-		hideVendorCards(document);
+		var root = moduleRoot();
+		swapImageSources(root);
+		replaceHeaderLogos(root);
+		hideUpstreamSidebars(root);
+		rewriteVendorLinks(root);
+		rewriteNoticeCopy(root);
+		hideVendorExtras(root);
+		hideVendorCards(root);
+		hideModuleUpsells(root);
+		rebrandModuleCopy(root);
 		injectLicenseBanner();
-		rebrandLicenseHeadings(document);
+		rebrandLicenseHeadings(root);
 	}
 
 	var timer = null;
@@ -249,17 +471,30 @@
 		if (timer) {
 			window.clearTimeout(timer);
 		}
-		timer = window.setTimeout(apply, 40);
+		timer = window.setTimeout(apply, isModuleWrap ? 16 : 40);
 	}
 
-	if (document.readyState === 'loading') {
+	if (isModuleWrap) {
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', apply);
+		} else {
+			apply();
+		}
+		window.setTimeout(apply, 250);
+		window.setTimeout(apply, 1000);
+	} else if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', apply);
 	} else {
 		apply();
 	}
 
-	if (window.MutationObserver) {
+	if (window.MutationObserver && !isModuleWrap) {
 		new MutationObserver(schedule).observe(document.documentElement, {
+			childList: true,
+			subtree: true,
+		});
+	} else if (window.MutationObserver && isModuleWrap) {
+		new MutationObserver(schedule).observe(document.querySelector('.rpsite-module-native') || document.documentElement, {
 			childList: true,
 			subtree: true,
 		});

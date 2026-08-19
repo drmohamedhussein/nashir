@@ -115,6 +115,14 @@ p { margin: 0 0 1em; }
   flex: 0 0 auto;
   white-space: nowrap;
 }
+.brand img,
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.22);
+}
 .brand img { width: 36px; height: 36px; }
 .brand small {
   margin-inline-start: 6px;
@@ -144,6 +152,27 @@ p { margin: 0 0 1em; }
   border-radius: 999px;
   padding: 4px 10px;
   font-size: 12px;
+}
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+.lang-switch .lang {
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+}
+.lang-switch .lang.is-active {
+  font-weight: 700;
+  color: var(--brand);
+}
+.lang-switch .lang-sep {
+  opacity: 0.35;
 }
 
 .hero-shell {
@@ -775,7 +804,8 @@ p { margin: 0 0 1em; }
   align-items: center;
   gap: 8px;
 }
-.foot-brand img { width: 28px; height: 28px; }
+.foot-brand img,
+.foot-brand .brand-logo { width: 28px; height: 28px; border-radius: 10px; }
 
 .os-mark {
   display: grid;
@@ -793,7 +823,7 @@ p { margin: 0 0 1em; }
 .os-name { font-size: 15px; font-weight: 800; letter-spacing: -0.04em; }
 .os-sub {
   margin-top: 2px;
-  font-size: 9px;
+  font-size: 7px;
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;

@@ -64,6 +64,10 @@ final class Admin {
 
 			Cloud_Client::store_connection( $result, $app_url );
 			Cloud_Client::sync_capabilities();
+			Heartbeat::ensure_scheduled();
+			Sync::push_all();
+			delete_transient( 'rankpublish_show_onboarding' );
+			Cloud_Client::fetch_workspace();
 			add_settings_error( 'rankpublish_cloud', 'connected', __( 'Connected to RankPublish Cloud.', 'rankpublish' ), 'updated' );
 		}
 	}
@@ -82,6 +86,10 @@ final class Admin {
 		echo '<h1>' . esc_html__( 'RankPublish Cloud Connect', 'rankpublish' ) . '</h1>';
 		settings_errors( 'rankpublish_cloud' );
 
+		if ( ! $connected || isset( $_GET['welcome'] ) ) {
+			Onboarding::render_welcome();
+		}
+
 		if ( $connected ) {
 			echo '<p><strong>' . esc_html__( 'Status:', 'rankpublish' ) . '</strong> ';
 			echo esc_html__( 'Connected', 'rankpublish' ) . '</p>';
@@ -98,7 +106,8 @@ final class Admin {
 			wp_nonce_field( 'rankpublish_connect' );
 			echo '<table class="form-table"><tbody>';
 			echo '<tr><th><label for="rankpublish_app_url">' . esc_html__( 'Cloud app URL', 'rankpublish' ) . '</label></th>';
-			echo '<td><input name="rankpublish_app_url" id="rankpublish_app_url" type="url" class="regular-text" value="' . esc_attr( $app_url ) . '" placeholder="https://nashir.satest.top" required /></td></tr>';
+			$default_app = $app_url !== '' ? $app_url : Onboarding::default_app_url();
+			echo '<td><input name="rankpublish_app_url" id="rankpublish_app_url" type="url" class="regular-text" value="' . esc_attr( $default_app ) . '" placeholder="https://nashir.satest.top" required /></td></tr>';
 			echo '<tr><th><label for="rankpublish_code">' . esc_html__( 'Pairing code', 'rankpublish' ) . '</label></th>';
 			echo '<td><input name="rankpublish_code" id="rankpublish_code" type="text" class="regular-text" maxlength="6" pattern="[A-Za-z0-9]{6}" required /></td></tr>';
 			echo '</tbody></table>';

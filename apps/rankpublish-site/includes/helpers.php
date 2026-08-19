@@ -36,11 +36,6 @@ function rpsite_t( string $key ): string {
 	return $en[ $key ] ?? $key;
 }
 
-function rpsite_plugin_zip_url(): string {
-	$path = WP_CONTENT_DIR . '/uploads/rankpublish/rankpublish.zip';
-	return file_exists( $path ) ? content_url( 'uploads/rankpublish/rankpublish.zip' ) : home_url( '/download/' );
-}
-
 function rpsite_cloud_url(): string {
 	$staging = 'https://nashir.satest.top';
 	$host    = (string) wp_parse_url( home_url(), PHP_URL_HOST );
@@ -64,8 +59,21 @@ function rpsite_cloud_url(): string {
 	return $local ? $staging : $staging;
 }
 
+/**
+ * RankPublish Site Core runs on the platform HQ — not on customer WordPress sites.
+ * Customer pairing happens only via the rankpublish connector plugin.
+ */
+function rpsite_is_platform(): bool {
+	return true;
+}
+
+function rpsite_plugin_zip_url(): string {
+	$path = WP_CONTENT_DIR . '/uploads/rankpublish/rankpublish.zip';
+	return file_exists( $path ) ? content_url( 'uploads/rankpublish/rankpublish.zip' ) : home_url( '/download/' );
+}
+
 function rpsite_logo_url(): string {
-	return RPSITE_URL . 'assets/logo.svg';
+	return RPSITE_URL . 'assets/logo.png';
 }
 
 function rpsite_art( string $file ): string {

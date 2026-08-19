@@ -194,6 +194,22 @@ final class Rest {
 	/**
 	 * @return array<int, array<string, mixed>>
 	 */
+	public static function export_posts( int $per_page = 50 ): array {
+		$self = new self();
+		return $self->query_posts( $per_page );
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public static function export_post( \WP_Post $post ): array {
+		$self = new self();
+		return $self->serialize_post_brief( $post );
+	}
+
+	/**
+	 * @return array<int, array<string, mixed>>
+	 */
 	private function query_posts( int $per_page ): array {
 		$query = new \WP_Query(
 			array(
@@ -222,14 +238,38 @@ final class Rest {
 	private function serialize_post_brief( \WP_Post $post ): array {
 		$gmt = get_post_datetime( $post, 'date', 'gmt' );
 
+		$keyword = (string) get_post_meta( $post->ID, 'thinkrank_focus_keyword', true );
+		$keywords_raw = (string) get_post_meta( $post->ID, 'thinkrank_focus_keywords', true );
+		$keywords     = array();
+		if ( $keyword !== '' ) {
+			$keywords[] = $keyword;
+		}
+		if ( $keywords_raw !== '' ) {
+			$decoded = json_decode( $keywords_raw, true );
+			if ( is_array( $decoded ) ) {
+				foreach ( $decoded as $item ) {
+					if ( is_string( $item ) && $item !== '' ) {
+						$keywords[] = $item;
+					}
+				}
+			}
+		}
+
+		$seo_title = (string) get_post_meta( $post->ID, 'thinkrank_seo_title', true );
+		$meta_desc = (string) get_post_meta( $post->ID, 'thinkrank_meta_description', true );
+
 		return array(
-			'wp_post_id'   => (int) $post->ID,
-			'title'        => get_the_title( $post ),
-			'status'       => $post->post_status,
-			'post_type'    => $post->post_type,
-			'permalink'    => get_permalink( $post ) ?: null,
-			'scheduled_at' => 'future' === $post->post_status && $gmt ? $gmt->format( DATE_ATOM ) : null,
-			'published_at' => 'publish' === $post->post_status && $gmt ? $gmt->format( DATE_ATOM ) : null,
+			'wp_post_id'        => (int) $post->ID,
+			'title'             => get_the_title( $post ),
+			'status'            => $post->post_status,
+			'post_type'         => $post->post_type,
+			'permalink'         => get_permalink( $post ) ?: null,
+			'excerpt'           => $post->post_excerpt !== '' ? $post->post_excerpt : null,
+			'seo_title'         => $seo_title !== '' ? $seo_title : null,
+			'meta_description'  => $meta_desc !== '' ? $meta_desc : null,
+			'keywords'          => array_values( array_unique( $keywords ) ),
+			'scheduled_at'      => 'future' === $post->post_status && $gmt ? $gmt->format( DATE_ATOM ) : null,
+			'published_at'      => 'publish' === $post->post_status && $gmt ? $gmt->format( DATE_ATOM ) : null,
 		);
 	}
 

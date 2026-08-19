@@ -8,10 +8,13 @@
 #
 # Or with full path from Local Site Shell:
 #   powershell -File C:\Users\drmoh\Projects\nashir\deploy\local\rp-local.ps1 fix-db --site rankpublish-test
+#
+# If PowerShell blocks .ps1 scripts, use the CMD wrapper instead:
+#   deploy\local\rp-local.cmd sync --site rankpublish-test
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test")]
+    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -50,6 +53,12 @@ switch ($Command) {
     "setup-test" {
         Run-Node @("deploy/local/setup-rankpublish-test.cjs") + $Rest
     }
+    "sync" {
+        Run-Node @("deploy/local/sync-rankpublish-site.cjs") + $Rest
+    }
+    "verify" {
+        Run-Node @("deploy/local/verify-thinkrank-local.cjs") + $Rest
+    }
     default {
         Write-Host @"
 Commands (always run from repo via this wrapper):
@@ -62,6 +71,9 @@ Commands (always run from repo via this wrapper):
 
   qa        Automated QA checklist
             .\deploy\local\rp-local.ps1 qa --site rankpublish-test
+
+  sync      Sync rankpublish-site plugin to a Local site
+            .\deploy\local\rp-local.ps1 sync --site rankpublish-test
 
   status    Show active plugins / detected mode
             .\deploy\local\rp-local.ps1 status --site rankpublish-test

@@ -31,6 +31,9 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
             <Link href="/download" className="hover:text-foreground">
               {copy.plugin}
             </Link>
+            <Link href="/guide" className="hover:text-foreground">
+              {copy.navGuide}
+            </Link>
           </nav>
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {session ? (
@@ -75,11 +78,17 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           <Link className="mt-2 block hover:text-white" href="/download">
             {copy.plugin}
           </Link>
+          <Link className="mt-2 block hover:text-white" href="/guide">
+            {copy.navGuide}
+          </Link>
         </div>
         <div>
           <h4 className="mb-2 font-bold text-white">{copy.footerSupport}</h4>
           <Link className="mt-2 block hover:text-white" href="/download">
             {copy.download}
+          </Link>
+          <Link className="mt-2 block hover:text-white" href="/guide">
+            {copy.navGuide}
           </Link>
           <Link className="mt-2 block hover:text-white" href="/privacy">
             {copy.privacy}

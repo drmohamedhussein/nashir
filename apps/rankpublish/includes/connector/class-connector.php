@@ -32,14 +32,22 @@ final class Connector {
 		require_once RANKPUBLISH_PATH . 'includes/connector/class-registry.php';
 		require_once RANKPUBLISH_PATH . 'includes/connector/class-rest.php';
 		require_once RANKPUBLISH_PATH . 'includes/connector/class-cloud-client.php';
+		require_once RANKPUBLISH_PATH . 'includes/connector/class-sync.php';
+		require_once RANKPUBLISH_PATH . 'includes/connector/class-heartbeat.php';
+		require_once RANKPUBLISH_PATH . 'includes/connector/class-onboarding.php';
 		require_once RANKPUBLISH_PATH . 'includes/connector/class-admin.php';
+		require_once RANKPUBLISH_PATH . 'includes/connector/class-workspace-admin.php';
 
 		Service_User::ensure();
 
 		( new Rest() )->register();
+		( new Sync() )->register();
+		( new Heartbeat() )->register();
+		Onboarding::register();
 
 		if ( is_admin() ) {
 			( new Admin() )->register();
+			( new Workspace_Admin() )->register();
 		}
 	}
 }

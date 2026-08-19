@@ -76,6 +76,96 @@ switch ( $check ) {
 		echo esc_url( home_url( '/' ) );
 		break;
 
+	case 'dev-versions':
+		echo wp_json_encode(
+			array(
+				'rpsite'    => defined( 'RPSITE_VERSION' ) ? RPSITE_VERSION : null,
+				'thinkrank' => defined( 'THINKRANK_VERSION' ) ? THINKRANK_VERSION : null,
+				'schedule'  => defined( 'WPSP_VERSION' ) ? WPSP_VERSION : null,
+			)
+		);
+		break;
+
+	case 'dev-menus':
+		if ( ! defined( 'WP_ADMIN' ) ) {
+			define( 'WP_ADMIN', true );
+		}
+		require_once ABSPATH . 'wp-admin/includes/admin.php';
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		set_current_screen( 'dashboard' );
+		do_action( 'admin_init' );
+		do_action( 'admin_menu' );
+		global $menu, $submenu, $admin_page_hooks;
+		$pages = array();
+		if ( is_array( $menu ) ) {
+			foreach ( $menu as $item ) {
+				if ( isset( $item[2] ) ) {
+					$pages[] = (string) $item[2];
+				}
+			}
+		}
+		if ( is_array( $submenu ) ) {
+			foreach ( $submenu as $items ) {
+				foreach ( (array) $items as $item ) {
+					if ( isset( $item[2] ) ) {
+						$pages[] = (string) $item[2];
+					}
+				}
+			}
+		}
+
+		$has_slug = static function ( array $slugs ) use ( $pages ): bool {
+			foreach ( $pages as $page ) {
+				$base = explode( '&', $page, 2 )[0];
+				if ( in_array( $base, $slugs, true ) ) {
+					return true;
+				}
+			}
+			return false;
+		};
+
+		$schedule_slugs = array(
+			'schedulepress',
+			'schedulepress-calendar',
+			'schedulepress-post',
+			'wp-scheduled-posts',
+		);
+		$schedule_menu  = $has_slug( $schedule_slugs );
+		if ( ! $schedule_menu && is_array( $pages ) ) {
+			foreach ( $pages as $page ) {
+				if ( preg_match( '/schedule|wpsp|wp-scheduled/i', $page ) ) {
+					$schedule_menu = true;
+					break;
+				}
+			}
+		}
+
+		$schedule_hook = false;
+		if ( is_array( $admin_page_hooks ) ) {
+			foreach ( array_keys( $admin_page_hooks ) as $hook ) {
+				if ( preg_match( '/schedulepress|wpsp|wp-scheduled/i', (string) $hook ) ) {
+					$schedule_hook = true;
+					break;
+				}
+			}
+		}
+
+		$schedule_stack = is_plugin_active( 'wp-scheduled-posts/wp-scheduled-posts.php' ) && defined( 'WPSP_VERSION' );
+
+		echo wp_json_encode(
+			array(
+				'thinkrank'       => $has_slug( array( 'thinkrank', 'thinkrank-license' ) ),
+				'schedulepress'   => $schedule_menu || $schedule_hook,
+				'schedule_stack'  => $schedule_stack,
+				'schedule_hook'   => $schedule_hook,
+				'rpsite'          => defined( 'RPSITE_VERSION' ),
+				'pages'           => $pages,
+			)
+		);
+		break;
+
 	case 'connector':
 		$health = rest_do_request( new WP_REST_Request( 'GET', '/rankpublish/v1/health' ) );
 		$health_data = $health->get_data();

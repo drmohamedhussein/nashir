@@ -33,7 +33,7 @@ export function PairingPanel({ locale, appUrl }: { locale: Locale; appUrl: strin
   }
 
   return (
-    <div className="rounded-2xl border border-ink/10 bg-white p-6">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-ink/10 bg-white p-6">
       <h2 className="text-lg font-semibold">{copy.pairingTitle}</h2>
       <p className="mt-2 text-sm leading-7 text-ink-soft">{copy.pairingHint}</p>
       <ol className="mt-4 list-decimal space-y-2 ps-5 text-sm text-ink-soft">
@@ -50,8 +50,10 @@ export function PairingPanel({ locale, appUrl }: { locale: Locale; appUrl: strin
         {pending ? copy.pending : copy.pairingCreate}
       </button>
       {code ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <p className="font-mono text-3xl tracking-[0.4em] text-leaf">{code}</p>
+        <div className="mt-4 min-w-0 space-y-3">
+          <p className="overflow-hidden rounded-xl bg-leaf/10 px-4 py-3 text-center font-mono text-3xl font-bold tracking-[0.45em] text-leaf">
+            {code}
+          </p>
           <button
             type="button"
             onClick={copyCode}

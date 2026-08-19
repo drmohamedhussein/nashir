@@ -128,6 +128,9 @@ final class Cloud_Client {
 		update_option( 'rankpublish_app_url', untrailingslashit( $app_url ) );
 		update_option( 'rankpublish_site_id', sanitize_text_field( (string) ( $result['site_id'] ?? '' ) ) );
 		update_option( 'rankpublish_signing_secret', sanitize_text_field( (string) ( $result['signing_secret'] ?? '' ) ) );
+		if ( isset( $result['workspace_id'] ) ) {
+			update_option( 'rankpublish_workspace_id', sanitize_text_field( (string) $result['workspace_id'] ) );
+		}
 		if ( isset( $result['api_key'] ) ) {
 			update_option( 'rankpublish_api_key', sanitize_text_field( (string) $result['api_key'] ) );
 		}
@@ -139,6 +142,20 @@ final class Cloud_Client {
 		update_option( 'nashir_app_url', untrailingslashit( $app_url ) );
 		update_option( 'nashir_site_id', sanitize_text_field( (string) ( $result['site_id'] ?? '' ) ) );
 		update_option( 'nashir_signing_secret', sanitize_text_field( (string) ( $result['signing_secret'] ?? '' ) ) );
+	}
+
+	/**
+	 * @return array<string, mixed>|\WP_Error
+	 */
+	public static function fetch_workspace() {
+		$result = self::signed_post( '/workspace', array(), 20, __( 'Could not load workspace.', 'rankpublish' ) );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		if ( empty( $result['ok'] ) || ! is_array( $result['data'] ?? null ) ) {
+			return new \WP_Error( 'rankpublish_workspace', __( 'Invalid workspace response.', 'rankpublish' ) );
+		}
+		return $result['data'];
 	}
 
 	/**

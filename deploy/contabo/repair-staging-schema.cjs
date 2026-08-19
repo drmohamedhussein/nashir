@@ -6,6 +6,11 @@ const username = process.env.NASHIR_SSH_USER;
 const password = process.env.NASHIR_SSH_PASS;
 const remoteRoot = process.env.NASHIR_REMOTE_ROOT || `/home/${username}/nashir`;
 
+if (!host || !username || !password) {
+  console.error("Missing NASHIR_SSH_HOST / NASHIR_SSH_USER / NASHIR_SSH_PASS");
+  process.exit(1);
+}
+
 function exec(conn, command) {
   return new Promise((resolve, reject) => {
     conn.exec(command, (err, stream) => {
@@ -21,14 +26,39 @@ function exec(conn, command) {
   });
 }
 
+const mysqlFromEnv = (sqlFileOrDashE) =>
+  [
+    "python3 - <<'PY'",
+    "import re, subprocess",
+    "from pathlib import Path",
+    "from urllib.parse import urlparse, unquote",
+    `env = Path("${remoteRoot}/apps/web/.env").read_text()`,
+    'match = re.search(r\'DATABASE_URL="([^"]+)"\', env)',
+    "if not match:",
+    "    raise SystemExit('DATABASE_URL missing')",
+    'parsed = urlparse(match.group(1).replace("mysql://", "http://", 1))',
+    "cmd = [",
+    '    "mysql",',
+    '    "-h", parsed.hostname or "127.0.0.1",',
+    '    "-P", str(parsed.port or 3306),',
+    '    "-u", unquote(parsed.username or ""),',
+    '    f"-p{unquote(parsed.password or \\"\\")}",',
+    '    parsed.path.lstrip("/"),',
+    "]",
+    sqlFileOrDashE,
+    "raise SystemExit(result.returncode)",
+    "PY",
+  ].join("\n");
+
 const conn = new Client();
 conn
   .on("ready", async () => {
     try {
       const sqlFile = [
+        "SET @db := DATABASE();",
         "SET @has_slug := (",
         "  SELECT COUNT(*) FROM information_schema.COLUMNS",
-        "  WHERE TABLE_SCHEMA = 'nashirwp_WKBlixyk'",
+        "  WHERE TABLE_SCHEMA = @db",
         "    AND TABLE_NAME = 'rp_workspace'",
         "    AND COLUMN_NAME = 'slug'",
         ");",
@@ -48,24 +78,24 @@ conn
       );
       await exec(
         conn,
-        `bash -lc "mysql -uDnh0lge57UHlNg5N -pvzo5zYgdFFrWqOke nashirwp_WKBlixyk < /tmp/rp_slug_fix.sql"`,
+        mysqlFromEnv('result = subprocess.run(cmd, input=Path("/tmp/rp_slug_fix.sql").read_text(), text=True)'),
       );
       await exec(
         conn,
         [
           `cd ${remoteRoot}/apps/web`,
-          "npx prisma db push || echo prisma_push_skipped_protecting_wordpress_tables",
+          "npx prisma generate",
+          `node ${remoteRoot}/deploy/contabo/run-staging-schema-safe.cjs ${remoteRoot}/apps/web`,
           "node prisma/seed.cjs",
-          [
-            "mysql -uDnh0lge57UHlNg5N -pvzo5zYgdFFrWqOke nashirwp_WKBlixyk -e",
-            "\"INSERT INTO rp_workspace_member (id, workspaceId, userId, role, createdAt) " +
-              "SELECT REPLACE(UUID(),'-',''), w.id, w.ownerId, 'owner', NOW() " +
-              "FROM rp_workspace w LEFT JOIN rp_workspace_member m ON m.workspaceId = w.id AND m.userId = w.ownerId " +
-              "WHERE m.id IS NULL;\"",
-          ].join(" "),
-          "pm2 restart nashir",
-        ].join(" && ")
+        ].join(" && "),
       );
+      await exec(
+        conn,
+        mysqlFromEnv(
+          'result = subprocess.run(cmd + ["-e", "INSERT INTO rp_workspace_member (id, workspaceId, userId, role, createdAt) SELECT REPLACE(UUID(),\'-\',\'\'), w.id, w.ownerId, \'owner\', NOW() FROM rp_workspace w LEFT JOIN rp_workspace_member m ON m.workspaceId = w.id AND m.userId = w.ownerId WHERE m.id IS NULL"], text=True)',
+        ),
+      );
+      await exec(conn, "pm2 restart nashir");
       conn.end();
     } catch (error) {
       console.error(error.message || error);

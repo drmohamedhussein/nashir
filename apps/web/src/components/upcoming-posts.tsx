@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { t, type Locale } from "@/lib/i18n";
+import { localizeApiError } from "@/lib/localize-api-error";
 
 type Item = {
   id: string;
@@ -10,7 +12,8 @@ type Item = {
   siteName: string;
 };
 
-export function UpcomingPosts({ posts }: { posts: Item[] }) {
+export function UpcomingPosts({ posts, locale }: { posts: Item[]; locale: Locale }) {
+  const copy = t(locale);
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -26,7 +29,7 @@ export function UpcomingPosts({ posts }: { posts: Item[] }) {
     const data = (await response.json()) as { error?: string };
     setBusy(null);
     if (!response.ok) {
-      setError(data.error ?? "تعذر التنفيذ.");
+      setError(localizeApiError(data.error ?? copy.errorGeneric, locale));
       return;
     }
     router.refresh();
@@ -38,7 +41,7 @@ export function UpcomingPosts({ posts }: { posts: Item[] }) {
 
   return (
     <section className="mt-8 rounded-2xl bg-white p-6">
-      <h2 className="text-lg font-semibold">أوامر سريعة</h2>
+      <h2 className="text-lg font-semibold">{copy.quickActionsTitle}</h2>
       {error ? <p className="mt-2 text-sm text-danger">{error}</p> : null}
       <ul className="mt-4 space-y-3">
         {posts.slice(0, 16).map((post) => (
@@ -51,16 +54,16 @@ export function UpcomingPosts({ posts }: { posts: Item[] }) {
             </div>
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => run(post.id, "publish")} disabled={Boolean(busy)} className="rounded-full bg-leaf px-3 py-1 text-xs font-semibold text-white disabled:opacity-60">
-                انشر الآن
+                {copy.publishNow}
               </button>
               <button type="button" onClick={() => run(post.id, "publish_keep_date")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
-                انشر مع التاريخ
+                {copy.publishKeepDate}
               </button>
               <button type="button" onClick={() => run(post.id, "unpublish")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
-                إلغاء نشر
+                {copy.unpublish}
               </button>
               <button type="button" onClick={() => run(post.id, "republish")} disabled={Boolean(busy)} className="rounded-full border border-ink/15 px-3 py-1 text-xs disabled:opacity-60">
-                إعادة نشر
+                {copy.republish}
               </button>
             </div>
           </li>

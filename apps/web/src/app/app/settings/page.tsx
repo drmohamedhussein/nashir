@@ -22,7 +22,7 @@ export default async function SettingsPage() {
     <div>
       <h1 className="text-2xl font-bold">{copy.settings}</h1>
       <p className="mt-2 text-sm text-ink-soft">{copy.settingsHint}</p>
-      <SettingsForm sites={sites} />
+      <SettingsForm sites={sites} locale={locale} />
     </div>
   );
 }
