@@ -1,7 +1,7 @@
 /**
  * Sync rankpublish-site to Windows LocalWP via SFTP/SSH.
  * Requires env: RANKPUBLISH_WIN_SSH_HOST, RANKPUBLISH_WIN_SSH_USER,
- * and RANKPUBLISH_WIN_SSH_PASS or RANKPUBLISH_WIN_SSH_KEY.
+ * and RANKPUBLISH_WIN_SSH_PRIVATE_KEY (inline PEM) or RANKPUBLISH_WIN_SSH_KEY (file path).
  *
  * Optional: RANKPUBLISH_WIN_PUBLIC (default rankpublish Local path on Windows)
  */
@@ -14,9 +14,24 @@ const source = path.join(repoRoot, "apps/rankpublish-site");
 const host = process.env.RANKPUBLISH_WIN_SSH_HOST;
 const username = process.env.RANKPUBLISH_WIN_SSH_USER || process.env.USERNAME || "drmoh";
 const password = process.env.RANKPUBLISH_WIN_SSH_PASS;
-const privateKey = process.env.RANKPUBLISH_WIN_SSH_KEY
-  ? fs.readFileSync(process.env.RANKPUBLISH_WIN_SSH_KEY)
-  : undefined;
+
+function resolvePrivateKey() {
+  const inline = process.env.RANKPUBLISH_WIN_SSH_PRIVATE_KEY;
+  if (inline && inline.includes("BEGIN")) {
+    return inline.replace(/\\n/g, "\n");
+  }
+  const keyRef = process.env.RANKPUBLISH_WIN_SSH_KEY;
+  if (!keyRef) return undefined;
+  if (keyRef.includes("BEGIN")) {
+    return keyRef.replace(/\\n/g, "\n");
+  }
+  if (fs.existsSync(keyRef)) {
+    return fs.readFileSync(keyRef, "utf8");
+  }
+  return undefined;
+}
+
+const privateKey = resolvePrivateKey();
 const winPublic =
   process.env.RANKPUBLISH_WIN_PUBLIC ||
   "C:/Users/drmoh/Local Sites/rankpublish/app/public";
@@ -79,7 +94,7 @@ const connectOpts = { host, port: Number(process.env.RANKPUBLISH_WIN_SSH_PORT ||
 if (privateKey) connectOpts.privateKey = privateKey;
 else if (password) connectOpts.password = password;
 else {
-  console.error("Need RANKPUBLISH_WIN_SSH_PASS or RANKPUBLISH_WIN_SSH_KEY");
+  console.error("Need RANKPUBLISH_WIN_SSH_PRIVATE_KEY, RANKPUBLISH_WIN_SSH_KEY, or RANKPUBLISH_WIN_SSH_PASS");
   process.exit(1);
 }
 
