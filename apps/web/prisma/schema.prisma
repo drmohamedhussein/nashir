@@ -7,12 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// SaaS tables share the WordPress MySQL database using the rp_ prefix.
+// Never run `prisma db push` against this URL — Prisma would try to drop wp_* tables.
+
 model User {
   id             String              @id @default(cuid())
   name           String
   email          String              @unique
   passwordHash   String
-  locale         String              @default("ar")
+  locale         String              @default("en")
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
   workspace      Workspace?

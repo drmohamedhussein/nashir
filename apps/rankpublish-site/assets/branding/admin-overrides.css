@@ -7,7 +7,15 @@ body.rankpublish-site-branded-admin .wpsp-admin-header img,
 body.rankpublish-site-branded-admin .wpsp-modal--header--left svg,
 body.rankpublish-site-branded-admin .wpsp-modal--header--left img,
 body.rankpublish-site-branded-admin img[src*="wpsp-logo"],
-body.rankpublish-site-branded-admin img[src*="schedulepress"] {
+body.rankpublish-site-branded-admin img[src*="schedulepress"],
+body.rpsite-os-module-wrap .wpsp-admin-header svg,
+body.rpsite-os-module-wrap .wpsp-admin-header img,
+body.rpsite-os-module-wrap .wpsp-modal--header--left svg,
+body.rpsite-os-module-wrap .wpsp-modal--header--left img,
+body.rpsite-os-module-wrap img[src*="wpsp-logo"],
+body.rpsite-os-module-wrap img[src*="schedulepress"],
+body.rpsite-os-module-wrap img[src*="thinkrank-logo"],
+body.rpsite-os-module-wrap img[src*="thinkrank-icon"] {
 	opacity: 0 !important;
 	width: 0 !important;
 	height: 0 !important;
@@ -17,13 +25,23 @@ body.rankpublish-site-branded-admin img[src*="schedulepress"] {
 }
 
 body.rankpublish-site-branded-admin .wpsp-admin-header,
-body.rankpublish-site-branded-admin .wpsp-modal--header--left {
+body.rankpublish-site-branded-admin .wpsp-modal--header--left,
+body.rpsite-os-module-wrap .wpsp-admin-header,
+body.rpsite-os-module-wrap .wpsp-modal--header--left {
 	position: relative;
 	min-height: 48px;
 }
 
+body.rpsite-os-module-wrap .wpsp-admin-header,
+body.rpsite-os-module-wrap .wpsp-modal--header--left {
+	color: transparent;
+	font-size: 0;
+}
+
 body.rankpublish-site-branded-admin .wpsp-admin-header::before,
-body.rankpublish-site-branded-admin .wpsp-modal--header--left::before {
+body.rankpublish-site-branded-admin .wpsp-modal--header--left::before,
+body.rpsite-os-module-wrap .wpsp-admin-header::before,
+body.rpsite-os-module-wrap .wpsp-modal--header--left::before {
 	content: "RankPublish";
 	position: absolute;
 	left: 20px;
@@ -42,7 +60,11 @@ body.rankpublish-site-branded-admin .wpsp-modal--header--left::before {
 }
 
 body.rankpublish-site-branded-admin .tr-root aside a svg:first-of-type,
-body.rankpublish-site-branded-admin .tr-root nav a svg:first-of-type {
+body.rankpublish-site-branded-admin .tr-root nav a svg:first-of-type,
+body.rpsite-os-module-wrap .tr-root aside a svg:first-of-type,
+body.rpsite-os-module-wrap .tr-root nav a svg:first-of-type,
+body.rpsite-os-module-wrap .tr-root header svg,
+body.rpsite-os-module-wrap .tr-root [class*="logo"] svg {
 	opacity: 0 !important;
 	width: 0 !important;
 	height: 0 !important;
@@ -50,14 +72,22 @@ body.rankpublish-site-branded-admin .tr-root nav a svg:first-of-type {
 }
 
 body.rankpublish-site-branded-admin .tr-root aside a:has(svg),
-body.rankpublish-site-branded-admin .tr-root nav a:has(svg) {
+body.rankpublish-site-branded-admin .tr-root nav a:has(svg),
+body.rpsite-os-module-wrap .tr-root aside a:has(svg),
+body.rpsite-os-module-wrap .tr-root nav a:has(svg),
+body.rpsite-os-module-wrap .tr-root header a:has(svg),
+body.rpsite-os-module-wrap .tr-root [class*="logo"]:has(svg) {
 	position: relative;
 	min-width: 32px;
 	min-height: 32px;
 }
 
 body.rankpublish-site-branded-admin .tr-root aside a:has(svg)::before,
-body.rankpublish-site-branded-admin .tr-root nav a:has(svg)::before {
+body.rankpublish-site-branded-admin .tr-root nav a:has(svg)::before,
+body.rpsite-os-module-wrap .tr-root aside a:has(svg)::before,
+body.rpsite-os-module-wrap .tr-root nav a:has(svg)::before,
+body.rpsite-os-module-wrap .tr-root header a:has(svg)::before,
+body.rpsite-os-module-wrap .tr-root [class*="logo"]:has(svg)::before {
 	content: "";
 	position: absolute;
 	left: 0;
@@ -88,8 +118,20 @@ body.rankpublish-site-branded-admin .tr-root nav a:has(svg)::before {
 }
 
 body.rankpublish-site-branded-admin iframe[src*="youtube.com"],
-body.rankpublish-site-branded-admin iframe[src*="youtu.be"] {
+body.rankpublish-site-branded-admin iframe[src*="youtu.be"],
+body.rpsite-os-module-wrap iframe[src*="youtube.com"],
+body.rpsite-os-module-wrap iframe[src*="youtu.be"] {
 	display: none !important;
+}
+
+/* Native OS wrap: upstream side nav is replaced by Core tabs + sidebar */
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root aside {
+	display: none !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div:first-child {
+	margin-left: 0 !important;
+	padding-left: 0 !important;
 }
 
 #the-list a[href*="wpdeveloper.com"],

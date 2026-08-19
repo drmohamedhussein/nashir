@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_ERRORS } from "@/lib/api-errors";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -15,14 +16,14 @@ type Params = { params: Promise<{ siteId: string }> };
 export async function GET(_request: Request, { params }: Params) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "يلزم تسجيل الدخول." }, { status: 401 });
+    return NextResponse.json({ error: API_ERRORS.LOGIN_REQUIRED }, { status: 401 });
   }
   const { siteId } = await params;
   const site = await prisma.site.findFirst({
     where: { id: siteId, workspaceId: session.workspaceId },
   });
   if (!site) {
-    return NextResponse.json({ error: "الموقع غير موجود." }, { status: 404 });
+    return NextResponse.json({ error: API_ERRORS.SITE_NOT_FOUND }, { status: 404 });
   }
   return NextResponse.json(site);
 }
@@ -30,7 +31,7 @@ export async function GET(_request: Request, { params }: Params) {
 export async function POST(request: Request, { params }: Params) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "يلزم تسجيل الدخول." }, { status: 401 });
+    return NextResponse.json({ error: API_ERRORS.LOGIN_REQUIRED }, { status: 401 });
   }
 
   const { siteId } = await params;
@@ -38,13 +39,13 @@ export async function POST(request: Request, { params }: Params) {
     where: { id: siteId, workspaceId: session.workspaceId },
   });
   if (!site) {
-    return NextResponse.json({ error: "الموقع غير موجود." }, { status: 404 });
+    return NextResponse.json({ error: API_ERRORS.SITE_NOT_FOUND }, { status: 404 });
   }
 
   const json = await request.json().catch(() => null);
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "إعدادات غير صالحة." }, { status: 400 });
+    return NextResponse.json({ error: API_ERRORS.INVALID_SETTINGS }, { status: 400 });
   }
 
   const updated = await prisma.site.update({

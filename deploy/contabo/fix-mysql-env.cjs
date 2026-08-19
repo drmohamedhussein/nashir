@@ -8,14 +8,24 @@ const username = process.env.NASHIR_SSH_USER;
 const password = process.env.NASHIR_SSH_PASS;
 const mysqlUser = process.env.NASHIR_MYSQL_USER;
 const mysqlPass = process.env.NASHIR_MYSQL_PASS;
+const authSecret = process.env.NASHIR_AUTH_SECRET;
+const cronSecret = process.env.NASHIR_CRON_SECRET;
 const web = `/home/${username}/nashir/apps/web`;
+
+if (!host || !username || !password || !mysqlUser || !mysqlPass || !authSecret || !cronSecret) {
+  console.error(
+    "Missing NASHIR_SSH_* / NASHIR_MYSQL_USER / NASHIR_MYSQL_PASS / NASHIR_AUTH_SECRET / NASHIR_CRON_SECRET",
+  );
+  process.exit(1);
+}
+
 const dbUrl = `mysql://${encodeURIComponent(mysqlUser)}:${encodeURIComponent(mysqlPass)}@127.0.0.1:3306/nashirwp_WKBlixyk`;
 
 const envBody = [
   `DATABASE_URL="${dbUrl}"`,
-  "APP_URL=\"https://nashir.satest.top\"",
-  "AUTH_SECRET=\"f9a15a442d29718a7250f33a576f6e50fbdbbd8f9c6b5c28\"",
-  "CRON_SECRET=\"f8dc00622f974fb9aba947497dcdfaddc9b057fd4480008a\"",
+  'APP_URL="https://nashir.satest.top"',
+  `AUTH_SECRET="${authSecret}"`,
+  `CRON_SECRET="${cronSecret}"`,
   "",
 ].join("\n");
 

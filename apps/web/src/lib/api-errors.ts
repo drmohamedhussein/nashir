@@ -1,0 +1,42 @@
+/** Canonical English API error messages (source language). */
+export const API_ERRORS = {
+  RATE_LIMIT: "Too many attempts. Wait a moment.",
+  LOGIN_REQUIRED: "Login required.",
+  INCOMPLETE_DATA: "Incomplete data.",
+  INVALID_CREDENTIALS: "Invalid email or password.",
+  NO_WORKSPACE: "No workspace linked to this account.",
+  DATABASE_UNAVAILABLE:
+    "Database unavailable. Check DATABASE_URL and restart the application.",
+  EMAIL_TAKEN: "This email is already registered.",
+  INVALID_CONNECT: "Invalid connect request.",
+  EXPIRED_PAIRING: "Pairing code expired or invalid.",
+  SITE_NOT_FOUND: "Site not found.",
+  INVALID_SIGNATURE: "Invalid signature.",
+  SITE_URL_REQUIRED: "siteUrl is required.",
+  INVALID_WP_URL: "Invalid WordPress URL.",
+  HQ_SITE_BLOCKED:
+    "This is the RankPublish HQ site, not a customer WordPress site. Pair the customer origin instead.",
+  INVALID_POST_ID: "Invalid post ID.",
+  CONNECTOR_REQUIRED: "Site does not use RankPublish Connector.",
+  POST_NOT_FOUND: "Post not found.",
+  FETCH_POST_FAILED: "Could not fetch the post.",
+  FETCH_POSTS_FAILED: "Could not fetch posts.",
+  INVALID_PAYLOAD: "Invalid payload.",
+  INVALID_REQUEST: "Invalid request.",
+  INVALID_ACCOUNT: "Invalid account data.",
+  INVALID_TEMPLATE: "Invalid template.",
+  INVALID_SHARE: "Invalid share request.",
+  UNKNOWN_INTENT: "Unknown intent.",
+  INVALID_ACTION: "Invalid action.",
+  ACTION_FAILED: "Could not run the action.",
+  PUBLISH_FAILED: "Could not publish.",
+  INVALID_SETTINGS: "Invalid settings.",
+  INVALID_ACTIVATION: "Invalid activation data.",
+  UNAUTHORIZED: "Unauthorized.",
+  INVALID_LICENSE: "Invalid email or password.",
+  NO_SEAT: "No subscription seat available for this account. Activate a trial from RankPublish or add a subscription for the site.",
+  SUBSCRIPTION_NOT_FOUND: "Subscription not found.",
+  SOCIAL_ACCOUNT_MISSING: "No connected account for this platform.",
+} as const;
+
+export type ApiErrorKey = keyof typeof API_ERRORS;

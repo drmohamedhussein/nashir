@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({
-  locale: z.enum(["ar", "en"]),
+  locale: z.enum(["en", "ar"]),
 });
 
 export async function POST(request: Request) {

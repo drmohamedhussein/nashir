@@ -44,6 +44,14 @@
 		}
 		modal.hidden = !open;
 		document.body.style.overflow = open ? 'hidden' : '';
+		if (open) {
+			var urlInput = qs('[data-rpsite-wp-url]');
+			if (urlInput) {
+				window.setTimeout(function () {
+					urlInput.focus();
+				}, 0);
+			}
+		}
 	}
 
 	function setSidebar(open) {
@@ -55,6 +63,60 @@
 		var scrim = qs('[data-rpsite-sidebar-close]');
 		if (scrim) {
 			scrim.hidden = !open;
+		}
+	}
+
+	function parseHttpUrl(value) {
+		try {
+			var parsed = new URL(value);
+			if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+				return null;
+			}
+			return parsed;
+		} catch (err) {
+			return null;
+		}
+	}
+
+	function isHqHost(hostname) {
+		var hq = String(strings.hqHost || '').toLowerCase().replace(/^www\./, '');
+		var host = String(hostname || '').toLowerCase().replace(/^www\./, '');
+		return hq !== '' && host === hq;
+	}
+
+	function continueToCloud(link, event) {
+		var input = qs('[data-rpsite-wp-url]');
+		var raw = input ? String(input.value || '').trim() : '';
+		var parsed = parseHttpUrl(raw);
+		if (!parsed) {
+			event.preventDefault();
+			toast(strings.invalidWpUrl || 'Enter a valid WordPress URL, including https://');
+			if (input) {
+				input.focus();
+			}
+			return;
+		}
+		if (isHqHost(parsed.hostname)) {
+			event.preventDefault();
+			toast(strings.hqUrlBlocked || 'Enter the customer WordPress URL instead.');
+			if (input) {
+				input.focus();
+			}
+			return;
+		}
+		var base = link.getAttribute('data-rpsite-cloud-base') || link.getAttribute('href') || '';
+		try {
+			var next = new URL(base, window.location.origin);
+			next.searchParams.set('siteUrl', parsed.origin);
+			var nameInput = qs('[data-rpsite-site-name]');
+			var siteName = nameInput ? String(nameInput.value || '').trim() : '';
+			if (siteName) {
+				next.searchParams.set('siteName', siteName);
+			}
+			link.setAttribute('href', next.toString());
+		} catch (err) {
+			event.preventDefault();
+			toast(strings.invalidWpUrl || 'Enter a valid WordPress URL, including https://');
 		}
 	}
 
@@ -128,6 +190,12 @@
 
 		if (event.target.closest('[data-rpsite-sidebar-close]')) {
 			setSidebar(false);
+			return;
+		}
+
+		var continueLink = event.target.closest('[data-rpsite-continue-cloud]');
+		if (continueLink) {
+			continueToCloud(continueLink, event);
 			return;
 		}
 

@@ -1,5 +1,7 @@
 /**
- * Upload RankPublish plugin to the Nashir staging WordPress (experimental host until RankPublish.com).
+ * Upload RankPublish plugin to a WordPress install for testing.
+ * Customer download zip: use deploy/contabo/upload-product-zip.cjs instead.
+ * Do not activate this plugin on the RankPublish HQ (Site Core) site.
  * Env: NASHIR_SSH_HOST, NASHIR_SSH_USER, NASHIR_SSH_PASS
  *
  * Local source: LocalWP rankpublish plugin folder (not the four standalone sources).
@@ -16,7 +18,7 @@ const password = process.env.NASHIR_SSH_PASS;
 const remoteRoot = "/home/7CvmqqaIv1y9ddCw/nashirwp/public_html";
 const localPlugin =
   process.env.RANKPUBLISH_PLUGIN_DIR ||
-  "C:/Users/drmoh/Local Sites/rankpublish/app/public/wp-content/plugins/rankpublish";
+  "C:/Users/drmoh/Local Sites/rankpublish-test/app/public/wp-content/plugins/rankpublish";
 const archive = path.join(os.tmpdir(), "rankpublish-staging.tgz");
 
 function exec(conn, command) {

@@ -1,37 +1,40 @@
-# RankPublish WordPress Plugin (connector source)
+# RankPublish WordPress Plugin (customer product)
 
-The full merged plugin (ThinkRank + SchedulePress + RankPublish shell) lives on LocalWP:
+**This is the plugin customers install.** RankPublish Site Core (`apps/rankpublish-site`) is HQ-only and is never distributed to customers.
 
-`C:/Users/drmoh/Local Sites/rankpublish/app/public/wp-content/plugins/rankpublish`
+## Source of truth
 
-This folder tracks **connector changes** in git. After editing here or on LocalWP, sync both ways:
+| Location | Role |
+|----------|------|
+| `https://rankpublish-test.local/` | Customer product development site |
+| `C:/Users/drmoh/Local Sites/rankpublish-test/app/public/wp-content/plugins/rankpublish` | Full merged plugin (SEO + Scheduler + connector) |
+| `apps/rankpublish/includes/connector/` | Connector code tracked in git (sync into the full plugin) |
+
+Do **not** ship:
+
+- `rankpublish-site` (Site Core)
+- stub / connector-only zips (~3.9 MB)
+- `rankpublish (6).zip` and any other undersized download from `/app`
+
+Public download on staging is the **full** plugin zip:
+
+`https://nashir.satest.top/wp-content/uploads/rankpublish/rankpublish.zip`
+
+Pack and upload:
 
 ```powershell
-# LocalWP → repo
-robocopy "C:\Users\drmoh\Local Sites\rankpublish\app\public\wp-content\plugins\rankpublish\includes\connector" `
-  "C:\Users\drmoh\Projects\nashir\apps\rankpublish\includes\connector" /E
-
-# Repo → rankpublish-test
-node deploy/local/switch-product-mode.cjs product --site rankpublish-test --sync
+robocopy "C:\Users\drmoh\Projects\nashir\apps\rankpublish\includes\connector" `
+  "C:\Users\drmoh\Local Sites\rankpublish-test\app\public\wp-content\plugins\rankpublish\includes\connector" /E
+node deploy/contabo/upload-product-zip.cjs
 ```
 
-## Connector (v1.0.0) — Phase 2
+## Connector (v1.0.0)
 
 - REST namespace: `rankpublish/v1`
-- Routes: `/health`, `/integrations`, `/capabilities`, `/actions`, `/posts`, `/posts/{id}`
-- Adapters: ThinkRank (SEO), SchedulePress (publishing)
 - Auth: HMAC (`X-RankPublish-*` + legacy `X-Nashir-*`)
-- Engine dispatch: internal REST + service user `rankpublish-connector`
+- Pairing: 6-character code via RankPublish Cloud → WordPress **Cloud Connect**
 
-Plugin version with connector: **0.9.0**
-
-## WordPress admin
-
-**RankPublish → Cloud Connect** — pairing code flow to Nashir/RankPublish web app.
-
-## Required `class-plugin.php` hook
-
-After modules boot:
+After modules boot (`includes/class-plugin.php`):
 
 ```php
 require_once RANKPUBLISH_PATH . 'includes/connector/class-connector.php';
