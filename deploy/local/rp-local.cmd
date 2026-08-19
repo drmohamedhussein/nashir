@@ -54,6 +54,10 @@ if /I "%CMD%"=="recover" (
   node "%REPO_ROOT%\deploy\local\recover-local-wp.cjs" %*
   exit /b %ERRORLEVEL%
 )
+if /I "%CMD%"=="setup-ssh" (
+  call "%SCRIPT_DIR%setup-win-ssh.cmd"
+  exit /b %ERRORLEVEL%
+)
 
 echo Unknown command: %CMD%
 echo.
@@ -74,6 +78,7 @@ echo   setup-test First-time test site setup
 echo   sync       Sync rankpublish-site plugin to Local site
 echo   verify     Verify local ThinkRank branding (no PHP required)
 echo   recover    Fix HTTP 500 / imagick warnings / show PHP log
+echo   setup-ssh  One-time OpenSSH setup for Cloud Agent (Admin UAC once)
 echo.
 echo Examples:
 echo   .\rp-local.cmd sync --site rankpublish-test

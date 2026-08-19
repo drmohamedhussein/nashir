@@ -14,7 +14,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover")]
+    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover", "setup-ssh")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -62,6 +62,10 @@ switch ($Command) {
     "verify" {
         Run-Node @("deploy/local/verify-thinkrank-local.cjs") + $Rest
     }
+    "setup-ssh" {
+        & (Join-Path $PSScriptRoot "setup-win-ssh.cmd")
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    }
     default {
         Write-Host @"
 Commands (always run from repo via this wrapper):
@@ -80,6 +84,9 @@ Commands (always run from repo via this wrapper):
 
   recover   Fix HTTP 500 on Local (disable plugin, imagick, show PHP log)
             .\deploy\local\rp-local.ps1 recover --site rankpublish --all
+
+  setup-ssh One-time OpenSSH for Cloud Agent (Admin UAC once)
+            .\deploy\local\rp-local.ps1 setup-ssh
 
   status    Show active plugins / detected mode
             .\deploy\local\rp-local.ps1 status --site rankpublish-test
