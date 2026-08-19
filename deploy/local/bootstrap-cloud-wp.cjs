@@ -67,7 +67,8 @@ dockerCompose(["up", "-d"]);
 dockerWp.waitForDb();
 waitHttp("http://127.0.0.1:8080/");
 
-const installed = dockerWp.wp(["core", "is-installed"], { allowFail: true }).stdout;
+const installedCheck = dockerWp.wp(["core", "is-installed"], { allowFail: true });
+const installed = installedCheck.status === 0;
 
 if (installed !== "1") {
   console.log("\nFirst boot — installing WordPress...");
