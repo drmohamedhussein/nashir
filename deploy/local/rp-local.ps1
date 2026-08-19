@@ -11,7 +11,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test")]
+    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -50,6 +50,9 @@ switch ($Command) {
     "setup-test" {
         Run-Node @("deploy/local/setup-rankpublish-test.cjs") + $Rest
     }
+    "sync" {
+        Run-Node @("deploy/local/sync-rankpublish-site.cjs") + $Rest
+    }
     default {
         Write-Host @"
 Commands (always run from repo via this wrapper):
@@ -62,6 +65,9 @@ Commands (always run from repo via this wrapper):
 
   qa        Automated QA checklist
             .\deploy\local\rp-local.ps1 qa --site rankpublish-test
+
+  sync      Sync rankpublish-site plugin to a Local site
+            .\deploy\local\rp-local.ps1 sync --site rankpublish-test
 
   status    Show active plugins / detected mode
             .\deploy\local\rp-local.ps1 status --site rankpublish-test

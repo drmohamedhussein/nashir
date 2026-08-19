@@ -58,17 +58,73 @@ function loadEnvrc(publicPath) {
   if (pathParts.length) {
     env.PATH = [...pathParts, process.env.PATH].join(path.delimiter);
   }
-  // wp-cli on Windows invokes `php` from PATH; ensure Local's PHP dir is first.
-  if (env.PHPRC) {
-    const parts = (env.PATH || "").split(path.delimiter);
-    const phpDir = parts.find(
-      (p) => p.includes("lightning-services") && p.includes("php") && p.endsWith("win64")
-    );
-    if (phpDir) {
-      env.PATH = [phpDir, ...parts.filter((p) => p !== phpDir)].join(path.delimiter);
+  const resolved = ensurePhpInPath(env, publicPath);
+  return { env: resolved, envrcPath, ok: Boolean(resolved.PHPRC) };
+}
+
+function phpBinaryName() {
+  return process.platform === "win32" ? "php.exe" : "php";
+}
+
+function pathHasPhp(dir) {
+  if (!dir) return false;
+  try {
+    return fs.existsSync(path.join(dir, phpBinaryName()));
+  } catch {
+    return false;
+  }
+}
+
+function ensurePhpInPath(env, publicPath) {
+  const next = { ...env };
+  const parts = (next.PATH || "").split(path.delimiter).filter(Boolean);
+  if (parts.some((p) => pathHasPhp(p))) {
+    return next;
+  }
+
+  const candidates = [];
+  if (next.PHPRC) {
+    let cursor = path.dirname(next.PHPRC);
+    for (let i = 0; i < 8 && cursor; i++) {
+      candidates.push(path.join(cursor, "bin", "win64"));
+      candidates.push(path.join(cursor, "bin"));
+      cursor = path.dirname(cursor);
     }
   }
-  return { env, envrcPath, ok: Boolean(env.PHPRC) };
+
+  const localRoot = path.join(process.env.LOCALAPPDATA || "", "Programs", "Local", "lightning-services");
+  if (fs.existsSync(localRoot)) {
+    for (const entry of fs.readdirSync(localRoot, { withFileTypes: true })) {
+      if (!entry.isDirectory() || !entry.name.includes("php")) continue;
+      candidates.push(path.join(localRoot, entry.name, "bin", "win64"));
+    }
+  }
+
+  const programFiles = process.env["ProgramFiles(x86)"] || process.env.ProgramFiles;
+  if (programFiles) {
+    candidates.push(path.join(programFiles, "Local", "resources", "extraResources", "lightning-services", "php-8.2.27+1", "bin", "win64"));
+  }
+
+  for (const candidate of candidates) {
+    if (pathHasPhp(candidate)) {
+      next.PATH = [candidate, ...parts.filter((p) => p !== candidate)].join(path.delimiter);
+      if (!next.PHPRC) {
+        next.PHPRC = path.join(path.dirname(path.dirname(publicPath)), "conf", "php", "php.ini");
+      }
+      return next;
+    }
+  }
+
+  if (next.PHPRC) {
+    const phpDir = parts.find(
+      (p) => p.includes("lightning-services") && p.includes("php") && /win64/i.test(p)
+    );
+    if (phpDir && pathHasPhp(phpDir)) {
+      next.PATH = [phpDir, ...parts.filter((p) => p !== phpDir)].join(path.delimiter);
+    }
+  }
+
+  return next;
 }
 
 function stripWpOutput(output) {

@@ -277,14 +277,14 @@
 
 	function hideVendorExtras(root) {
 		root.querySelectorAll('iframe[src*="youtube"], iframe[src*="youtu.be"]').forEach(function (frame) {
-			var wrap = frame.closest('.wprf-video, .wpsp-video, div, aside, section, article') || frame;
-			wrap.style.setProperty('display', 'none', 'important');
+			var wrap = frame.closest('.wprf-video, .wpsp-video, aside, section, article, li') || frame;
+			hideElement(wrap);
 		});
 
 		root.querySelectorAll('a[href*="youtube.com"], a[href*="youtu.be"]').forEach(function (a) {
 			if (/WPDeveloper|SchedulePress|ThinkRank|WP Scheduled/i.test(a.textContent || a.getAttribute('title') || '')) {
-				var wrap = a.closest('div, aside, section, article') || a;
-				wrap.style.setProperty('display', 'none', 'important');
+				var wrap = a.closest('.wpsp-sidebar-widget, .sidebar-widget, aside, section, article, li') || a;
+				hideElement(wrap);
 			}
 		});
 	}
@@ -296,9 +296,7 @@
 				return;
 			}
 			var card = h.closest('.wpsp-sidebar-widget, .sidebar-widget, aside, section, article, li, .wprf-control') || h.parentElement;
-			if (card) {
-				card.style.setProperty('display', 'none', 'important');
-			}
+			hideElement(card);
 		});
 	}
 
