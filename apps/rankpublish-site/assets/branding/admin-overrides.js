@@ -12,6 +12,7 @@
 	var guideUrl = cfg.guideUrl || (cfg.cloudUrl || '') + '/guide/';
 	var cloudUrl = cfg.cloudUrl || 'https://nashir.satest.top';
 	var isModuleWrap = !!cfg.isModuleWrap;
+	var PROTECTED_ROOT_SELECTORS = ['.tr-root', 'body', '#wpwrap', '#wpbody-content'];
 
 	var UPSTREAM_RE = /schedulepress|thinkrank|wpdeveloper|wpsp-logo|wp-scheduled/i;
 	var VENDOR_HREF = /wpdeveloper\.com|schedulepress\.com|thinkrank\.ai|calendly\.com/i;
@@ -26,10 +27,18 @@
 	];
 
 	function isAdminTarget() {
+		if (isThinkRankSettingsScreen()) {
+			return true;
+		}
 		return (
 			document.body.classList.contains('rankpublish-site-branded') ||
 			document.body.classList.contains('rpsite-os-module-wrap')
 		);
+	}
+
+	function isThinkRankSettingsScreen() {
+		var href = window.location.href || '';
+		return /[?&]page=thinkrank(?:&|$)/.test(href);
 	}
 
 	function isLicenseScreen() {
@@ -72,6 +81,58 @@
 
 	function moduleRoot() {
 		return document.querySelector('.rpsite-module-native') || document;
+	}
+
+	function isProtectedRoot(el) {
+		if (!el || el.nodeType !== 1) {
+			return false;
+		}
+		for (var i = 0; i < PROTECTED_ROOT_SELECTORS.length; i++) {
+			if (el.matches(PROTECTED_ROOT_SELECTORS[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function shouldSkipHide(el) {
+		if (!el || el.nodeType !== 1) {
+			return true;
+		}
+		if (isProtectedRoot(el)) {
+			return true;
+		}
+		if (
+			el.closest('.tr-root') &&
+			(el.closest('.tr-root') === el || el.matches('.tr-root, body, #wpwrap, #wpbody-content'))
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	function hideElement(el) {
+		if (shouldSkipHide(el)) {
+			return;
+		}
+		el.style.setProperty('display', 'none', 'important');
+	}
+
+	function textOf(el) {
+		return ((el && el.textContent) || '').replace(/\s+/g, ' ').trim();
+	}
+
+	function findClosestHideable(el) {
+		if (!el || el.nodeType !== 1) {
+			return null;
+		}
+		var candidate =
+			el.closest('[class*="card"], [class*="Card"], [class*="widget"], [class*="panel"], section, article, li, a, button, div') ||
+			el.parentElement;
+		if (!candidate || shouldSkipHide(candidate)) {
+			return null;
+		}
+		return candidate;
 	}
 
 	function hideUpstreamSidebars(root) {
@@ -213,6 +274,63 @@
 		});
 	}
 
+	function hideThinkRankUpsells(root) {
+		if (!isThinkRankSettingsScreen()) {
+			return;
+		}
+		document.documentElement.classList.add('rpsite-thinkrank-screen');
+
+		root.querySelectorAll('a[href*="cal.com"], a[href*="calendly.com"]').forEach(function (el) {
+			hideElement(findClosestHideable(el) || el);
+		});
+
+		root.querySelectorAll('a, button, span, div, p, strong, h1, h2, h3, h4, h5').forEach(function (el) {
+			var text = textOf(el);
+			if (!text) {
+				return;
+			}
+
+			if (/^pro$/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+				return;
+			}
+
+			if (/^book a free call$/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+				return;
+			}
+
+			if (/^search settings$/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+				return;
+			}
+
+			if (/^v\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+				return;
+			}
+
+			if (/activate your thinkrank pro license/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+				return;
+			}
+
+			if (/^activate license$/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+				return;
+			}
+
+			if (/^not activated$/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+				return;
+			}
+
+			if (/^follow us$/i.test(text)) {
+				hideElement(findClosestHideable(el) || el);
+			}
+		});
+	}
+
 	function injectLicenseBanner() {
 		if (!isLicenseScreen() || document.getElementById('rankpublish-license-banner')) {
 			return;
@@ -286,6 +404,7 @@
 		rewriteNoticeCopy(root);
 		hideVendorExtras(root);
 		hideVendorCards(root);
+		hideThinkRankUpsells(root);
 		rebrandModuleCopy(root);
 		injectLicenseBanner();
 		rebrandLicenseHeadings(root);

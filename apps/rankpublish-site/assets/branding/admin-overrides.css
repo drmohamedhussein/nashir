@@ -173,3 +173,11 @@ body.rpsite-os-module-wrap .tr-root header svg[viewBox*="29"] {
 .rankpublish-license-banner .button {
 	margin: 8px 8px 0 0;
 }
+
+/* ThinkRank screen white-label fallbacks (without relying on body classes) */
+html.rpsite-thinkrank-screen .tr-root a[href*="cal.com"],
+html.rpsite-thinkrank-screen .tr-root a[href*="calendly.com"],
+html.rpsite-thinkrank-screen .tr-root a[href*="thinkrank.ai"],
+html.rpsite-thinkrank-screen .tr-root [class*="version"] {
+	display: none !important;
+}
