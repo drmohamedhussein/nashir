@@ -50,6 +50,10 @@ if /I "%CMD%"=="verify" (
   node "%REPO_ROOT%\deploy\local\verify-thinkrank-local.cjs" %*
   exit /b %ERRORLEVEL%
 )
+if /I "%CMD%"=="recover" (
+  node "%REPO_ROOT%\deploy\local\recover-local-wp.cjs" %*
+  exit /b %ERRORLEVEL%
+)
 
 echo Unknown command: %CMD%
 echo.
@@ -69,9 +73,11 @@ echo   qa         Automated QA checklist
 echo   setup-test First-time test site setup
 echo   sync       Sync rankpublish-site plugin to Local site
 echo   verify     Verify local ThinkRank branding (no PHP required)
+echo   recover    Fix HTTP 500 / imagick warnings / show PHP log
 echo.
 echo Examples:
 echo   .\rp-local.cmd sync --site rankpublish-test
+echo   .\rp-local.cmd recover --site rankpublish --all
 echo   .\rp-local.cmd qa --site rankpublish
 echo.
 echo PowerShell note: use .\ prefix, e.g. .\rp-local.cmd sync --site rankpublish-test

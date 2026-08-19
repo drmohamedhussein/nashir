@@ -76,23 +76,41 @@ function enablePluginFolder() {
   log("rankpublish-site", "ENABLED");
 }
 
+function commentImagickLines(text) {
+  return text
+    .replace(/^(\s*)extension\s*=\s*php_imagick(?:\.dll)?\s*$/gim, "$1; extension=php_imagick.dll")
+    .replace(/^(\s*)extension\s*=\s*imagick(?:\.so|\.dll)?\s*$/gim, "$1; extension=imagick")
+    .replace(/^(\s*)zend_extension\s*=\s*.*imagick.*$/gim, "$1; zend_extension=imagick (disabled)");
+}
+
 function fixImagickIni() {
-  const { envrcPath, env } = loadEnvrc(publicPath);
-  const phpIni = env.PHPRC || path.join(siteRoot, "conf", "php", "php.ini");
-  if (!fs.existsSync(phpIni)) {
-    log("fix-imagick", "php.ini not found: " + phpIni);
+  const { env } = loadEnvrc(publicPath);
+  const candidates = [
+    env.PHPRC,
+    path.join(siteRoot, "conf", "php", "php.ini"),
+    path.join(siteRoot, "conf", "php", "php.ini.hbs"),
+  ].filter(Boolean);
+
+  const seen = new Set();
+  let fixed = 0;
+  for (const phpIni of candidates) {
+    if (!phpIni || seen.has(phpIni) || !fs.existsSync(phpIni)) {
+      continue;
+    }
+    seen.add(phpIni);
+    const before = fs.readFileSync(phpIni, "utf8");
+    const after = commentImagickLines(before);
+    if (after === before) {
+      continue;
+    }
+    fs.writeFileSync(phpIni, after);
+    log("fix-imagick", "commented imagick in " + phpIni);
+    fixed++;
+  }
+  if (!fixed) {
+    log("fix-imagick", "no imagick extension line found (checked " + candidates.join(", ") + ")");
     return;
   }
-  let text = fs.readFileSync(phpIni, "utf8");
-  const before = text;
-  text = text.replace(/^\s*extension\s*=\s*php_imagick\.dll\s*$/gim, "; extension=php_imagick.dll");
-  text = text.replace(/^\s*extension\s*=\s*imagick\.so\s*$/gim, "; extension=imagick.so");
-  if (text === before) {
-    log("fix-imagick", "no imagick extension line found in " + phpIni);
-    return;
-  }
-  fs.writeFileSync(phpIni, text);
-  log("fix-imagick", "commented imagick in " + phpIni);
   log("fix-imagick", "restart site in Local (Stop → Start)");
 }
 
