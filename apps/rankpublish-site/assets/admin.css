@@ -1588,11 +1588,15 @@ body.rpsite-os-module-wrap #wpbody-content > .wpdeveloper-licensing-notice {
 
 body.rpsite-os-module-wrap .rpsite-os-body {
 	max-width: none;
-	padding: 24px 32px 32px;
+	padding: 20px 24px 32px;
 	flex: 1 1 auto;
 	min-height: 0;
 	overflow: visible !important;
 	display: block;
+}
+
+body.rpsite-os-module-wrap .rpsite-os-heading {
+	margin-bottom: 20px;
 }
 
 body.rpsite-os-module-wrap #wpwrap,
@@ -1610,21 +1614,29 @@ body.rpsite-os-module-wrap .rpsite-os {
 	display: flex;
 	flex-wrap: nowrap;
 	align-items: stretch;
+	width: 100%;
 }
 
 body.rpsite-os-module-wrap .rpsite-os-main {
 	flex: 1 1 auto;
+	min-width: 0;
 	min-height: 0;
-	display: block;
+	display: flex;
+	flex-direction: column;
 	overflow: visible !important;
 }
 
 body.rpsite-os-module-wrap .rpsite-module-native {
 	overflow: visible !important;
-	flex: none;
+	flex: 1 1 auto;
+	min-width: 0;
 	min-height: 0;
 	max-height: none;
 	height: auto !important;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
 }
 
 body.rpsite-os-module-wrap .rpsite-module-native.rpsite-module-native {
@@ -1687,6 +1699,15 @@ body.rpsite-os-module-wrap .rpsite-module-native.rpsite-module-native {
 	flex: 1;
 	min-height: 0;
 	box-shadow: var(--rp-shadow);
+}
+
+/* OS wrap: upstream apps supply their own surfaces — no nested card frame */
+body.rpsite-os-module-wrap .rpsite-module-native {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	overflow: visible;
 }
 
 .rpsite-module-native .wrap,

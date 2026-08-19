@@ -190,6 +190,43 @@
 		});
 	}
 
+	function normalizeModuleLayout(root) {
+		if (!isModuleWrap) {
+			return;
+		}
+
+		root.querySelectorAll('.tr-root').forEach(function (tr) {
+			tr.style.setProperty('width', '100%', 'important');
+			tr.style.setProperty('max-width', 'none', 'important');
+			Array.from(tr.children).forEach(function (child) {
+				if (child.tagName === 'ASIDE') {
+					child.style.setProperty('display', 'none', 'important');
+					return;
+				}
+				child.style.setProperty('flex', '1 1 auto', 'important');
+				child.style.setProperty('width', '100%', 'important');
+				child.style.setProperty('max-width', 'none', 'important');
+				child.style.setProperty('margin-left', '0', 'important');
+				child.style.setProperty('padding-left', '0', 'important');
+			});
+		});
+
+		root.querySelectorAll('#wpsp-dashboard-body, .wpsp-admin-page').forEach(function (el) {
+			el.style.setProperty('width', '100%', 'important');
+			el.style.setProperty('max-width', 'none', 'important');
+		});
+
+		root.querySelectorAll('.wpsp-layout-sidebar, .wpsp-sidebar, [class*="wpsp-sidebar"]').forEach(function (el) {
+			el.style.setProperty('display', 'none', 'important');
+		});
+
+		root.querySelectorAll('.wpsp-layout-main, .wpsp-layout-content, [class*="wpsp-layout-main"]').forEach(function (el) {
+			el.style.setProperty('width', '100%', 'important');
+			el.style.setProperty('max-width', 'none', 'important');
+			el.style.setProperty('flex', '1 1 auto', 'important');
+		});
+	}
+
 	function replaceHeaderLogos(root) {
 		if (!logo) {
 			return;
@@ -523,6 +560,7 @@
 		swapImageSources(root);
 		replaceHeaderLogos(root);
 		hideUpstreamSidebars(root);
+		normalizeModuleLayout(root);
 		rewriteVendorLinks(root);
 		rewriteNoticeCopy(root);
 		if (!isModuleWrap) {

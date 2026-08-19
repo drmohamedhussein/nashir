@@ -155,9 +155,96 @@ body.rpsite-os-module-wrap .rpsite-module-native .tr-root aside {
 	display: none !important;
 }
 
-body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div:first-child {
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root {
+	display: flex !important;
+	flex-direction: column !important;
+	width: 100% !important;
+	max-width: none !important;
+	min-height: 0 !important;
+	background: #fff;
+	border: 1px solid rgba(226, 232, 240, 0.8);
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(33, 51, 93, 0.04);
+	overflow: hidden;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div {
+	flex: 1 1 auto !important;
+	width: 100% !important;
+	max-width: none !important;
 	margin-left: 0 !important;
 	padding-left: 0 !important;
+	min-width: 0 !important;
+}
+
+/* ThinkRank: hide duplicate tab row (Core module tabs already provide navigation) */
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root header nav,
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root header [role="tablist"],
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div > header nav,
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div > header [role="tablist"] {
+	display: none !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root header {
+	border-bottom: 1px solid #f1f5f9;
+	padding-inline: 20px;
+}
+
+/* SchedulePress: single integrated surface aligned with OS shell */
+body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body,
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-admin-page {
+	width: 100% !important;
+	max-width: none !important;
+	background: #fff;
+	border: 1px solid rgba(226, 232, 240, 0.8);
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(33, 51, 93, 0.04);
+	overflow: hidden;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-admin-header {
+	margin: 0;
+	border-bottom: 1px solid #f1f5f9;
+	background: #fff;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-admin-header::before {
+	left: 20px;
+}
+
+/* SchedulePress: hide vendor promo sidebar — keeps layout flush with OS canvas */
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-layout-sidebar,
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-sidebar,
+body.rpsite-os-module-wrap .rpsite-module-native [class*="wpsp-sidebar"],
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-sidebar-widget {
+	display: none !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-layout-main,
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-layout-content,
+body.rpsite-os-module-wrap .rpsite-module-native [class*="wpsp-layout-main"] {
+	width: 100% !important;
+	max-width: none !important;
+	flex: 1 1 auto !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-layout,
+body.rpsite-os-module-wrap .rpsite-module-native [class*="wpsp-layout"]:not([class*="sidebar"]) {
+	display: block !important;
+	width: 100% !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div > div[class*="grid"],
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div > div[class*="flex"] {
+	width: 100% !important;
+	max-width: none !important;
+}
+
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root main,
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root [class*="content"] {
+	flex: 1 1 auto !important;
+	min-width: 0 !important;
+	max-width: none !important;
 }
 
 #the-list a[href*="wpdeveloper.com"],
