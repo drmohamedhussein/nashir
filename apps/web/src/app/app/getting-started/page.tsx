@@ -6,13 +6,28 @@ import { getLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { isSubscriptionLive } from "@/lib/plans";
 import { ENV_URLS, publicAppUrl } from "@/lib/environments";
+import { readIntendedSite } from "@/lib/tenant-origin";
 import { redirect } from "next/navigation";
 
-export default async function GettingStartedPage() {
+function firstParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) {
+    return value[0] ?? "";
+  }
+  return value ?? "";
+}
+
+export default async function GettingStartedPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await getSession();
   if (!session) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const intended = readIntendedSite(firstParam(params.siteUrl), firstParam(params.siteName));
 
   const locale = await getLocale();
   const copy = t(locale);
@@ -57,6 +72,18 @@ export default async function GettingStartedPage() {
       <p className="mt-3 text-ink-soft">
         {copy.gettingStartedWelcome.replace("{name}", session.name)}
       </p>
+      {intended.blocked ? (
+        <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {copy.intendedSiteBlocked}
+        </p>
+      ) : null}
+      {intended.url ? (
+        <p className="mt-4 rounded-2xl border border-brand/20 bg-brand/5 px-4 py-3 text-sm text-ink">
+          <strong className="block text-brand">{copy.intendedSiteTitle}</strong>
+          {copy.intendedSiteBody.replace("{url}", intended.url)}
+          {intended.name ? <span className="mt-1 block text-ink-soft">{intended.name}</span> : null}
+        </p>
+      ) : null}
       <p className="mt-2 rounded-2xl bg-brand/5 px-4 py-3 text-sm text-ink-soft">
         {copy.dashboardUrlHint}{" "}
         <Link href="/app" className="font-semibold text-brand">
@@ -119,7 +146,12 @@ export default async function GettingStartedPage() {
       </ol>
 
       <div className="mt-8">
-        <PairingPanel locale={locale} appUrl={cloudAppUrl} />
+        <PairingPanel
+          locale={locale}
+          appUrl={cloudAppUrl}
+          intendedSiteUrl={intended.url}
+          intendedSiteName={intended.name}
+        />
       </div>
 
       <div className="mt-6 flex flex-wrap gap-4 text-sm">

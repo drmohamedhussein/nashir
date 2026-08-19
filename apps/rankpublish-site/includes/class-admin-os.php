@@ -38,19 +38,25 @@ final class RankPublish_Site_Admin_Os {
 		$s   = self::SLUG;
 		$nav = array(
 			'workspace' => array(
-				$s                 => __( 'Overview', 'rankpublish-site' ),
-				$s . '-sites'      => __( 'Connected sites', 'rankpublish-site' ),
-				$s . '-scheduler'  => __( 'Scheduler', 'rankpublish-site' ),
-				$s . '-seo'        => __( 'SEO', 'rankpublish-site' ),
-				$s . '-activity'   => __( 'Activity', 'rankpublish-site' ),
+				$s => __( 'Overview', 'rankpublish-site' ),
 			),
 			'manage'    => array(
-				$s . '-team'     => __( 'Team', 'rankpublish-site' ),
-				$s . '-billing'  => __( 'Billing', 'rankpublish-site' ),
 				$s . '-settings' => __( 'Settings', 'rankpublish-site' ),
 			),
 		);
 		if ( self::is_dev_mode() ) {
+			$nav['workspace'] = array(
+				$s                => __( 'Overview', 'rankpublish-site' ),
+				$s . '-sites'     => __( 'Connected sites', 'rankpublish-site' ),
+				$s . '-scheduler' => __( 'Scheduler', 'rankpublish-site' ),
+				$s . '-seo'       => __( 'SEO', 'rankpublish-site' ),
+				$s . '-activity'  => __( 'Activity', 'rankpublish-site' ),
+			);
+			$nav['manage'] = array(
+				$s . '-team'     => __( 'Team', 'rankpublish-site' ),
+				$s . '-billing'  => __( 'Billing', 'rankpublish-site' ),
+				$s . '-settings' => __( 'Settings', 'rankpublish-site' ),
+			);
 			$nav['core'] = array(
 				$s . '-merge'      => __( 'Merge audit', 'rankpublish-site' ),
 				$s . '-stack'      => __( 'Dev stack', 'rankpublish-site' ),
@@ -65,6 +71,12 @@ final class RankPublish_Site_Admin_Os {
 	}
 
 	public static function current_page(): string {
+		if ( class_exists( 'RankPublish_Site_Module_Embed', false ) && RankPublish_Site_Module_Embed::is_os_wrapped_request() && isset( $_GET['rpsite_ctx'] ) ) {
+			$ctx = sanitize_key( (string) wp_unslash( $_GET['rpsite_ctx'] ) );
+			if ( in_array( $ctx, array( 'scheduler', 'seo' ), true ) ) {
+				return self::SLUG . '-' . $ctx;
+			}
+		}
 		$page = isset( $_GET['page'] ) ? sanitize_key( (string) wp_unslash( $_GET['page'] ) ) : '';
 		return str_starts_with( $page, self::SLUG ) ? $page : self::SLUG;
 	}
@@ -104,7 +116,8 @@ final class RankPublish_Site_Admin_Os {
 			'user_email'     => $email,
 			'user_initial'   => strtoupper( substr( ( $name !== '' ? $name : $email ) !== '' ? ( $name !== '' ? $name : $email ) : 'U', 0, 1 ) ),
 			'cloud_url'      => $cloud,
-			'account_url'    => $cloud . '/app',
+			'account_url'    => $cloud . '/app/getting-started',
+			'cloud_app_url'  => $cloud . '/app',
 			'billing_url'    => $cloud . '/app/billing',
 			'guide_url'      => home_url( '/guide/' ),
 			'logout_url'     => wp_logout_url( admin_url() ),
@@ -114,16 +127,16 @@ final class RankPublish_Site_Admin_Os {
 				'name'   => $blog !== '' ? $blog : 'RankPublish',
 				'url'    => $home,
 				'status' => $connected,
-				'worker' => 'not_provisioned',
+				'worker' => 'platform',
 			),
 			'counts'         => array(
-				'sites'     => 1,
+				'sites'     => 0,
 				'scheduled' => $future,
 				'pending'   => 0,
 				'drafts'    => $draft,
 				'published' => $publish,
-				'active'    => 'connected' === $connected ? 1 : 0,
-				'awaiting'  => 'pending' === $connected ? 1 : 0,
+				'active'    => 0,
+				'awaiting'  => 0,
 			),
 			'plan'           => array(
 				'name'         => 'RankPublish',
@@ -131,7 +144,7 @@ final class RankPublish_Site_Admin_Os {
 				'price_year'   => '$99',
 				'trial_days'   => 7,
 				'site_limit'   => 1,
-				'sites_used'   => 1,
+				'sites_used'   => 0,
 			),
 			'bridge_zip'     => $bridge,
 			'product_zip'    => $product,
@@ -180,7 +193,7 @@ final class RankPublish_Site_Admin_Os {
 		?>
 		<aside class="rpsite-os-sidebar">
 			<a class="rpsite-os-brand" href="<?php echo esc_url( self::url( self::SLUG ) ); ?>">
-				<span class="rpsite-os-brand__mark">R</span>
+				<img class="rpsite-os-brand__logo" src="<?php echo esc_url( RankPublish_Site_Branding::url( 'logo-menu.svg' ) ); ?>" width="36" height="36" alt="" />
 				<span class="rpsite-os-brand__text">
 					<strong>RankPublish</strong>
 					<em><?php esc_html_e( 'Publishing OS', 'rankpublish-site' ); ?></em>
@@ -214,6 +227,11 @@ final class RankPublish_Site_Admin_Os {
 					<?php endforeach; ?>
 				</nav>
 			<?php endforeach; ?>
+
+			<a class="rpsite-os-cloud-cta" href="<?php echo esc_url( (string) ( $ctx['cloud_app_url'] ?? $ctx['account_url'] ) ); ?>">
+				<?php echo self::icon( 'external' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<span><?php esc_html_e( 'RankPublish Cloud', 'rankpublish-site' ); ?></span>
+			</a>
 
 			<div class="rpsite-os-sidebar__foot">
 				<div class="rpsite-os-help">
@@ -253,7 +271,7 @@ final class RankPublish_Site_Admin_Os {
 					<?php echo self::icon( 'menu' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</button>
 				<div>
-					<p><?php esc_html_e( 'Workspace', 'rankpublish-site' ); ?></p>
+					<p><?php esc_html_e( 'HQ Site Core', 'rankpublish-site' ); ?></p>
 					<strong><?php echo esc_html( (string) $ctx['workspace_name'] ); ?></strong>
 				</div>
 			</div>
@@ -269,7 +287,6 @@ final class RankPublish_Site_Admin_Os {
 	 * @param array<string, mixed> $ctx Context.
 	 */
 	private static function render_connect_modal( array $ctx ): void {
-		$site = is_array( $ctx['site'] ) ? $ctx['site'] : array();
 		?>
 		<div class="rpsite-os-modal" data-rpsite-modal="connect" hidden>
 			<div class="rpsite-os-modal__backdrop" data-rpsite-close="connect"></div>
@@ -278,19 +295,22 @@ final class RankPublish_Site_Admin_Os {
 					<span class="rpsite-os-icon-blob"><?php echo self::icon( 'link' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 					<div>
 						<h2 id="rpsite-connect-title"><?php esc_html_e( 'Connect a WordPress site', 'rankpublish-site' ); ?></h2>
-						<p><?php esc_html_e( 'A secure one-time handoff between your site and RankPublish.', 'rankpublish-site' ); ?></p>
+						<p><?php esc_html_e( 'A secure one-time handoff between a customer site and RankPublish Cloud.', 'rankpublish-site' ); ?></p>
 					</div>
+					<button type="button" class="rpsite-os-modal__close" data-rpsite-close="connect" aria-label="<?php esc_attr_e( 'Close', 'rankpublish-site' ); ?>">
+						<?php echo self::icon( 'x' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</button>
 					<div class="rpsite-os-progress"><span></span><span></span></div>
 				</div>
 				<div class="rpsite-os-modal__body">
 					<label>
 						<span><?php esc_html_e( 'Site name', 'rankpublish-site' ); ?></span>
-						<input type="text" value="<?php echo esc_attr( (string) ( $site['name'] ?? '' ) ); ?>" readonly />
+						<input type="text" data-rpsite-site-name value="" autocomplete="organization" placeholder="<?php esc_attr_e( 'Customer site name', 'rankpublish-site' ); ?>" />
 					</label>
 					<label>
 						<span><?php esc_html_e( 'WordPress URL', 'rankpublish-site' ); ?></span>
-						<input type="url" value="<?php echo esc_attr( (string) ( $site['url'] ?? '' ) ); ?>" readonly />
-						<em><?php esc_html_e( 'This must match the canonical, publicly reachable address of the WordPress site.', 'rankpublish-site' ); ?></em>
+						<input type="url" data-rpsite-wp-url value="" inputmode="url" autocomplete="url" placeholder="https://your-wordpress-site.com" />
+						<em><?php esc_html_e( 'Enter the customer WordPress site you will install RankPublish on — not this HQ site.', 'rankpublish-site' ); ?></em>
 					</label>
 					<label>
 						<span><?php esc_html_e( 'RankPublish endpoint', 'rankpublish-site' ); ?></span>
@@ -304,7 +324,7 @@ final class RankPublish_Site_Admin_Os {
 					</label>
 					<div class="rpsite-os-modal__actions">
 						<button type="button" class="rpsite-os-btn rpsite-os-btn--ghost" data-rpsite-close="connect"><?php esc_html_e( 'Cancel', 'rankpublish-site' ); ?></button>
-						<a class="rpsite-os-btn rpsite-os-btn--primary" href="<?php echo esc_url( (string) $ctx['account_url'] ); ?>">
+						<a class="rpsite-os-btn rpsite-os-btn--primary" data-rpsite-continue-cloud data-rpsite-cloud-base="<?php echo esc_url( (string) $ctx['account_url'] ); ?>" href="<?php echo esc_url( (string) $ctx['account_url'] ); ?>">
 							<?php esc_html_e( 'Continue in RankPublish', 'rankpublish-site' ); ?>
 							<?php echo self::icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						</a>
@@ -314,6 +334,15 @@ final class RankPublish_Site_Admin_Os {
 			</div>
 		</div>
 		<?php
+	}
+
+	public static function hq_banner(): void {
+		$cloud = rpsite_cloud_url() . '/app';
+		echo '<div class="rpsite-hq-banner" role="status">';
+		echo '<strong>' . esc_html__( 'This HQ WordPress — not a customer seat.', 'rankpublish-site' ) . '</strong> ';
+		esc_html_e( 'Customer accounts, pairing, and synced calendars live in RankPublish Cloud. Engines on this site operate on HQ posts only.', 'rankpublish-site' );
+		echo ' <a href="' . esc_url( $cloud ) . '">' . esc_html__( 'Open RankPublish Cloud', 'rankpublish-site' ) . '</a>';
+		echo '</div>';
 	}
 
 	public static function heading( string $eyebrow, string $title, string $description, string $action_html = '' ): void {
@@ -344,6 +373,7 @@ final class RankPublish_Site_Admin_Os {
 			'failed'       => __( 'failed', 'rankpublish-site' ),
 			'connected'    => __( 'connected', 'rankpublish-site' ),
 			'disconnected' => __( 'disconnected', 'rankpublish-site' ),
+			'platform'     => __( 'platform HQ', 'rankpublish-site' ),
 		);
 		printf(
 			'<span class="rpsite-os-pill rpsite-os-pill--%1$s">%2$s</span>',
@@ -380,7 +410,7 @@ final class RankPublish_Site_Admin_Os {
 			'refresh'   => 'M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0 1 14.8-3.4L23 10M1 14l4.7 4.4A9 9 0 0 0 20.5 15',
 			'mail'      => 'M4 4h16v16H4zM4 4l8 8 8-8',
 			'chevron'   => 'M6 9l6 6 6-6',
-			'link'      => 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71',
+			'x'         => 'M18 6 6 18M6 6l12 12',
 			'clock'     => 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
 			'menu'      => 'M4 6h16M4 12h16M4 18h16',
 		);
@@ -415,8 +445,7 @@ final class RankPublish_Site_Admin_Os {
 	}
 
 	private static function local_site_status(): string {
-		$home = (string) home_url();
-		return '' !== $home ? 'connected' : 'pending';
+		return rpsite_is_platform() ? 'platform' : 'disconnected';
 	}
 
 	/**

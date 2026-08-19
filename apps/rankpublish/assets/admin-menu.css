@@ -1,0 +1,30 @@
+/**
+ * RankPublish admin menu icons — always 20×20 like core dashicons.
+ * Loaded on every wp-admin screen so the dashboard sidebar stays aligned.
+ */
+
+#adminmenu .toplevel_page_rankpublish .wp-menu-image,
+#adminmenu .toplevel_page_rankpublish-core .wp-menu-image,
+#adminmenu .toplevel_page_thinkrank .wp-menu-image,
+#adminmenu .toplevel_page_schedulepress .wp-menu-image {
+	background-image: url("logo-menu.svg") !important;
+	background-repeat: no-repeat !important;
+	background-position: center 6px !important;
+	background-size: 20px 20px !important;
+}
+
+#adminmenu .toplevel_page_rankpublish .wp-menu-image img,
+#adminmenu .toplevel_page_rankpublish-core .wp-menu-image img,
+#adminmenu .toplevel_page_thinkrank .wp-menu-image img,
+#adminmenu .toplevel_page_schedulepress .wp-menu-image img,
+#adminmenu .toplevel_page_rankpublish .wp-menu-image::before,
+#adminmenu .toplevel_page_rankpublish-core .wp-menu-image::before,
+#adminmenu .toplevel_page_thinkrank .wp-menu-image::before,
+#adminmenu .toplevel_page_schedulepress .wp-menu-image::before {
+	display: none !important;
+	width: 0 !important;
+	height: 0 !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	overflow: hidden !important;
+}

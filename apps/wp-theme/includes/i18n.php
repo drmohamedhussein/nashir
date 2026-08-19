@@ -1,11 +1,6 @@
 <?php
-/**
- * Original PublisherWP marketing copy. English is the source language; Arabic is the translation.
- *
- * @package PublisherWP
- */
-
 declare(strict_types=1);
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

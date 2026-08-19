@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_ERRORS } from "@/lib/api-errors";
 import { z } from "zod";
 import { activateByLogin, LicenseError } from "@/lib/license";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
@@ -14,13 +15,13 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   if (!rateLimit(clientKey(request, "license"), 20, 15 * 60 * 1000)) {
-    return NextResponse.json({ error: "محاولات كثيرة. انتظر قليلاً." }, { status: 429 });
+    return NextResponse.json({ error: API_ERRORS.RATE_LIMIT }, { status: 429 });
   }
 
   const json = await request.json().catch(() => null);
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "بيانات التفعيل غير صالحة." }, { status: 400 });
+    return NextResponse.json({ error: API_ERRORS.INVALID_ACTIVATION }, { status: 400 });
   }
 
   try {

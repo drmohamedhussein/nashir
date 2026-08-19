@@ -15,10 +15,9 @@ Local `npm run dev` on `:3000` is for developers editing code only — not the u
 
 ## Setup (developers only)
 
-1. Start Postgres: `docker compose -f deploy/local/docker-compose.yml up -d`
-2. Copy `apps/web/.env.example` to `apps/web/.env`
-3. Set `DATABASE_URL=...` and `APP_URL=https://nashir.satest.top`
-4. `cd apps/web && npm install && npx prisma db push && npm run dev`
+1. Copy `apps/web/.env.example` to `apps/web/.env`
+2. Set `DATABASE_URL` to LocalWP MySQL (or the shared WordPress DB on staging)
+3. `cd apps/web && npm install && npx prisma generate && node ../../deploy/contabo/run-staging-schema-safe.cjs . && npm run dev`
 
 WordPress customer test site: `rankpublish-test.local` with RankPublish plugin 0.9+.
 

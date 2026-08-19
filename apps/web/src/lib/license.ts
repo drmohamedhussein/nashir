@@ -1,10 +1,8 @@
 ﻿import { prisma } from "./db";
 import { hashSecret, randomToken, verifyPassword } from "./crypto";
 import { isSubscriptionLive, PLANS, trialEnd } from "./plans";
-
-function normalizeUrl(value: string): string {
-  return value.replace(/\/+$/, "");
-}
+import { API_ERRORS } from "./api-errors";
+import { customerSiteUrlOrError, rejectHqOrigin } from "./tenant-origin";
 
 export class LicenseError extends Error {
   constructor(
@@ -29,11 +27,19 @@ export async function activateByLogin(input: {
     include: { workspace: true },
   });
   if (!user?.workspace || !(await verifyPassword(input.password, user.passwordHash))) {
-    throw new LicenseError("بريد أو كلمة مرور غير صحيحة.", 401);
+    throw new LicenseError(API_ERRORS.INVALID_CREDENTIALS, 401);
   }
 
   const workspaceId = user.workspace.id;
-  const url = normalizeUrl(input.site_url);
+  const siteUrl = customerSiteUrlOrError(input.site_url);
+  if (!siteUrl.ok) {
+    throw new LicenseError(siteUrl.error, 400);
+  }
+  const restBlocked = rejectHqOrigin(input.rest_url);
+  if (restBlocked) {
+    throw new LicenseError(restBlocked, 400);
+  }
+  const url = siteUrl.url;
 
   const existingSite = await prisma.site.findUnique({
     where: { workspaceId_url: { workspaceId, url } },
@@ -69,10 +75,7 @@ export async function activateByLogin(input: {
   }
 
   if (!seat) {
-    throw new LicenseError(
-      "لا يوجد مقعد اشتراك فارغ لهذا الحساب. فعّل تجريبياً من لوحة RankPublish أو أضف اشتراكاً للموقع.",
-      402,
-    );
+    throw new LicenseError(API_ERRORS.NO_SEAT, 402);
   }
 
   const apiKey = randomToken(24);
@@ -132,7 +135,7 @@ export async function unbindSeat(workspaceId: string, subscriptionId: string) {
     where: { id: subscriptionId, workspaceId },
   });
   if (!seat) {
-    throw new LicenseError("الاشتراك غير موجود.", 404);
+    throw new LicenseError(API_ERRORS.SUBSCRIPTION_NOT_FOUND, 404);
   }
 
   if (seat.siteId) {

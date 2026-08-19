@@ -1,4 +1,6 @@
+import { API_ERRORS } from "./api-errors";
 import { signPayload } from "./crypto";
+import { isHqOrigin } from "./tenant-origin";
 
 type SignedRequest = {
   restUrl: string;
@@ -9,6 +11,9 @@ type SignedRequest = {
 };
 
 export async function callWordPress<T>(request: SignedRequest): Promise<T> {
+  if (isHqOrigin(request.restUrl)) {
+    throw new Error(API_ERRORS.HQ_SITE_BLOCKED);
+  }
   const url = new URL(request.path.replace(/^\//, ""), ensureSlash(request.restUrl));
   const method = request.method ?? (request.body ? "POST" : "GET");
   const body = request.body === undefined ? "" : JSON.stringify(request.body);

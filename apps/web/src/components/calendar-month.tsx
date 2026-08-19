@@ -1,5 +1,7 @@
 "use client";
 
+import { t, type Locale } from "@/lib/i18n";
+
 type CalendarPost = {
   id: string;
   title: string;
@@ -7,8 +9,6 @@ type CalendarPost = {
   siteName: string;
   date: string;
 };
-
-const WEEKDAYS = ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
 
 function ymd(date: Date): string {
   const year = date.getFullYear();
@@ -26,7 +26,8 @@ function startOfMonthGrid(year: number, month: number) {
   return start;
 }
 
-export function CalendarMonth({ posts }: { posts: CalendarPost[] }) {
+export function CalendarMonth({ posts, locale }: { posts: CalendarPost[]; locale: Locale }) {
+  const weekdays = t(locale).calendarWeekdays;
   const now = new Date();
   const start = startOfMonthGrid(now.getFullYear(), now.getMonth());
   const days = Array.from({ length: 42 }, (_, index) => {
@@ -49,7 +50,7 @@ export function CalendarMonth({ posts }: { posts: CalendarPost[] }) {
   return (
     <div className="mt-8 overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_12px_30px_rgba(11,22,56,0.06)]">
       <div className="grid grid-cols-7 border-b border-ink/10 bg-paper-deep text-center text-xs font-medium">
-        {WEEKDAYS.map((day) => (
+        {weekdays.map((day) => (
           <div key={day} className="px-2 py-3">
             {day}
           </div>

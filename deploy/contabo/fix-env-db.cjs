@@ -23,7 +23,7 @@ c.on("ready", async () => {
     [
       `cd ${web}`,
       "head -c 3 .env | od -An -tx1",
-      "npx prisma db push 2>&1 | tail -8",
+      "node ../../deploy/contabo/run-staging-schema-safe.cjs .",
       "pm2 restart nashir",
       "sleep 3",
       "curl -s 'https://nashir.satest.top/api/health?n='$(date +%s)",

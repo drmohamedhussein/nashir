@@ -23,7 +23,6 @@ apps/web/out/
 # Prisma
 apps/web/prisma/*.db
 apps/web/prisma/*.db-journal
-apps/web/prisma/create-rp-tables.sql
 apps/web/src/generated/
 
 # Logs

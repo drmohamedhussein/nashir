@@ -1,11 +1,6 @@
-﻿<?php
-/**
- * Interface mockups for the marketing homepage.
- *
- * @package PublisherWP
- */
-
+<?php
 declare(strict_types=1);
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

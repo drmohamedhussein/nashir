@@ -1,11 +1,11 @@
-﻿<?php
+<?php
+declare(strict_types=1);
+
 /**
  * Inner marketing pages.
  *
  * @package PublisherWP
  */
-
-declare(strict_types=1);
 
 get_header();
 $slug  = get_post_field( 'post_name', get_queried_object_id() );
@@ -28,6 +28,9 @@ $start = $cloud ? $cloud . '/register' : nashir_plugin_zip_url();
 				break;
 			case 'download':
 				echo '<h1>' . esc_html( nashir_t( 'nav_plugin' ) ) . '</h1><p class="lead">' . esc_html( nashir_t( 'how1b' ) ) . '</p>';
+				break;
+			case 'guide':
+				echo '<p class="kicker">RankPublish</p><h1>' . esc_html( $en ? 'User guide' : 'دليل الاستخدام' ) . '</h1><p class="lead">' . esc_html( $en ? 'Install the plugin, pair your site, then use every publishing and SEO tool from WordPress and your RankPublish account.' : 'ثبّت الإضافة، اربط موقعك، ثم استخدم كل أدوات النشر وتحسين البحث من ووردبريس ومن حساب RankPublish.' ) . '</p>';
 				break;
 			default:
 				echo '<h1>' . esc_html( get_the_title() ) . '</h1>';
@@ -83,12 +86,7 @@ switch ( $slug ) {
 		break;
 
 	case 'guide':
-		echo '<p class="lead">' . esc_html( $en ? 'PublisherWP is a cloud account plus a WordPress connector. The site executes; the account stores the schedule and social templates.' : 'PublisherWP حساب سحابي وموصل ووردبريس. الموقع ينفّذ، والحساب يحفظ الجدول وقوالب المشاركة.' ) . '</p>';
-		echo '<div class="grid-3">';
-		foreach ( array( '1', '2', '3' ) as $n ) {
-			echo '<article class="card"><h2>' . esc_html( $n . '. ' . nashir_t( 'how' . $n . 't' ) ) . '</h2><p class="muted">' . esc_html( nashir_t( 'how' . $n . 'b' ) ) . '</p></article>';
-		}
-		echo '</div>';
+		nashir_render_user_guide();
 		break;
 
 	case 'faq':

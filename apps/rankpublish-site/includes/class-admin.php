@@ -25,6 +25,7 @@ final class RankPublish_Site_Admin {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'admin_body_class', array( $this, 'body_class' ) );
+		add_action( 'admin_head', array( $this, 'suppress_upstream_license_notices' ) );
 		add_filter( 'screen_options_show_screen', array( $this, 'hide_screen_options' ), 10, 2 );
 		add_action( 'admin_post_rpsite_run_audit', array( $this, 'handle_run_audit' ) );
 		add_action( 'admin_post_rpsite_save_settings', array( $this, 'handle_save_settings' ) );
@@ -84,6 +85,12 @@ final class RankPublish_Site_Admin {
 		}
 
 		if ( ! RankPublish_Site_Admin_Os::is_dev_mode() ) {
+			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-sites' );
+			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-scheduler' );
+			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-seo' );
+			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-activity' );
+			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-team' );
+			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-billing' );
 			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-merge' );
 			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-stack' );
 			remove_submenu_page( self::MENU_SLUG, self::MENU_SLUG . '-connectors' );
@@ -111,12 +118,20 @@ final class RankPublish_Site_Admin {
 			RPSITE_VERSION,
 			true
 		);
+		self::localize_admin_script();
+	}
+
+	public static function localize_admin_script(): void {
+		$host = wp_parse_url( home_url(), PHP_URL_HOST );
 		wp_localize_script(
 			'rankpublish-site-admin',
 			'rpsiteAdmin',
 			array(
-				'copied' => __( 'Copied', 'rankpublish-site' ),
-				'copyFailed' => __( 'Could not copy', 'rankpublish-site' ),
+				'copied'       => __( 'Copied', 'rankpublish-site' ),
+				'copyFailed'   => __( 'Could not copy', 'rankpublish-site' ),
+				'invalidWpUrl' => __( 'Enter a valid WordPress URL, including https://', 'rankpublish-site' ),
+				'hqUrlBlocked' => __( 'This is the RankPublish HQ site. Enter the customer WordPress URL instead.', 'rankpublish-site' ),
+				'hqHost'       => is_string( $host ) ? strtolower( $host ) : '',
 			)
 		);
 	}
@@ -192,45 +207,29 @@ final class RankPublish_Site_Admin {
 	}
 
 	public function render_overview(): void {
-		$ctx    = $this->ctx();
-		$counts = is_array( $ctx['counts'] ?? null ) ? $ctx['counts'] : array();
-		$plan   = is_array( $ctx['plan'] ?? null ) ? $ctx['plan'] : array();
-		$site   = is_array( $ctx['site'] ?? null ) ? $ctx['site'] : array();
-		$steps  = array(
-			array(
-				'done'   => 'connected' === ( $site['status'] ?? '' ),
-				'title'  => __( 'Connect a WordPress site', 'rankpublish-site' ),
-				'detail' => __( 'Use a secure, time-limited token from the RankPublish account to establish the bridge.', 'rankpublish-site' ),
-			),
-			array(
-				'done'   => ( (int) ( $counts['published'] ?? 0 ) + (int) ( $counts['drafts'] ?? 0 ) + (int) ( $counts['scheduled'] ?? 0 ) ) > 0,
-				'title'  => __( 'Synchronize content', 'rankpublish-site' ),
-				'detail' => __( 'Posts on this WordPress site appear in Scheduler and SEO once they exist.', 'rankpublish-site' ),
-			),
-			array(
-				'done'   => (int) ( $counts['scheduled'] ?? 0 ) > 0,
-				'title'  => __( 'Run publishing operations', 'rankpublish-site' ),
-				'detail' => __( 'Schedule and optimize from RankPublish, then finish edits in WordPress.', 'rankpublish-site' ),
-			),
-		);
+		$ctx  = $this->ctx();
+		$site = is_array( $ctx['site'] ?? null ) ? $ctx['site'] : array();
+		$zip  = (string) ( $ctx['product_zip'] ?? rpsite_plugin_zip_url() );
+		$app  = (string) ( $ctx['cloud_app_url'] ?? ( rpsite_cloud_url() . '/app' ) );
 
 		$this->shell_start( self::MENU_SLUG );
 		if ( isset( $_GET['cleared'] ) ) {
 			$this->notice( __( 'Merge watch dismissals cleared.', 'rankpublish-site' ), 'success' );
 		}
 
+		RankPublish_Site_Admin_Os::hq_banner();
 		RankPublish_Site_Admin_Os::heading(
-			__( 'Workspace overview', 'rankpublish-site' ),
-			__( 'Publishing, with a clear signal.', 'rankpublish-site' ),
-			__( 'Monitor this WordPress site, scheduled content, and command status from one calm control surface.', 'rankpublish-site' ),
+			__( 'RankPublish HQ', 'rankpublish-site' ),
+			__( 'Site Core operator surface', 'rankpublish-site' ),
+			__( 'This WordPress is the RankPublish platform. Customer accounts, pairing, and synced calendars live in RankPublish Cloud — not as connected sites on this HQ install.', 'rankpublish-site' ),
 			RankPublish_Site_Admin_Os::connect_button()
 		);
 		?>
 		<div class="rpsite-os-stats">
 			<?php
-			$this->stat_card( __( 'Connected sites', 'rankpublish-site' ), (string) (int) ( $counts['sites'] ?? 0 ), sprintf( __( '%1$d allowed on the RankPublish plan', 'rankpublish-site' ), (int) ( $plan['site_limit'] ?? 1 ) ), 'globe', 'sky' );
-			$this->stat_card( __( 'Scheduled content', 'rankpublish-site' ), (string) (int) ( $counts['scheduled'] ?? 0 ), __( 'Items awaiting their publish window', 'rankpublish-site' ), 'calendar', 'violet' );
-			$this->stat_card( __( 'Queued operations', 'rankpublish-site' ), (string) (int) ( $counts['pending'] ?? 0 ), __( 'Pending Worker actions — none until workers are provisioned', 'rankpublish-site' ), 'activity', 'amber' );
+			$this->stat_card( __( 'This WordPress', 'rankpublish-site' ), 'HQ', (string) ( $site['url'] ?? home_url() ), 'globe', 'sky' );
+			$this->stat_card( __( 'Cloud account', 'rankpublish-site' ), '/app', __( 'Customer seats, pairing, calendar, and SEO lists', 'rankpublish-site' ), 'external', 'violet' );
+			$this->stat_card( __( 'Site Core', 'rankpublish-site' ), (string) ( $ctx['core_version'] ?? RPSITE_VERSION ), __( 'Marketing, branding, and HQ operator tools', 'rankpublish-site' ), 'shield', 'amber' );
 			?>
 		</div>
 
@@ -238,46 +237,50 @@ final class RankPublish_Site_Admin {
 			<section class="rpsite-os-card">
 				<div class="rpsite-os-card__head">
 					<div>
-						<h2><?php esc_html_e( 'Your operating rhythm', 'rankpublish-site' ); ?></h2>
-						<p><?php esc_html_e( 'A short path to a connected, active workspace.', 'rankpublish-site' ); ?></p>
+						<h2><?php esc_html_e( 'Customer path', 'rankpublish-site' ); ?></h2>
+						<p><?php esc_html_e( 'Do not pair this HQ origin. Customers register, install the plugin on their WordPress, then pair from Cloud Connect.', 'rankpublish-site' ); ?></p>
 					</div>
 					<?php echo RankPublish_Site_Admin_Os::icon( 'clock' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 				<ol class="rpsite-os-steps">
-					<?php foreach ( $steps as $index => $step ) : ?>
-						<li>
-							<span class="<?php echo ! empty( $step['done'] ) ? 'is-done' : ''; ?>">
-								<?php
-								if ( ! empty( $step['done'] ) ) {
-									echo RankPublish_Site_Admin_Os::icon( 'check' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								} else {
-									echo esc_html( (string) ( $index + 1 ) );
-								}
-								?>
-							</span>
-							<div>
-								<strong><?php echo esc_html( (string) $step['title'] ); ?></strong>
-								<p><?php echo esc_html( (string) $step['detail'] ); ?></p>
-							</div>
-						</li>
-					<?php endforeach; ?>
+					<li>
+						<span>1</span>
+						<div>
+							<strong><?php esc_html_e( 'Create a RankPublish account', 'rankpublish-site' ); ?></strong>
+							<p><?php esc_html_e( 'Registration is at /register. Each account gets its own workspace.', 'rankpublish-site' ); ?></p>
+						</div>
+					</li>
+					<li>
+						<span>2</span>
+						<div>
+							<strong><?php esc_html_e( 'Install RankPublish on the customer WordPress', 'rankpublish-site' ); ?></strong>
+							<p><?php esc_html_e( 'Download the plugin zip and upload it on the customer site — never activate that plugin here.', 'rankpublish-site' ); ?></p>
+						</div>
+					</li>
+					<li>
+						<span>3</span>
+						<div>
+							<strong><?php esc_html_e( 'Pair from Cloud Connect', 'rankpublish-site' ); ?></strong>
+							<p><?php esc_html_e( 'The connected origin must be the customer site (for example zipwp), not nashir.satest.top.', 'rankpublish-site' ); ?></p>
+						</div>
+					</li>
 				</ol>
 			</section>
 
 			<section class="rpsite-os-card rpsite-os-card--dark">
-				<p class="rpsite-os-kicker-light"><?php esc_html_e( 'Current subscription', 'rankpublish-site' ); ?></p>
+				<p class="rpsite-os-kicker-light"><?php esc_html_e( 'Cloud account', 'rankpublish-site' ); ?></p>
 				<div class="rpsite-os-card__head">
-					<h2><?php echo esc_html( (string) ( $plan['name'] ?? 'RankPublish' ) ); ?></h2>
+					<h2><?php esc_html_e( 'RankPublish Cloud', 'rankpublish-site' ); ?></h2>
 					<?php echo RankPublish_Site_Admin_Os::icon( 'spark' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
-				<p><?php esc_html_e( '$9.99 / month or $99 / year per site, with a 7-day trial.', 'rankpublish-site' ); ?></p>
+				<p><?php esc_html_e( '$9.99 / month or $99 / year per site, with a 7-day trial. Billing and pairing happen in the cloud account.', 'rankpublish-site' ); ?></p>
 				<hr />
 				<div class="rpsite-os-card__foot">
 					<div>
-						<p><?php esc_html_e( 'Site capacity', 'rankpublish-site' ); ?></p>
-						<strong><?php echo esc_html( (int) ( $plan['sites_used'] ?? 1 ) . ' of ' . (int) ( $plan['site_limit'] ?? 1 ) ); ?> <?php esc_html_e( 'sites', 'rankpublish-site' ); ?></strong>
+						<p><?php esc_html_e( 'Open the customer dashboard', 'rankpublish-site' ); ?></p>
+						<strong>/app</strong>
 					</div>
-					<a class="rpsite-os-btn rpsite-os-btn--ghost-light" href="<?php echo esc_url( RankPublish_Site_Admin_Os::url( self::MENU_SLUG . '-billing' ) ); ?>"><?php esc_html_e( 'Manage plan', 'rankpublish-site' ); ?></a>
+					<a class="rpsite-os-btn rpsite-os-btn--ghost-light" href="<?php echo esc_url( $app ); ?>"><?php esc_html_e( 'Open RankPublish Cloud', 'rankpublish-site' ); ?></a>
 				</div>
 			</section>
 		</div>
@@ -285,122 +288,87 @@ final class RankPublish_Site_Admin {
 		<section class="rpsite-os-card">
 			<div class="rpsite-os-card__head">
 				<div>
-					<h2><?php esc_html_e( 'Recent activity', 'rankpublish-site' ); ?></h2>
-					<p><?php esc_html_e( 'An auditable record of the actions in this workspace.', 'rankpublish-site' ); ?></p>
+					<h2><?php esc_html_e( 'Plugin for customer sites', 'rankpublish-site' ); ?></h2>
+					<p><?php esc_html_e( 'SchedulePress and ThinkRank run on the customer WordPress after this zip is installed there.', 'rankpublish-site' ); ?></p>
 				</div>
-				<a class="rpsite-os-link" href="<?php echo esc_url( RankPublish_Site_Admin_Os::url( self::MENU_SLUG . '-activity' ) ); ?>">
-					<?php esc_html_e( 'View all', 'rankpublish-site' ); ?>
-					<?php echo RankPublish_Site_Admin_Os::icon( 'arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<a class="rpsite-os-btn rpsite-os-btn--primary" href="<?php echo esc_url( $zip ); ?>">
+					<?php esc_html_e( 'Download plugin', 'rankpublish-site' ); ?>
 				</a>
 			</div>
-			<?php $this->activity_list( is_array( $ctx['activity'] ?? null ) ? $ctx['activity'] : array() ); ?>
 		</section>
 		<?php
+		if ( RankPublish_Site_Admin_Os::is_dev_mode() ) {
+			echo '<section class="rpsite-os-card">';
+			echo '<div class="rpsite-os-card__head"><div><h2>' . esc_html__( 'HQ activity (dev)', 'rankpublish-site' ) . '</h2>';
+			echo '<p>' . esc_html__( 'Local HQ WordPress activity — not customer workspace posts.', 'rankpublish-site' ) . '</p></div></div>';
+			$this->activity_list( is_array( $ctx['activity'] ?? null ) ? $ctx['activity'] : array() );
+			echo '</section>';
+		}
 		$this->shell_end();
 	}
 
 	public function render_sites(): void {
-		$ctx    = $this->ctx();
-		$site   = is_array( $ctx['site'] ?? null ) ? $ctx['site'] : array();
-		$counts = is_array( $ctx['counts'] ?? null ) ? $ctx['counts'] : array();
-		$plan   = is_array( $ctx['plan'] ?? null ) ? $ctx['plan'] : array();
+		$ctx = $this->ctx();
 
 		$this->shell_start( self::MENU_SLUG . '-sites' );
 		RankPublish_Site_Admin_Os::heading(
 			__( 'WordPress integration', 'rankpublish-site' ),
 			__( 'Connected sites', 'rankpublish-site' ),
-			__( 'This WordPress site is headquarters: content lives here. Customer sites list below after a signed handshake — extra rows are never invented.', 'rankpublish-site' ),
-			RankPublish_Site_Admin_Os::connect_button()
+			__( 'Customer WordPress sites appear in RankPublish Cloud when users register, subscribe, and pair the rankpublish plugin — not by pairing this platform site.', 'rankpublish-site' ),
+			'<a class="rpsite-os-btn rpsite-os-btn--primary" href="' . esc_url( rpsite_cloud_url() . '/app' ) . '">' . esc_html__( 'RankPublish Cloud', 'rankpublish-site' ) . '</a>'
 		);
-		?>
-		<div class="rpsite-os-stats rpsite-os-stats--3">
-			<?php
-			$this->mini_stat( __( 'Sites in workspace', 'rankpublish-site' ), (int) ( $counts['sites'] ?? 1 ), sprintf( __( '%d included in the current plan', 'rankpublish-site' ), (int) ( $plan['site_limit'] ?? 1 ) ), 'globe' );
-			$this->mini_stat( __( 'Active connections', 'rankpublish-site' ), (int) ( $counts['active'] ?? 0 ), __( 'Ready to receive Worker operations', 'rankpublish-site' ), 'shield' );
-			$this->mini_stat( __( 'Awaiting setup', 'rankpublish-site' ), (int) ( $counts['awaiting'] ?? 0 ), __( 'Token verification still required', 'rankpublish-site' ), 'key' );
-			?>
-		</div>
-
-		<section class="rpsite-os-card rpsite-os-card--flush">
-			<div class="rpsite-os-site">
-				<span class="rpsite-os-icon-blob rpsite-os-icon-blob--sky"><?php echo RankPublish_Site_Admin_Os::icon( 'globe' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-				<div class="rpsite-os-site__body">
-					<div class="rpsite-os-site__title">
-						<strong><?php echo esc_html( (string) ( $site['name'] ?? '' ) ); ?></strong>
-						<?php RankPublish_Site_Admin_Os::status_badge( (string) ( $site['status'] ?? 'pending' ) ); ?>
-					</div>
-					<a href="<?php echo esc_url( (string) ( $site['url'] ?? '' ) ); ?>" target="_blank" rel="noopener noreferrer">
-						<?php echo esc_html( (string) ( $site['url'] ?? '' ) ); ?>
-						<?php echo RankPublish_Site_Admin_Os::icon( 'external' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					</a>
-				</div>
-				<div class="rpsite-os-site__worker">
-					<p><?php esc_html_e( 'Worker', 'rankpublish-site' ); ?></p>
-					<strong><?php esc_html_e( 'not provisioned', 'rankpublish-site' ); ?></strong>
-				</div>
-				<div class="rpsite-os-site__actions">
-					<a class="rpsite-os-btn rpsite-os-btn--outline" href="<?php echo esc_url( (string) $ctx['account_url'] ); ?>">
-						<?php echo RankPublish_Site_Admin_Os::icon( 'key' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<?php esc_html_e( 'Issue token in RankPublish', 'rankpublish-site' ); ?>
-					</a>
-				</div>
-			</div>
-		</section>
-		<section class="rpsite-os-card">
-			<div class="rpsite-os-card__head">
-				<div>
-					<h2><?php esc_html_e( 'Customer sites', 'rankpublish-site' ); ?></h2>
-					<p><?php esc_html_e( 'Customer WordPress sites belong in the RankPublish account after a signed connect. This list stays empty until that handshake exists — Site Core will not draw fictional extra sites.', 'rankpublish-site' ); ?></p>
-				</div>
-			</div>
-			<?php
-			$this->empty_state(
-				'sites',
-				__( 'No customer sites yet', 'rankpublish-site' ),
-				__( 'Use Connect a site, issue the token in RankPublish, then install the Connector on the customer WordPress.', 'rankpublish-site' ),
-				true
-			);
-			?>
-			<?php if ( ! empty( $ctx['bridge_zip'] ) ) : ?>
-				<p class="rpsite-os-actions">
-					<a class="rpsite-os-btn rpsite-os-btn--outline" href="<?php echo esc_url( (string) $ctx['bridge_zip'] ); ?>"><?php esc_html_e( 'Download Bridge', 'rankpublish-site' ); ?></a>
-				</p>
-			<?php endif; ?>
-		</section>
-		<?php
+		RankPublish_Site_Workspace::render_operator_sites( $ctx );
 		$this->shell_end();
 	}
 
 	public function render_scheduler(): void {
 		$this->shell_start( self::MENU_SLUG . '-scheduler' );
+		RankPublish_Site_Admin_Os::hq_banner();
 		RankPublish_Site_Admin_Os::heading(
 			__( 'Scheduler', 'rankpublish-site' ),
-			__( 'SchedulePress workspace', 'rankpublish-site' ),
-			__( 'Use SchedulePress and SchedulePress Pro inside RankPublish Core without leaving this screen.', 'rankpublish-site' ),
-			'<a class="rpsite-os-btn rpsite-os-btn--outline" href="' . esc_url( RankPublish_Site_Admin_Os::url( self::MENU_SLUG . '-sites' ) ) . '">'
-			. RankPublish_Site_Admin_Os::icon( 'globe' )
-			. esc_html__( 'Manage sites', 'rankpublish-site' )
-			. '</a>'
+			__( 'HQ publishing engines', 'rankpublish-site' ),
+			__( 'SchedulePress on this WordPress operates on HQ posts. Customer calendars live in RankPublish Cloud and on the customer plugin.', 'rankpublish-site' )
 		);
-		RankPublish_Site_Module_Embed::render_workspace(
-			RankPublish_Site_Module_Embed::scheduler_panels(),
-			'scheduler'
-		);
+		if ( RankPublish_Site_Admin_Os::is_dev_mode() ) {
+			RankPublish_Site_Module_Embed::render_missing_stack( 'scheduler' );
+		} else {
+			echo '<section class="rpsite-os-card"><p>';
+			esc_html_e( 'Open /app/calendar for the connected customer site. Full engines stay on that WordPress install.', 'rankpublish-site' );
+			echo ' <a href="' . esc_url( rpsite_cloud_url() . '/app/calendar' ) . '">' . esc_html__( 'Open cloud calendar', 'rankpublish-site' ) . '</a>';
+			echo '</p></section>';
+		}
 		$this->shell_end();
 	}
 
 	public function render_seo(): void {
 		$this->shell_start( self::MENU_SLUG . '-seo' );
+		RankPublish_Site_Admin_Os::hq_banner();
 		RankPublish_Site_Admin_Os::heading(
 			__( 'SEO', 'rankpublish-site' ),
-			__( 'ThinkRank workspace', 'rankpublish-site' ),
-			__( 'Use ThinkRank and ThinkRank Pro inside RankPublish Core without leaving this screen.', 'rankpublish-site' )
+			__( 'HQ search engines', 'rankpublish-site' ),
+			__( 'ThinkRank on this WordPress operates on HQ posts. Customer SEO lists live in RankPublish Cloud and on the customer plugin.', 'rankpublish-site' )
 		);
-		RankPublish_Site_Module_Embed::render_workspace(
-			RankPublish_Site_Module_Embed::seo_panels(),
-			'seo'
-		);
+		if ( RankPublish_Site_Admin_Os::is_dev_mode() ) {
+			RankPublish_Site_Module_Embed::render_missing_stack( 'seo' );
+		} else {
+			echo '<section class="rpsite-os-card"><p>';
+			esc_html_e( 'Open /app/seo for the connected customer site. Full engines stay on that WordPress install.', 'rankpublish-site' );
+			echo ' <a href="' . esc_url( rpsite_cloud_url() . '/app/seo' ) . '">' . esc_html__( 'Open cloud SEO', 'rankpublish-site' ) . '</a>';
+			echo '</p></section>';
+		}
 		$this->shell_end();
+	}
+
+	/**
+	 * Hide upstream SchedulePress / ThinkRank license banners inside Publishing OS.
+	 */
+	public function suppress_upstream_license_notices(): void {
+		if ( ! $this->is_os_page() ) {
+			return;
+		}
+		echo '<style id="rpsite-hide-upstream-licenses">';
+		echo 'body.rpsite-os .wpdeveloper-licensing-notice,body.rpsite-os .wpdeveloper-licensing-notice-wrap{display:none!important}';
+		echo '</style>';
 	}
 
 	public function render_activity(): void {

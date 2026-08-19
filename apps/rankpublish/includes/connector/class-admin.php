@@ -21,6 +21,10 @@ final class Admin {
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'menu' ), 10001 );
 		add_action( 'admin_init', array( $this, 'handle' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_menu_icon' ), 5 );
+		add_filter( 'admin_body_class', array( $this, 'body_class' ) );
+		add_action( 'in_admin_header', array( $this, 'suppress_notices' ), 1 );
 	}
 
 	public function menu(): void {
@@ -31,6 +35,71 @@ final class Admin {
 			'manage_options',
 			'rankpublish-cloud',
 			array( $this, 'render' )
+		);
+	}
+
+	/**
+	 * @param string $classes Admin body classes.
+	 */
+	public function body_class( string $classes ): string {
+		if ( $this->is_cloud_screen() ) {
+			$classes .= ' rankpublish-cloud-wizard';
+		}
+		return $classes;
+	}
+
+	/**
+	 * Keep the connect screen as clean as ThinkRank Setup Wizard.
+	 */
+	public function suppress_notices(): void {
+		if ( ! $this->is_cloud_screen() ) {
+			return;
+		}
+		remove_all_actions( 'user_admin_notices' );
+		remove_all_actions( 'admin_notices' );
+		remove_all_actions( 'all_admin_notices' );
+	}
+
+	/**
+	 * Keep sidebar icons at dashicon size on every admin screen.
+	 */
+	public function enqueue_menu_icon(): void {
+		if ( ! defined( 'RANKPUBLISH_URL' ) ) {
+			return;
+		}
+
+		$version = defined( 'RANKPUBLISH_VERSION' ) ? RANKPUBLISH_VERSION : RANKPUBLISH_CONNECTOR_VERSION;
+		wp_enqueue_style(
+			'rankpublish-admin-menu',
+			RANKPUBLISH_URL . 'assets/admin-menu.css',
+			array(),
+			$version
+		);
+	}
+
+	/**
+	 * @param string $hook Admin page hook.
+	 */
+	public function enqueue( string $hook ): void {
+		if ( false === strpos( $hook, 'rankpublish-cloud' ) ) {
+			return;
+		}
+
+		$version = defined( 'RANKPUBLISH_VERSION' ) ? RANKPUBLISH_VERSION : RANKPUBLISH_CONNECTOR_VERSION;
+		$base    = defined( 'RANKPUBLISH_URL' ) ? RANKPUBLISH_URL : '';
+
+		wp_enqueue_style(
+			'rankpublish-cloud-connect',
+			$base . 'assets/cloud-connect.css',
+			array(),
+			$version
+		);
+
+		wp_register_script( 'rankpublish-cloud-connect', '', array(), $version, true );
+		wp_enqueue_script( 'rankpublish-cloud-connect' );
+		wp_add_inline_script(
+			'rankpublish-cloud-connect',
+			'document.addEventListener("DOMContentLoaded",function(){var i=document.getElementById("rankpublish_code");if(!i){return;}i.addEventListener("input",function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);});});'
 		);
 	}
 
@@ -64,6 +133,10 @@ final class Admin {
 
 			Cloud_Client::store_connection( $result, $app_url );
 			Cloud_Client::sync_capabilities();
+			Heartbeat::ensure_scheduled();
+			Sync::push_all();
+			delete_transient( 'rankpublish_show_onboarding' );
+			Cloud_Client::fetch_workspace();
 			add_settings_error( 'rankpublish_cloud', 'connected', __( 'Connected to RankPublish Cloud.', 'rankpublish' ), 'updated' );
 		}
 	}
@@ -77,42 +150,16 @@ final class Admin {
 		$site_id   = (string) get_option( 'rankpublish_site_id', '' );
 		$connected = Rest::is_connected();
 		$health    = rest_url( 'rankpublish/v1/health' );
+		$default   = '' !== $app_url ? untrailingslashit( $app_url ) : Onboarding::default_app_url();
 
-		echo '<div class="wrap">';
-		echo '<h1>' . esc_html__( 'RankPublish Cloud Connect', 'rankpublish' ) . '</h1>';
-		settings_errors( 'rankpublish_cloud' );
-
-		if ( $connected ) {
-			echo '<p><strong>' . esc_html__( 'Status:', 'rankpublish' ) . '</strong> ';
-			echo esc_html__( 'Connected', 'rankpublish' ) . '</p>';
-			echo '<p><code>' . esc_html( $site_id ) . '</code></p>';
-			echo '<p>' . esc_html__( 'Connector REST:', 'rankpublish' ) . ' <code>' . esc_url( $health ) . '</code></p>';
-
-			echo '<form method="post">';
-			wp_nonce_field( 'rankpublish_disconnect' );
-			submit_button( __( 'Disconnect', 'rankpublish' ), 'delete', 'rankpublish_disconnect', false );
-			echo '</form>';
-		} else {
-			echo '<p>' . esc_html__( 'Generate a pairing code in RankPublish Cloud, then enter it here.', 'rankpublish' ) . '</p>';
-			echo '<form method="post" class="rankpublish-cloud-form">';
-			wp_nonce_field( 'rankpublish_connect' );
-			echo '<table class="form-table"><tbody>';
-			echo '<tr><th><label for="rankpublish_app_url">' . esc_html__( 'Cloud app URL', 'rankpublish' ) . '</label></th>';
-			echo '<td><input name="rankpublish_app_url" id="rankpublish_app_url" type="url" class="regular-text" value="' . esc_attr( $app_url ) . '" placeholder="https://nashir.satest.top" required /></td></tr>';
-			echo '<tr><th><label for="rankpublish_code">' . esc_html__( 'Pairing code', 'rankpublish' ) . '</label></th>';
-			echo '<td><input name="rankpublish_code" id="rankpublish_code" type="text" class="regular-text" maxlength="6" pattern="[A-Za-z0-9]{6}" required /></td></tr>';
-			echo '</tbody></table>';
-			submit_button( __( 'Connect site', 'rankpublish' ), 'primary', 'rankpublish_connect' );
-			echo '</form>';
-		}
-
-		echo '<h2>' . esc_html__( 'Integrations on this site', 'rankpublish' ) . '</h2>';
-		echo '<ul>';
-		foreach ( Registry::integration_manifest() as $row ) {
-			echo '<li><strong>' . esc_html( (string) $row['label'] ) . '</strong> — ';
-			echo esc_html( (string) ( $row['version'] ?? '?' ) ) . '</li>';
-		}
-		echo '</ul>';
+		echo '<div class="wrap rp-wizard-wrap">';
+		Onboarding::render_wizard( $connected, $default, $site_id, $health );
 		echo '</div>';
+	}
+
+	private function is_cloud_screen(): bool {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only screen detection.
+		$page = isset( $_GET['page'] ) ? sanitize_key( (string) wp_unslash( $_GET['page'] ) ) : '';
+		return 'rankpublish-cloud' === $page;
 	}
 }

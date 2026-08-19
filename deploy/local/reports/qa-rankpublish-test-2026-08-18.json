@@ -1,0 +1,179 @@
+{
+  "site": "rankpublish-test",
+  "publicPath": "C:/Users/drmoh/Local Sites/rankpublish-test/app/public",
+  "url": "http://rankpublish-test.local/",
+  "auditedAt": "2026-08-18T16:48:56.812Z",
+  "mode": "product",
+  "versions": {
+    "rankpublish": "0.9.1",
+    "schedule": "5.3.3",
+    "thinkrank": "1.31.0"
+  },
+  "modules": {
+    "schedule": true,
+    "schedule_pro": true,
+    "seo": true,
+    "seo_pro": true
+  },
+  "summary": {
+    "passed": 19,
+    "failed": 3,
+    "total": 22
+  },
+  "checks": [
+    {
+      "id": "mode",
+      "label": "Site in product mode",
+      "pass": true,
+      "detail": "detected: product",
+      "required": true
+    },
+    {
+      "id": "plugin-rankpublish",
+      "label": "rankpublish active",
+      "pass": true,
+      "detail": "0.9.1",
+      "required": true
+    },
+    {
+      "id": "plugin-upstream-off",
+      "label": "Upstream plugins inactive",
+      "pass": true,
+      "detail": "rankpublish",
+      "required": true
+    },
+    {
+      "id": "ver-rankpublish",
+      "label": "RANKPUBLISH_VERSION",
+      "pass": true,
+      "detail": "0.9.1",
+      "required": true
+    },
+    {
+      "id": "ver-schedule",
+      "label": "WPSP_VERSION (embedded)",
+      "pass": true,
+      "detail": "5.3.3",
+      "required": true
+    },
+    {
+      "id": "ver-thinkrank",
+      "label": "THINKRANK_VERSION (embedded)",
+      "pass": true,
+      "detail": "1.31.0",
+      "required": true
+    },
+    {
+      "id": "mod-schedule",
+      "label": "Schedule module loaded",
+      "pass": true,
+      "detail": "true",
+      "required": true
+    },
+    {
+      "id": "mod-schedule-pro",
+      "label": "Schedule Pro module loaded",
+      "pass": true,
+      "detail": "true",
+      "required": true
+    },
+    {
+      "id": "mod-seo",
+      "label": "SEO module loaded",
+      "pass": true,
+      "detail": "true",
+      "required": true
+    },
+    {
+      "id": "mod-seo-pro",
+      "label": "SEO Pro module loaded",
+      "pass": true,
+      "detail": "true",
+      "required": true
+    },
+    {
+      "id": "menu-rankpublish",
+      "label": "RankPublish admin menu registered",
+      "pass": true,
+      "detail": "8 subpages",
+      "required": true
+    },
+    {
+      "id": "menu-rankpublish",
+      "label": "Submenu: rankpublish",
+      "pass": true,
+      "detail": "",
+      "required": true
+    },
+    {
+      "id": "menu-thinkrank",
+      "label": "Submenu: thinkrank",
+      "pass": true,
+      "detail": "",
+      "required": true
+    },
+    {
+      "id": "menu-thinkrank-essential-seo",
+      "label": "Submenu: thinkrank-essential-seo",
+      "pass": true,
+      "detail": "",
+      "required": true
+    },
+    {
+      "id": "menu-thinkrank-license",
+      "label": "Submenu: thinkrank-license",
+      "pass": true,
+      "detail": "",
+      "required": true
+    },
+    {
+      "id": "menu-schedulepress",
+      "label": "Submenu (optional): schedulepress",
+      "pass": false,
+      "detail": "visible in browser QA",
+      "required": false
+    },
+    {
+      "id": "menu-schedulepress-calendar",
+      "label": "Submenu (optional): schedulepress-calendar",
+      "pass": false,
+      "detail": "visible in browser QA",
+      "required": false
+    },
+    {
+      "id": "menu-thinkrank_setup_wizard",
+      "label": "Submenu (optional): thinkrank_setup_wizard",
+      "pass": true,
+      "detail": "ok",
+      "required": false
+    },
+    {
+      "id": "db-tables",
+      "label": "Plugin DB tables present",
+      "pass": true,
+      "detail": "23 tables",
+      "required": true
+    },
+    {
+      "id": "http-home",
+      "label": "Front page responds",
+      "pass": true,
+      "detail": "HTTP 200",
+      "required": true
+    },
+    {
+      "id": "http-admin-login",
+      "label": "wp-admin reachable",
+      "pass": true,
+      "detail": "HTTP 302",
+      "required": true
+    },
+    {
+      "id": "php-log",
+      "label": "No recent PHP fatals in Local log",
+      "pass": false,
+      "detail": "1 fatal(s) in last 80 lines",
+      "required": true
+    }
+  ]
+}

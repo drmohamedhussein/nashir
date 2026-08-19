@@ -10,9 +10,14 @@ const { Client } = require("./lib/ssh2-client.cjs");
 const host = process.env.NASHIR_SSH_HOST;
 const username = process.env.NASHIR_SSH_USER;
 const password = process.env.NASHIR_SSH_PASS;
-const mysqlUser = process.env.NASHIR_MYSQL_USER || "Dnh0lge57UHlNg5N";
-const mysqlPass = process.env.NASHIR_MYSQL_PASS || process.env.NASHIR_MYSQL_PASSWORD || "";
+const mysqlUser = process.env.NASHIR_MYSQL_USER;
+const mysqlPass = process.env.NASHIR_MYSQL_PASS || process.env.NASHIR_MYSQL_PASSWORD;
 const mysqlDb = process.env.NASHIR_MYSQL_DB || "nashirwp_WKBlixyk";
+
+if (!host || !username || !password || !mysqlUser || !mysqlPass) {
+  console.error("Missing NASHIR_SSH_* / NASHIR_MYSQL_USER / NASHIR_MYSQL_PASS");
+  process.exit(1);
+}
 
 function exec(conn, command) {
   return new Promise((resolve, reject) => {
