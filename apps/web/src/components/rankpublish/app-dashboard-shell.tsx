@@ -122,9 +122,8 @@ export function AppDashboardShell({
   const workspaceName = `${userName || "RankPublish"} Workspace`;
   const [navOpen, setNavOpen] = useState(false);
 
-  useEffect(() => {
-    setNavOpen(false);
-  }, [pathname]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- close mobile nav on route change
+  useEffect(() => { setNavOpen(false); }, [pathname]);
 
   useEffect(() => {
     if (!navOpen) {

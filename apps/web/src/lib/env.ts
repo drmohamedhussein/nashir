@@ -1,4 +1,4 @@
-import { ENV_URLS, publicAppUrl } from "./environments";
+import { publicAppUrl } from "./environments";
 
 export function appUrl(): string {
   return publicAppUrl();
