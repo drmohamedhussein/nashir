@@ -185,6 +185,13 @@ html.rpsite-thinkrank-screen .tr-root [class*="version"] {
 /* OS wrap: CSS-only upsell chrome (keeps React scroll intact) */
 body.rpsite-os-module-wrap .rpsite-module-native .tr-root a[href*="cal.com"],
 body.rpsite-os-module-wrap .rpsite-module-native .tr-root a[href*="calendly.com"],
-body.rpsite-os-module-wrap .rpsite-module-native .tr-root [class*="version"] {
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root [class*="version"],
+body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body a[href*="wpdeveloper.com"],
+body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body a[href*="schedulepress.com"] {
+	display: none !important;
+}
+
+html.rpsite-schedulepress-screen .rpsite-module-native a[href*="wpdeveloper.com"],
+html.rpsite-schedulepress-screen .rpsite-module-native a[href*="schedulepress.com"] {
 	display: none !important;
 }

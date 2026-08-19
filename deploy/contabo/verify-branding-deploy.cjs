@@ -98,11 +98,11 @@ if (!host || !username || !password) {
     const jsPath = `${remoteRoot}/wp-content/plugins/rankpublish-site/assets/branding/admin-overrides.js`;
     const remoteJs = await exec(conn, `grep -E 'hideThinkRankUpsells|shouldSkipHide|PROTECTED_ROOT_SELECTORS|isThinkRankSettingsScreen' ${jsPath}`);
     const markers = [
-      "hideThinkRankUpsells",
-      "hideThinkRankUpsellsSafe",
+      "hideModuleUpsells",
+      "hideModuleUpsellsSafe",
       "shouldSkipHide",
       "PROTECTED_ROOT_SELECTORS",
-      "isThinkRankSettingsScreen",
+      "isUpstreamModuleScreen",
     ];
     for (const marker of markers) {
       if (!check(`admin-overrides.js contains ${marker}`, remoteJs.includes(marker))) failed++;

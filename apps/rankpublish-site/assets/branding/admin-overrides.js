@@ -12,7 +12,7 @@
 	var guideUrl = cfg.guideUrl || (cfg.cloudUrl || '') + '/guide/';
 	var cloudUrl = cfg.cloudUrl || 'https://nashir.satest.top';
 	var isModuleWrap = !!cfg.isModuleWrap;
-	var PROTECTED_ROOT_SELECTORS = ['.tr-root', 'body', '#wpwrap', '#wpbody-content'];
+	var PROTECTED_ROOT_SELECTORS = ['.tr-root', '#wpsp-dashboard-body', 'body', '#wpwrap', '#wpbody-content'];
 
 	var UPSTREAM_RE = /schedulepress|thinkrank|wpdeveloper|wpsp-logo|wp-scheduled/i;
 	var VENDOR_HREF = /wpdeveloper\.com|schedulepress\.com|thinkrank\.ai|calendly\.com/i;
@@ -27,7 +27,7 @@
 	];
 
 	function isAdminTarget() {
-		if (isThinkRankSettingsScreen()) {
+		if (isUpstreamModuleScreen()) {
 			return true;
 		}
 		return (
@@ -36,13 +36,26 @@
 		);
 	}
 
+	function isUpstreamModuleScreen() {
+		var href = window.location.href || '';
+		return /[?&]page=(thinkrank|schedulepress|schedulepress-calendar)(?:&|$)/.test(href);
+	}
+
 	function isThinkRankSettingsScreen() {
 		var href = window.location.href || '';
 		return /[?&]page=thinkrank(?:&|$)/.test(href);
 	}
 
+	function isSchedulePressScreen() {
+		var href = window.location.href || '';
+		return /[?&]page=schedulepress(?:&|$)/.test(href) || /[?&]page=schedulepress-calendar(?:&|$)/.test(href);
+	}
+
 	function isLicenseScreen() {
 		var href = window.location.href;
+		if (isModuleWrap) {
+			return /page=thinkrank-license(?:&|$)/.test(href);
+		}
 		return /page=(thinkrank-license|schedulepress-calendar|schedulepress)(&|$)/.test(href);
 	}
 
@@ -102,7 +115,7 @@
 		if (isProtectedRoot(el)) {
 			return true;
 		}
-		if (el.querySelector && el.querySelector('.tr-root')) {
+		if (el.querySelector && (el.querySelector('.tr-root') || el.querySelector('#wpsp-dashboard-body'))) {
 			return true;
 		}
 		if (el.childElementCount > 30) {
@@ -112,8 +125,10 @@
 			return true;
 		}
 		if (
-			el.closest('.tr-root') &&
-			(el.closest('.tr-root') === el || el.matches('.tr-root, body, #wpwrap, #wpbody-content'))
+			(el.closest('.tr-root') || el.closest('#wpsp-dashboard-body')) &&
+			(el.closest('.tr-root') === el ||
+				el.closest('#wpsp-dashboard-body') === el ||
+				el.matches('.tr-root, #wpsp-dashboard-body, body, #wpwrap, #wpbody-content'))
 		) {
 			return true;
 		}
@@ -300,14 +315,20 @@
 		});
 	}
 
-	function hideThinkRankUpsells(root) {
-		if (!isThinkRankSettingsScreen()) {
+	function hideModuleUpsells(root) {
+		if (!isUpstreamModuleScreen()) {
 			return;
 		}
-		document.documentElement.classList.add('rpsite-thinkrank-screen');
+		document.documentElement.classList.add('rpsite-module-screen');
+		if (isThinkRankSettingsScreen()) {
+			document.documentElement.classList.add('rpsite-thinkrank-screen');
+		}
+		if (isSchedulePressScreen()) {
+			document.documentElement.classList.add('rpsite-schedulepress-screen');
+		}
 
 		if (isModuleWrap) {
-			hideThinkRankUpsellsSafe(root);
+			hideModuleUpsellsSafe(root);
 			return;
 		}
 
@@ -315,11 +336,13 @@
 			hideElement(findClosestHideable(el) || el);
 		});
 
-		var appRoot = root.querySelector('.tr-root') || root;
-		var headerScope = appRoot.querySelector('header') || appRoot;
+		var appRoot = root.querySelector('.tr-root') || root.querySelector('#wpsp-dashboard-body') || root;
+		var headerScope =
+			appRoot.querySelector('header') || appRoot.querySelector('.wpsp-admin-header') || appRoot;
 		var bodyScope = appRoot;
 
 		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^pro$/i);
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^go pro$/i);
 		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^book a free call$/i);
 		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^search settings$/i);
 		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^v\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/i);
@@ -327,15 +350,15 @@
 		hideByTextInScope(
 			bodyScope,
 			'h1, h2, h3, h4, p, strong, span, a, button',
-			/activate your thinkrank pro license/i
+			/activate your (?:thinkrank|schedulepress|wp scheduled posts) pro license/i
 		);
 		hideByTextInScope(bodyScope, 'a, button, span, p', /^activate license$/i);
 		hideByTextInScope(bodyScope, 'span, p, strong, div[class*="status"]', /^not activated$/i);
 		hideByTextInScope(bodyScope, 'h2, h3, h4, strong, span, p', /^follow us$/i);
 	}
 
-	function hideThinkRankUpsellsSafe(root) {
-		root.querySelectorAll('a[href*="cal.com"], a[href*="calendly.com"]').forEach(function (el) {
+	function hideModuleUpsellsSafe(root) {
+		root.querySelectorAll('a[href*="cal.com"], a[href*="calendly.com"], a[href*="wpdeveloper.com"], a[href*="schedulepress.com"]').forEach(function (el) {
 			hideElement(el);
 		});
 
@@ -347,7 +370,7 @@
 			if (!text) {
 				return;
 			}
-			if (/^(pro|book a free call|search settings|activate license|not activated|follow us)$/i.test(text)) {
+			if (/^(pro|go pro|book a free call|search settings|activate license|not activated|follow us)$/i.test(text)) {
 				hideElement(el);
 				return;
 			}
@@ -355,8 +378,8 @@
 				hideElement(el);
 				return;
 			}
-			if (/activate your thinkrank pro license/i.test(text)) {
-				var card = el.closest('[class*="card"], [class*="Card"], [class*="license"], [class*="License"], section, article, aside');
+			if (/activate your (?:thinkrank|schedulepress|wp scheduled posts) pro license/i.test(text)) {
+				var card = el.closest('[class*="card"], [class*="Card"], [class*="license"], [class*="License"], section, article, aside, .wpsp-sidebar-widget');
 				if (card && card.childElementCount < 20) {
 					hideElement(card);
 				}
@@ -437,7 +460,7 @@
 		rewriteNoticeCopy(root);
 		hideVendorExtras(root);
 		hideVendorCards(root);
-		hideThinkRankUpsells(root);
+		hideModuleUpsells(root);
 		rebrandModuleCopy(root);
 		injectLicenseBanner();
 		rebrandLicenseHeadings(root);

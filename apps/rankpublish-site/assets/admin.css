@@ -1700,13 +1700,16 @@ body.rpsite-os-module-wrap .rpsite-module-native {
 }
 
 body.rpsite-os-module-wrap .rpsite-module-native .tr-root,
-body.rpsite-os-module-wrap .rpsite-module-native .thinkrank-admin-page {
+body.rpsite-os-module-wrap .rpsite-module-native .thinkrank-admin-page,
+body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body,
+body.rpsite-os-module-wrap .rpsite-module-native .wpsp-admin-page {
 	min-height: 0 !important;
 	height: auto !important;
 	max-height: none !important;
 }
 
-body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div {
+body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div,
+body.rpsite-os-module-wrap .rpsite-module-native #wpsp-dashboard-body > div {
 	height: auto !important;
 	max-height: none !important;
 	min-height: 0 !important;
