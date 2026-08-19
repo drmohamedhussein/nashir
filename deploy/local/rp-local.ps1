@@ -14,7 +14,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify")]
+    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -47,6 +47,9 @@ switch ($Command) {
     "status" {
         Run-Node @("deploy/local/switch-product-mode.cjs", "status") + $Rest
     }
+    "recover" {
+        Run-Node @("deploy/local/recover-local-wp.cjs") + $Rest
+    }
     "qa" {
         Run-Node @("deploy/local/qa-rankpublish.cjs") + $Rest
     }
@@ -74,6 +77,9 @@ Commands (always run from repo via this wrapper):
 
   sync      Sync rankpublish-site plugin to a Local site
             .\deploy\local\rp-local.ps1 sync --site rankpublish-test
+
+  recover   Fix HTTP 500 on Local (disable plugin, imagick, show PHP log)
+            .\deploy\local\rp-local.ps1 recover --site rankpublish --all
 
   status    Show active plugins / detected mode
             .\deploy\local\rp-local.ps1 status --site rankpublish-test

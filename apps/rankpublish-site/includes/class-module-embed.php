@@ -95,8 +95,17 @@ final class RankPublish_Site_Module_Embed {
 	 * @param string $page Admin page slug.
 	 */
 	private static function admin_load_hook( string $page ): string {
+		$fallback = 'toplevel_page_' . $page;
+
 		if ( ! function_exists( 'get_plugin_page_hookname' ) ) {
+			if ( ! is_readable( ABSPATH . 'wp-admin/includes/plugin.php' ) ) {
+				return $fallback;
+			}
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		if ( ! function_exists( 'get_plugin_page_hookname' ) ) {
+			return $fallback;
 		}
 
 		$parent = isset( $_GET['parent'] ) ? sanitize_key( (string) wp_unslash( $_GET['parent'] ) ) : '';
@@ -105,7 +114,7 @@ final class RankPublish_Site_Module_Embed {
 			return $hook;
 		}
 
-		return 'toplevel_page_' . $page;
+		return $fallback;
 	}
 
 	/**

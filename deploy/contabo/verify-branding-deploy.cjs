@@ -123,7 +123,7 @@ if (!host || !username || !password) {
     if (
       !check(
         "Branding asset publicly served",
-        asset.status === 200 && asset.body.includes("hideThinkRankUpsells"),
+        asset.status === 200 && asset.body.includes("unlockModuleScroll"),
         `HTTP ${asset.status}`
       )
     ) {
