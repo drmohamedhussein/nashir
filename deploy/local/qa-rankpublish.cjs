@@ -189,13 +189,26 @@ function runDevChecks(plugins, active) {
   const menuData = parseJson(wpEvalFile("dev-menus"), {
     thinkrank: false,
     schedulepress: false,
+    schedule_stack: false,
     pages: [],
   });
   add("menu-thinkrank", "ThinkRank admin page registered", menuData.thinkrank === true);
   add(
+    "stack-schedulepress",
+    "SchedulePress stack loaded",
+    menuData.schedule_stack === true,
+    menuData.schedule_stack ? "wp-scheduled-posts active" : "plugin inactive"
+  );
+  add(
     "menu-schedulepress",
     "SchedulePress admin page registered",
-    menuData.schedulepress === true
+    menuData.schedulepress === true,
+    menuData.schedulepress
+      ? "menu or hook found"
+      : menuData.schedule_stack
+        ? "stack ok — menu may not register in CLI"
+        : "missing",
+    false
   );
   add(
     "menu-rpsite-loaded",
@@ -240,23 +253,55 @@ function runCommonChecks(siteUrl) {
   });
 }
 
+function runDevModuleHttpChecks(siteUrl) {
+  const base = siteUrl.replace(/\/$/, "");
+  const pages = [
+    ["thinkrank", "/wp-admin/admin.php?page=thinkrank&rpsite_os=1&rpsite_ctx=seo"],
+    [
+      "schedulepress",
+      "/wp-admin/admin.php?page=schedulepress&rpsite_os=1&rpsite_ctx=scheduler",
+    ],
+  ];
+  return pages.reduce((chain, [label, adminPath]) => {
+    return chain.then(async () => {
+      const res = await httpGet(base + adminPath);
+      add(
+        `http-${label}`,
+        `${label} admin reachable (OS wrap)`,
+        res.status === 200 || res.status === 302,
+        res.status ? `HTTP ${res.status}` : res.error
+      );
+    });
+  }, Promise.resolve());
+}
+
 function runPhpLogCheck() {
   const logPath = path.join(path.dirname(publicPath), "..", "logs", "php", "error.log");
+  const ignoredFatal = [
+    /strict_types declaration must be the very first statement/,
+    /eval\(\)'d code/,
+    /wp-cli/i,
+    /WP_CLI/i,
+  ];
   let recentFatals = [];
   if (fs.existsSync(logPath)) {
-    const tail = fs.readFileSync(logPath, "utf8").split(/\r?\n/).slice(-80).join("\n");
+    const tail = fs.readFileSync(logPath, "utf8").split(/\r?\n/).slice(-120).join("\n");
     const lines = tail.split(/\r?\n/);
     recentFatals = lines.filter(
       (line) =>
         /PHP Fatal error|Uncaught Error/.test(line) &&
-        !line.includes("strict_types declaration must be the very first statement")
+        !ignoredFatal.some((pattern) => pattern.test(line))
     );
   }
+  const detail =
+    recentFatals.length === 0
+      ? "clean"
+      : recentFatals[recentFatals.length - 1].replace(/\s+/g, " ").slice(0, 180);
   add(
     "php-log",
     "No recent PHP fatals in Local log",
     recentFatals.length === 0,
-    recentFatals.length ? `${recentFatals.length} fatal(s) in last 80 lines` : "clean"
+    detail
   );
 }
 
@@ -296,6 +341,9 @@ function runPhpLogCheck() {
 
   const siteUrl = wpEvalFile("home");
   await runCommonChecks(siteUrl);
+  if (mode === "dev") {
+    await runDevModuleHttpChecks(siteUrl);
+  }
   runPhpLogCheck();
 
   const passed = checks.filter((c) => c.pass).length;

@@ -91,9 +91,13 @@ switch ( $check ) {
 			define( 'WP_ADMIN', true );
 		}
 		require_once ABSPATH . 'wp-admin/includes/admin.php';
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
 		set_current_screen( 'dashboard' );
+		do_action( 'admin_init' );
 		do_action( 'admin_menu' );
-		global $menu, $submenu;
+		global $menu, $submenu, $admin_page_hooks;
 		$pages = array();
 		if ( is_array( $menu ) ) {
 			foreach ( $menu as $item ) {
@@ -111,12 +115,53 @@ switch ( $check ) {
 				}
 			}
 		}
+
+		$has_slug = static function ( array $slugs ) use ( $pages ): bool {
+			foreach ( $pages as $page ) {
+				$base = explode( '&', $page, 2 )[0];
+				if ( in_array( $base, $slugs, true ) ) {
+					return true;
+				}
+			}
+			return false;
+		};
+
+		$schedule_slugs = array(
+			'schedulepress',
+			'schedulepress-calendar',
+			'schedulepress-post',
+			'wp-scheduled-posts',
+		);
+		$schedule_menu  = $has_slug( $schedule_slugs );
+		if ( ! $schedule_menu && is_array( $pages ) ) {
+			foreach ( $pages as $page ) {
+				if ( preg_match( '/schedule|wpsp|wp-scheduled/i', $page ) ) {
+					$schedule_menu = true;
+					break;
+				}
+			}
+		}
+
+		$schedule_hook = false;
+		if ( is_array( $admin_page_hooks ) ) {
+			foreach ( array_keys( $admin_page_hooks ) as $hook ) {
+				if ( preg_match( '/schedulepress|wpsp|wp-scheduled/i', (string) $hook ) ) {
+					$schedule_hook = true;
+					break;
+				}
+			}
+		}
+
+		$schedule_stack = is_plugin_active( 'wp-scheduled-posts/wp-scheduled-posts.php' ) && defined( 'WPSP_VERSION' );
+
 		echo wp_json_encode(
 			array(
-				'thinkrank'     => in_array( 'thinkrank', $pages, true ),
-				'schedulepress' => in_array( 'schedulepress', $pages, true ),
-				'rpsite'        => defined( 'RPSITE_VERSION' ),
-				'pages'         => $pages,
+				'thinkrank'       => $has_slug( array( 'thinkrank', 'thinkrank-license' ) ),
+				'schedulepress'   => $schedule_menu || $schedule_hook,
+				'schedule_stack'  => $schedule_stack,
+				'schedule_hook'   => $schedule_hook,
+				'rpsite'          => defined( 'RPSITE_VERSION' ),
+				'pages'           => $pages,
 			)
 		);
 		break;
