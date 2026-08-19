@@ -275,6 +275,24 @@ function syncRankpublish(sourcePublic, destPublic) {
   });
 }
 
+function resolveAdminUser(publicPath, env) {
+  try {
+    const out = wp(
+      publicPath,
+      ["user", "list", "--role=administrator", "--field=ID", "--format=csv"],
+      env,
+      true
+    );
+    const id = (out || "")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .find((line) => /^\d+$/.test(line));
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
 function detectMode(publicPath, env) {
   const out = wp(
     publicPath,
@@ -313,4 +331,5 @@ module.exports = {
   resolveSite,
   syncRankpublish,
   detectMode,
+  resolveAdminUser,
 };

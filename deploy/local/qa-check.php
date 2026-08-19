@@ -76,6 +76,51 @@ switch ( $check ) {
 		echo esc_url( home_url( '/' ) );
 		break;
 
+	case 'dev-versions':
+		echo wp_json_encode(
+			array(
+				'rpsite'    => defined( 'RPSITE_VERSION' ) ? RPSITE_VERSION : null,
+				'thinkrank' => defined( 'THINKRANK_VERSION' ) ? THINKRANK_VERSION : null,
+				'schedule'  => defined( 'WPSP_VERSION' ) ? WPSP_VERSION : null,
+			)
+		);
+		break;
+
+	case 'dev-menus':
+		if ( ! defined( 'WP_ADMIN' ) ) {
+			define( 'WP_ADMIN', true );
+		}
+		require_once ABSPATH . 'wp-admin/includes/admin.php';
+		set_current_screen( 'dashboard' );
+		do_action( 'admin_menu' );
+		global $menu, $submenu;
+		$pages = array();
+		if ( is_array( $menu ) ) {
+			foreach ( $menu as $item ) {
+				if ( isset( $item[2] ) ) {
+					$pages[] = (string) $item[2];
+				}
+			}
+		}
+		if ( is_array( $submenu ) ) {
+			foreach ( $submenu as $items ) {
+				foreach ( (array) $items as $item ) {
+					if ( isset( $item[2] ) ) {
+						$pages[] = (string) $item[2];
+					}
+				}
+			}
+		}
+		echo wp_json_encode(
+			array(
+				'thinkrank'     => in_array( 'thinkrank', $pages, true ),
+				'schedulepress' => in_array( 'schedulepress', $pages, true ),
+				'rpsite'        => defined( 'RPSITE_VERSION' ),
+				'pages'         => $pages,
+			)
+		);
+		break;
+
 	case 'connector':
 		$health = rest_do_request( new WP_REST_Request( 'GET', '/rankpublish/v1/health' ) );
 		$health_data = $health->get_data();

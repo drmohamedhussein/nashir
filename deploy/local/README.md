@@ -72,10 +72,16 @@ node deploy/local/qa-rankpublish.cjs --site rankpublish-test
 ### QA checklist (automated)
 
 ```powershell
+# Product-only site (rankpublish-test.local)
 node deploy/local/qa-rankpublish.cjs --site rankpublish-test
+
+# Dev stack site (rankpublish.local — upstream + rankpublish-site)
+node deploy/local/qa-rankpublish.cjs --site rankpublish
 ```
 
-Report: `deploy/local/reports/qa-rankpublish-test-YYYY-MM-DD.json`
+Reports: `deploy/local/reports/qa-<site>-YYYY-MM-DD.json`
+
+The QA script auto-detects **product** vs **dev** mode and runs the matching checklist. Dev mode validates `rankpublish-site` + upstream ThinkRank/SchedulePress; product mode validates the unified `rankpublish` plugin.
 
 ### Connector tests
 
