@@ -73,7 +73,7 @@ function rpsite_plugin_zip_url(): string {
 }
 
 function rpsite_logo_url(): string {
-	return RPSITE_URL . 'assets/logo.svg';
+	return RPSITE_URL . 'assets/logo.png';
 }
 
 function rpsite_art( string $file ): string {

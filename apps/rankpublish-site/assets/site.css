@@ -823,7 +823,7 @@ p { margin: 0 0 1em; }
 .os-name { font-size: 15px; font-weight: 800; letter-spacing: -0.04em; }
 .os-sub {
   margin-top: 2px;
-  font-size: 9px;
+  font-size: 7px;
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;

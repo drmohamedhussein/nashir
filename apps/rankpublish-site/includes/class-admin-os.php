@@ -186,10 +186,10 @@ final class RankPublish_Site_Admin_Os {
 		?>
 		<aside class="rpsite-os-sidebar">
 			<a class="rpsite-os-brand" href="<?php echo esc_url( self::url( self::SLUG ) ); ?>">
-				<img class="rpsite-os-brand__logo" src="<?php echo esc_url( RankPublish_Site_Branding::url( 'logo-menu.svg' ) ); ?>" width="36" height="36" alt="" />
+				<img class="rpsite-os-brand__logo" src="<?php echo esc_url( RankPublish_Site_Branding::url( 'logo-menu.png' ) ); ?>" width="36" height="36" alt="" />
 				<span class="rpsite-os-brand__text">
 					<strong>RankPublish</strong>
-					<em><?php esc_html_e( 'Publishing OS', 'rankpublish-site' ); ?></em>
+					<em><?php esc_html_e( 'Publish. Optimize. Rank.', 'rankpublish-site' ); ?></em>
 				</span>
 			</a>
 

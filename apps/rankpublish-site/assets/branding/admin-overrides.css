@@ -51,7 +51,7 @@ body.rpsite-os-module-wrap .wpsp-modal--header--left::before {
 	font-weight: 650;
 	color: #1b3a4b;
 	letter-spacing: -0.02em;
-	background: url("logo.svg") no-repeat left center;
+	background: url("logo.png") no-repeat left center;
 	background-size: 28px 28px;
 	padding-left: 36px;
 	line-height: 28px;
@@ -95,7 +95,7 @@ body.rpsite-os-module-wrap .tr-root [class*="logo"]:has(svg)::before {
 	transform: translateY(-50%);
 	width: 28px;
 	height: 28px;
-	background: url("logo.svg") no-repeat center;
+	background: url("logo.png") no-repeat center;
 	background-size: contain;
 }
 
@@ -137,6 +137,23 @@ body.rpsite-os-module-wrap .rpsite-module-native .tr-root > div:first-child {
 #the-list a[href*="wpdeveloper.com"],
 #the-list a[href*="schedulepress.com"],
 #the-list a[href*="thinkrank.ai"] {
+	display: none !important;
+}
+
+/* Hide ThinkRank branding logos in the React app header (top-right) */
+body.rankpublish-site-branded-admin .tr-root a[href*="thinkrank.ai"],
+body.rpsite-os-module-wrap .tr-root a[href*="thinkrank.ai"],
+body.rankpublish-site-branded-admin .tr-root a[href*="cal.com"],
+body.rpsite-os-module-wrap .tr-root a[href*="cal.com"],
+body.rankpublish-site-branded-admin .tr-root [class*="version"],
+body.rpsite-os-module-wrap .tr-root [class*="version"] {
+	display: none !important;
+}
+
+body.rankpublish-site-branded-admin .tr-root header svg[width="29"],
+body.rpsite-os-module-wrap .tr-root header svg[width="29"],
+body.rankpublish-site-branded-admin .tr-root header svg[viewBox*="29"],
+body.rpsite-os-module-wrap .tr-root header svg[viewBox*="29"] {
 	display: none !important;
 }
 

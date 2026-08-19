@@ -54,7 +54,7 @@ final class RankPublish_Site_Admin {
 	 */
 	public function register_menu(): void {
 		$cap  = 'manage_options';
-		$icon = RankPublish_Site_Branding::url( 'logo-menu.svg' );
+		$icon = RankPublish_Site_Branding::url( 'logo-menu.png' );
 
 		add_menu_page(
 			__( 'RankPublish Core', 'rankpublish-site' ),

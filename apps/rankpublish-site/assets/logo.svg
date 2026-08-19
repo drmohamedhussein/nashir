@@ -1,21 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="RankPublish">
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 64 64" role="img" aria-label="RankPublish">
   <defs>
-    <linearGradient id="rp-bg" x1="5" y1="3" x2="27" y2="29" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#6366f1"/>
-      <stop offset="1" stop-color="#2563eb"/>
+    <linearGradient id="rp-r32" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4F8FFF"/>
+      <stop offset="100%" stop-color="#4451FF"/>
     </linearGradient>
-    <linearGradient id="rp-bars" x1="18" y1="24" x2="28" y2="8" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22d3ee"/>
-      <stop offset="1" stop-color="#a5b4fc"/>
+    <linearGradient id="rp-p32" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6D5BF7"/>
+      <stop offset="100%" stop-color="#9333EA"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="10" fill="url(#rp-bg)"/>
-  <rect x="7" y="9" width="9.5" height="14" rx="2.2" fill="#fff" fill-opacity="0.97"/>
-  <rect x="8.8" y="11.8" width="6.2" height="1.5" rx="0.75" fill="#4338ca" fill-opacity="0.22"/>
-  <rect x="8.8" y="14.6" width="6.2" height="1.5" rx="0.75" fill="#4338ca" fill-opacity="0.16"/>
-  <rect x="8.8" y="17.4" width="4.2" height="1.5" rx="0.75" fill="#4338ca" fill-opacity="0.1"/>
-  <rect x="19.2" y="18.2" width="2.5" height="4.8" rx="1.25" fill="url(#rp-bars)" fill-opacity="0.7"/>
-  <rect x="22.5" y="14.8" width="2.5" height="8.2" rx="1.25" fill="url(#rp-bars)" fill-opacity="0.88"/>
-  <rect x="25.8" y="11" width="2.5" height="12" rx="1.25" fill="url(#rp-bars)"/>
-  <path d="M26.05 10.2 26.05 7.4 28.55 10.2Z" fill="#ecfeff"/>
+  <path d="M6 56 V10 C6 8.5 7 7.5 8.5 7.5 H22 C30.5 7.5 35 12.5 35 19 C35 24 32.5 27.5 28.5 29 L36 42 H36 L22 29 H14 V56 Z" fill="url(#rp-r32)"/>
+  <path d="M14 15 H21 C25 15 27.5 17 27.5 19.5 C27.5 22 25 24 21 24 H14 Z" fill="#fff" fill-opacity="0.3"/>
+  <path d="M30 56 V10 C30 8.5 31 7.5 32.5 7.5 H46 C54 7.5 58 12.5 58 19.5 C58 26.5 54 31.5 46 31.5 H38 V56 Z" fill="url(#rp-p32)"/>
+  <path d="M38 15 H45 C49.5 15 52 17.5 52 20 C52 22.5 49.5 25 45 25 H38 Z" fill="#fff" fill-opacity="0.3"/>
+  <path d="M12 50 C16 40 22 30 34 18 L42 10" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="44,6 48,14 40,12" fill="#fff"/>
+  <rect x="32" y="44" width="4" height="12" rx="1.5" fill="#fff" fill-opacity="0.85"/>
+  <rect x="38" y="39" width="4" height="17" rx="1.5" fill="#fff" fill-opacity="0.85"/>
+  <rect x="44" y="34" width="4" height="22" rx="1.5" fill="#fff" fill-opacity="0.85"/>
 </svg>
