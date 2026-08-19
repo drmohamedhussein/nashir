@@ -102,6 +102,15 @@
 		if (isProtectedRoot(el)) {
 			return true;
 		}
+		if (el.querySelector && el.querySelector('.tr-root')) {
+			return true;
+		}
+		if (el.childElementCount > 30) {
+			return true;
+		}
+		if (((el.textContent || '').length || 0) > 1500) {
+			return true;
+		}
 		if (
 			el.closest('.tr-root') &&
 			(el.closest('.tr-root') === el || el.matches('.tr-root, body, #wpwrap, #wpbody-content'))
@@ -127,12 +136,31 @@
 			return null;
 		}
 		var candidate =
-			el.closest('[class*="card"], [class*="Card"], [class*="widget"], [class*="panel"], section, article, li, a, button, div') ||
+			el.closest(
+				'[class*="card"], [class*="Card"], [class*="widget"], [class*="panel"], [class*="license"], [class*="License"], [class*="status"], [class*="badge"], [class*="chip"], section, article, aside, li, a, button'
+			) ||
 			el.parentElement;
 		if (!candidate || shouldSkipHide(candidate)) {
 			return null;
 		}
 		return candidate;
+	}
+
+	function hideByTextInScope(scope, selector, pattern) {
+		scope.querySelectorAll(selector).forEach(function (el) {
+			var text = textOf(el);
+			if (!text || !pattern.test(text)) {
+				return;
+			}
+			var target = findClosestHideable(el);
+			if (target) {
+				hideElement(target);
+				return;
+			}
+			if (el.matches('a, button, span, strong, small')) {
+				hideElement(el);
+			}
+		});
 	}
 
 	function hideUpstreamSidebars(root) {
@@ -284,51 +312,23 @@
 			hideElement(findClosestHideable(el) || el);
 		});
 
-		root.querySelectorAll('a, button, span, div, p, strong, h1, h2, h3, h4, h5').forEach(function (el) {
-			var text = textOf(el);
-			if (!text) {
-				return;
-			}
+		var appRoot = root.querySelector('.tr-root') || root;
+		var headerScope = appRoot.querySelector('header') || appRoot;
+		var bodyScope = appRoot;
 
-			if (/^pro$/i.test(text)) {
-				hideElement(findClosestHideable(el) || el);
-				return;
-			}
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^pro$/i);
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^book a free call$/i);
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^search settings$/i);
+		hideByTextInScope(headerScope, 'a, button, span, p, strong, small', /^v\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/i);
 
-			if (/^book a free call$/i.test(text)) {
-				hideElement(findClosestHideable(el) || el);
-				return;
-			}
-
-			if (/^search settings$/i.test(text)) {
-				hideElement(findClosestHideable(el) || el);
-				return;
-			}
-
-			if (/^v\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/i.test(text)) {
-				hideElement(findClosestHideable(el) || el);
-				return;
-			}
-
-			if (/activate your thinkrank pro license/i.test(text)) {
-				hideElement(findClosestHideable(el) || el);
-				return;
-			}
-
-			if (/^activate license$/i.test(text)) {
-				hideElement(findClosestHideable(el) || el);
-				return;
-			}
-
-			if (/^not activated$/i.test(text)) {
-				hideElement(findClosestHideable(el) || el);
-				return;
-			}
-
-			if (/^follow us$/i.test(text)) {
-				hideElement(findClosestHideable(el) || el);
-			}
-		});
+		hideByTextInScope(
+			bodyScope,
+			'h1, h2, h3, h4, p, strong, span, a, button',
+			/activate your thinkrank pro license/i
+		);
+		hideByTextInScope(bodyScope, 'a, button, span, p', /^activate license$/i);
+		hideByTextInScope(bodyScope, 'span, p, strong, div[class*="status"]', /^not activated$/i);
+		hideByTextInScope(bodyScope, 'h2, h3, h4, strong, span, p', /^follow us$/i);
 	}
 
 	function injectLicenseBanner() {
