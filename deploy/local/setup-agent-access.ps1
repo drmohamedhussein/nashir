@@ -74,16 +74,22 @@ Set-Content -Path $agentAuth -Value $pub -Encoding ascii
 icacls $agentAuth /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F" /grant "${AgentWinUser}:F" | Out-Null
 Log "authorized_keys for $AgentWinUser"
 
-# --- 4. Grant plugin access on LocalWP sites ---
+# --- 4. Grant plugin access (fast: no recursive /T on all plugins) ---
+Log "Granting plugin access..."
 $localSites = Join-Path $env:USERPROFILE "Local Sites"
 $granted = @()
 if (Test-Path $localSites) {
   Get-ChildItem $localSites -Directory | ForEach-Object {
     $plugins = Join-Path $_.FullName "app\public\wp-content\plugins"
-    if (Test-Path $plugins) {
-      icacls $plugins /grant "${AgentWinUser}:(OI)(CI)M" /T /Q | Out-Null
-      $granted += $_.Name
+    if (-not (Test-Path $plugins)) { return }
+    Log "  $($_.Name)..."
+    # Inherit only on plugins root (instant). New sync writes rankpublish-site inside.
+    icacls $plugins /grant "${AgentWinUser}:(OI)(CI)M" /Q 2>$null | Out-Null
+    $rpsite = Join-Path $plugins "rankpublish-site"
+    if (Test-Path $rpsite) {
+      icacls $rpsite /grant "${AgentWinUser}:(OI)(CI)M" /Q 2>$null | Out-Null
     }
+    $granted += $_.Name
   }
 }
 if ($granted.Count -gt 0) {
