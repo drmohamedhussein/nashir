@@ -111,6 +111,41 @@ function Install-OpenSshServerQuick {
   return $false
 }
 
+function Invoke-SshKeygen([string]$KeyPath) {
+  if (Test-Path $KeyPath) {
+    Write-Log "SSH key already exists: $KeyPath"
+    return
+  }
+
+  $keygen = Get-Command ssh-keygen -ErrorAction SilentlyContinue
+  if (-not $keygen) {
+    throw "ssh-keygen not found. Install OpenSSH Client: Settings > Optional features > OpenSSH Client"
+  }
+
+  Write-Log "Generating SSH key pair..."
+
+  $argSets = @(
+    "-t ed25519 -f `"$KeyPath`" -N `"`" -C rankpublish-cloud-agent",
+    "-t ed25519 -f `"$KeyPath`" -C rankpublish-cloud-agent"
+  )
+
+  foreach ($argLine in $argSets) {
+    $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+    $pinfo.FileName = $keygen.Source
+    $pinfo.Arguments = $argLine
+    $pinfo.UseShellExecute = $false
+    $pinfo.CreateNoWindow = $true
+    $proc = [System.Diagnostics.Process]::Start($pinfo)
+    $proc.WaitForExit()
+    if ($proc.ExitCode -eq 0 -and (Test-Path $KeyPath) -and (Test-Path "$KeyPath.pub")) {
+      Write-Log "SSH key created: $KeyPath"
+      return
+    }
+  }
+
+  throw "ssh-keygen failed. Run manually: ssh-keygen -t ed25519 -f `"$KeyPath`" -N `"`""
+}
+
 try {
   Write-Log ""
   Write-Log "RankPublish - Windows SSH setup (key auth, no password)"
@@ -155,15 +190,7 @@ try {
   $sshdConfig = Join-Path $env:ProgramData "ssh\sshd_config"
 
   New-Item -ItemType Directory -Force -Path $sshDir | Out-Null
-
-  if (-not (Test-Path $keyPath)) {
-    Write-Log "Generating SSH key pair..."
-    $emptyPass = [string]::Empty
-    & ssh-keygen -t ed25519 -f $keyPath -N $emptyPass -C "rankpublish-cloud-agent" -q
-    if ($LASTEXITCODE -ne 0) { throw "ssh-keygen failed (exit $LASTEXITCODE)" }
-  } else {
-    Write-Log "SSH key already exists: $keyPath"
-  }
+  Invoke-SshKeygen -KeyPath $keyPath
 
   if ($sshdReady) {
     $pubKeyLine = (Get-Content "$keyPath.pub" -Raw).Trim()
