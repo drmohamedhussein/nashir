@@ -9,6 +9,7 @@
 const fs = require("fs");
 const path = require("path");
 const { Client } = require("../contabo/lib/ssh2-client.cjs");
+const { diagnoseWinHost } = require("./lib/win-ssh-reachability.cjs");
 
 const repoRoot = path.resolve(__dirname, "../..");
 const source = path.join(repoRoot, "apps/rankpublish-site");
@@ -108,10 +109,19 @@ if (!host) {
   process.exit(1);
 }
 
+const sshPort = Number(process.env.RANKPUBLISH_WIN_SSH_PORT || 22);
+const reach = diagnoseWinHost(host, sshPort);
+if (!reach.reachable) {
+  console.error("\nWindows SSH unreachable from this Cloud Agent.\n");
+  console.error(reach.note);
+  if (reach.guidance) console.error("\n" + reach.guidance + "\n");
+  process.exit(2);
+}
+
 const privateKey = resolvePrivateKey();
 const connectOpts = {
   host,
-  port: Number(process.env.RANKPUBLISH_WIN_SSH_PORT || 22),
+  port: sshPort,
   username,
   readyTimeout: 60000,
 };
