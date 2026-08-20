@@ -1,21 +1,15 @@
 /**
- * Deploy rankpublish-site to every target this agent can reach:
- *   1. Staging (SSH) when NASHIR_SSH_* is set
- *   2. Cloud local Docker mirror (always on Linux agents)
- *   3. Windows LocalWP paths when mounted/available
- *   4. Windows via SFTP when RANKPUBLISH_WIN_SSH_* is set
- *
- * Usage:
- *   node deploy/local/deploy-all.cjs
+ * Deploy rankpublish-site to every target this agent can reach.
+ * Usage: node deploy/local/deploy-all.cjs
  */
-const fs = require("fs");
-const path = require("path");
 const { spawnSync } = require("child_process");
+const path = require("path");
 
 const repoRoot = path.resolve(__dirname, "../..");
 
 function runNode(script, args = []) {
-  const r = spawnSync("node", [path.join(__dirname, script), ...args], {
+  const scriptPath = script.startsWith("..") ? path.join(__dirname, script) : path.join(__dirname, script);
+  const r = spawnSync("node", [scriptPath, ...args], {
     cwd: repoRoot,
     encoding: "utf8",
     stdio: "inherit",
@@ -31,37 +25,44 @@ function section(title) {
 
 const results = [];
 
-section("1/4 Staging (nashir.satest.top)");
+section("1/5 Staging — nashir.satest.top");
 if (process.env.NASHIR_SSH_HOST && process.env.NASHIR_SSH_USER && process.env.NASHIR_SSH_PASS) {
-  results.push(["staging", runNode("../contabo/deploy-rankpublish-site.cjs")]);
+  results.push(["nashir.satest.top", runNode("../contabo/deploy-rankpublish-site.cjs")]);
 } else {
   console.log("Skip — NASHIR_SSH_* not configured");
-  results.push(["staging", false]);
+  results.push(["nashir.satest.top", false]);
 }
 
-section("2/4 Cloud local Docker mirror");
+section("2/5 Cloud local Docker — 127.0.0.1:8080");
 const dockerOk =
   spawnSync("docker", ["info"], { encoding: "utf8" }).status === 0 ||
   spawnSync("sudo", ["docker", "info"], { encoding: "utf8" }).status === 0;
 if (dockerOk) {
-  const boot = runNode("bootstrap-cloud-wp.cjs", ["--sync"]);
-  results.push(["cloud-local", boot]);
+  results.push(["cloud-local", runNode("bootstrap-cloud-wp.cjs", ["--sync"])]);
 } else {
   console.log("Skip — Docker not available");
   results.push(["cloud-local", false]);
 }
 
-section("3/4 Windows LocalWP (direct path)");
-const winOk = runNode("sync-rankpublish-site.cjs");
-results.push(["windows-local", winOk]);
-
-section("4/4 Windows LocalWP (remote SFTP)");
+section("3/5 Windows — rankpublish.local (SSH)");
 if (process.env.RANKPUBLISH_WIN_SSH_HOST) {
-  results.push(["windows-ssh", runNode("sync-via-ssh.cjs")]);
+  results.push(["rankpublish.local", runNode("sync-via-ssh.cjs", ["--site", "rankpublish"])]);
 } else {
-  console.log("Skip — RANKPUBLISH_WIN_SSH_HOST not set (optional remote Windows access)");
-  results.push(["windows-ssh", null]);
+  console.log("Skip — RANKPUBLISH_WIN_SSH_HOST not in this agent env");
+  results.push(["rankpublish.local", null]);
 }
+
+section("4/5 Windows — rankpublish-test.local (SSH)");
+if (process.env.RANKPUBLISH_WIN_SSH_HOST) {
+  results.push(["rankpublish-test.local", runNode("sync-via-ssh.cjs", ["--site", "rankpublish-test"])]);
+} else {
+  console.log("Skip — RANKPUBLISH_WIN_SSH_HOST not in this agent env");
+  results.push(["rankpublish-test.local", null]);
+}
+
+section("5/5 Verify all sites");
+const verified = runNode("verify-all-sites.cjs");
+results.push(["verify-all", verified]);
 
 console.log("\nDeploy summary:");
 for (const [name, ok] of results) {
@@ -69,7 +70,5 @@ for (const [name, ok] of results) {
   console.log(`  ${name}: ${status}`);
 }
 
-const anyOk = results.some(([, ok]) => ok === true);
-if (!anyOk) {
-  process.exit(1);
-}
+const critical = results.filter(([name]) => name !== "verify-all").some(([, ok]) => ok === true);
+if (!critical) process.exit(1);

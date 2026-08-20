@@ -104,6 +104,7 @@ conn
           `${wp} rewrite flush`,
           `${wp} cache flush || true`,
           `${wp} litespeed-purge all 2>/dev/null || true`,
+          `${wp} eval 'echo "RPSITE_VERSION=".RPSITE_VERSION;' 2>/dev/null || grep RPSITE_VERSION wp-content/plugins/rankpublish-site/rankpublish-site.php | head -1`,
         ].join(" && ")
       );
       console.log("done");
