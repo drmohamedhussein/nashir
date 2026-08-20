@@ -1,0 +1,6 @@
+{
+  "contaboHostEnv": "NASHIR_SSH_HOST",
+  "contaboUserEnv": "NASHIR_SSH_USER",
+  "tunnelPort": 2222,
+  "note": "Windows opens reverse SSH to Contabo; Cloud Agent jumps via Contabo localhost:2222"
+}

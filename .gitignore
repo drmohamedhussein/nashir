@@ -41,3 +41,4 @@ apps/plugin/**/.DS_Store
 .tmp-rankpublish-design/
 .tmp-github-rankpublish/
 .cloud-local-wp/
+deploy/local/cloud-tunnel.config.json
