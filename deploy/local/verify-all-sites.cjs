@@ -7,6 +7,7 @@ const { spawnSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const { Client } = require("../contabo/lib/ssh2-client.cjs");
+const { diagnoseWinHost } = require("./lib/win-ssh-reachability.cjs");
 
 const repoRoot = path.resolve(__dirname, "../..");
 const expected = (() => {
@@ -110,12 +111,22 @@ function winVerify(target) {
   if (!host) {
     return Promise.resolve({ http: false, version: null, note: "RANKPUBLISH_WIN_SSH_HOST not in env" });
   }
+  const sshPort = Number(process.env.RANKPUBLISH_WIN_SSH_PORT || 22);
+  const reach = diagnoseWinHost(host, sshPort);
+  if (!reach.reachable) {
+    return Promise.resolve({
+      http: false,
+      version: null,
+      note: reach.note,
+      guidance: reach.guidance,
+    });
+  }
   const winPath = (process.env[target.publicEnv] || target.defaultPublic).replace(/\//g, "\\");
   const pluginPhp = `${winPath}\\wp-content\\plugins\\rankpublish-site\\rankpublish-site.php`;
   const conn = new Client();
   const opts = {
     host,
-    port: Number(process.env.RANKPUBLISH_WIN_SSH_PORT || 22),
+    port: sshPort,
     username,
     readyTimeout: 30000,
   };
@@ -179,6 +190,12 @@ async function main() {
     console.log(`  HTTP:    ${result.http ? "reachable" : "not from cloud"}`);
     console.log(`  Version: ${result.version || "?"} ${versionOk ? "PASS" : "FAIL"}`);
     if (result.note) console.log(`  Note:    ${result.note}`);
+    if (result.guidance) {
+      console.log("  Fix:");
+      for (const line of String(result.guidance).split("\n")) {
+        console.log(`    ${line}`);
+      }
+    }
   }
 
   console.log("\nSummary:");

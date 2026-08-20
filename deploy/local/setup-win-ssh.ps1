@@ -46,6 +46,12 @@ function Write-SecretsFile([string]$Path, [string]$User, [string]$HostIp, [strin
   $out.Add("")
   $out.Add("Do NOT add RANKPUBLISH_WIN_SSH_PASS - key auth only (Microsoft account OK)")
   $out.Add("")
+  $out.Add("IMPORTANT for Cursor Cloud Agents:")
+  $out.Add("  HOST must be a PUBLIC / Tailscale IP (not 192.168.x.x).")
+  $out.Add("  If only LAN IP is available, sync on Windows instead:")
+  $out.Add("    .\\rp-local.cmd sync --site rankpublish")
+  $out.Add("    .\\rp-local.cmd sync --site rankpublish-test")
+  $out.Add("")
   $out.Add("Test: ssh -i `"$KeyPath`" ${User}@localhost")
   [System.IO.File]::WriteAllLines($Path, $out.ToArray())
 }
@@ -235,6 +241,16 @@ try {
     Select-Object -First 1).IPAddress
   if (-not $localIp) { $localIp = "YOUR-LOCAL-IP" }
 
+  $wanIp = $null
+  try {
+    $wanIp = (Invoke-RestMethod -Uri "https://api.ipify.org" -TimeoutSec 8).Trim()
+  } catch {
+    Write-Log "Could not detect public WAN IP (offline or blocked)."
+  }
+
+  # Cloud Agents cannot reach RFC1918 LAN addresses. Prefer WAN when known.
+  $hostForCloud = if ($wanIp) { $wanIp } else { $localIp }
+
   $publicPath = Join-Path $env:USERPROFILE "Local Sites\rankpublish\app\public"
   if (-not (Test-Path $publicPath)) {
     $publicPath = "C:/Users/$user/Local Sites/rankpublish/app/public"
@@ -242,10 +258,12 @@ try {
   $publicPathUnix = ($publicPath -replace '\\', '/')
 
   $privateKeyContent = Get-Content $keyPath -Raw
-  Write-SecretsFile -Path $SecretsFile -User $user -HostIp $localIp -PublicPath $publicPathUnix -KeyPath $keyPath -PrivateKey $privateKeyContent
+  Write-SecretsFile -Path $SecretsFile -User $user -HostIp $hostForCloud -PublicPath $publicPathUnix -KeyPath $keyPath -PrivateKey $privateKeyContent
 
   Write-Log "Secrets saved to: $SecretsFile"
   Write-Log "Log file: $LogFile"
+  Write-Log "LAN IP: $localIp"
+  if ($wanIp) { Write-Log "WAN IP (used for Cloud Secret): $wanIp" }
 
   Write-Host ""
   if ($sshdReady) {
@@ -254,6 +272,17 @@ try {
     Write-Host "PARTIAL - Keys saved. Install OpenSSH Server then re-run setup-ssh:" -ForegroundColor Yellow
   }
   Write-Host "  $SecretsFile" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "Cloud Agent note:" -ForegroundColor Cyan
+  Write-Host "  RANKPUBLISH_WIN_SSH_HOST must be reachable from the internet." -ForegroundColor Cyan
+  if ($wanIp) {
+    Write-Host "  Using WAN IP $wanIp — also forward router TCP 22 -> this PC." -ForegroundColor Cyan
+  } else {
+    Write-Host "  LAN IP alone will NOT work from Cloud Agents." -ForegroundColor Yellow
+  }
+  Write-Host "  Without port-forward/Tailscale, sync locally:" -ForegroundColor Cyan
+  Write-Host "    .\rp-local.cmd sync --site rankpublish" -ForegroundColor White
+  Write-Host "    .\rp-local.cmd sync --site rankpublish-test" -ForegroundColor White
   Write-Host ""
 
   Start-Process notepad.exe $SecretsFile
