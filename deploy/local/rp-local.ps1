@@ -63,11 +63,16 @@ switch ($Command) {
         Run-Node @("deploy/local/verify-thinkrank-local.cjs") + $Rest
     }
     "setup-ssh" {
-        & (Join-Path $PSScriptRoot "setup-win-ssh.cmd")
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        & (Join-Path $PSScriptRoot "setup-agent-access.cmd")
     }
     "setup-ssh-key" {
-        & powershell -NoProfile -ExecutionPolicy Bypass -NoExit -File (Join-Path $PSScriptRoot "setup-win-ssh.ps1") -KeysOnly
+        & (Join-Path $PSScriptRoot "setup-agent-access.cmd")
+    }
+    "agent-setup" {
+        & (Join-Path $PSScriptRoot "setup-agent-access.cmd")
+    }
+    "agent-wp" {
+        Run-Node @("deploy/local/create-wp-agent-user.cjs") + $Rest
     }
     default {
         Write-Host @"

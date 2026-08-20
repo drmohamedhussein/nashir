@@ -77,7 +77,9 @@ function nashirVerify() {
   if (!host || !username || !password) {
     return Promise.resolve({ http: curlHead("https://nashir.satest.top/"), version: null, note: "no SSH" });
   }
-  const remoteRoot = "/home/[REDACTED]/nashirwp/public_html";
+  const remoteRoot =
+    process.env.NASHIR_REMOTE_ROOT ||
+    `/home/${username}/nashirwp/public_html`;
   const conn = new Client();
   return new Promise((resolve) => {
     conn
