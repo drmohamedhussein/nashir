@@ -52,6 +52,7 @@ function verifySyncedPlugin(dest, key) {
     ["layout: transparent module wrap", css.includes("background: transparent") && css.includes("rpsite-module-native .tr-root")],
     ["scroll unlock CSS", css.includes("document-level scroll")],
     ["version >= 1.8.6", version !== "?" && parseVersion(version) >= parseVersion("1.8.6")],
+    ["version >= 1.9.0", version !== "?" && parseVersion(version) >= parseVersion("1.9.0")],
   ];
 
   console.log(`\nVerify synced plugin on ${key} (v${version}):`);
