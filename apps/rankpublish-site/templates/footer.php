@@ -27,7 +27,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div>
 			<h4><?php echo esc_html( rpsite_t( 'footer_prod' ) ); ?></h4>
 			<a href="<?php echo esc_url( home_url( '/features/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_features' ) ); ?></a>
+			<a href="<?php echo esc_url( home_url( '/calendar/' ) ); ?>"><?php echo esc_html( rpsite_t( 'f1k' ) ); ?></a>
 			<a href="<?php echo esc_url( home_url( '/social/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_social' ) ); ?></a>
+			<a href="<?php echo esc_url( home_url( '/integrations/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_integrations' ) ); ?></a>
 			<a href="<?php echo esc_url( home_url( '/pricing/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_pricing' ) ); ?></a>
 			<a href="<?php echo esc_url( home_url( '/download/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_plugin' ) ); ?></a>
 		</div>
@@ -35,6 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<h4><?php echo esc_html( rpsite_t( 'footer_support' ) ); ?></h4>
 			<a href="<?php echo esc_url( home_url( '/guide/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_guide' ) ); ?></a>
 			<a href="<?php echo esc_url( home_url( '/faq/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_faq' ) ); ?></a>
+			<a href="<?php echo esc_url( home_url( '/security/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_security' ) ); ?></a>
 			<a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>"><?php echo esc_html( rpsite_t( 'contact' ) ); ?></a>
 			<a href="<?php echo esc_url( get_permalink( (int) get_option( 'page_for_posts' ) ) ?: home_url( '/blog/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_blog' ) ); ?></a>
 		</div>

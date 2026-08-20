@@ -28,6 +28,9 @@ function rpsite_locale(): string {
 }
 
 function rpsite_t( string $key ): string {
+	if ( class_exists( 'RankPublish_Site_Marketing' ) ) {
+		return RankPublish_Site_Marketing::text( $key );
+	}
 	$all = rpsite_i18n();
 	if ( isset( $all[ $key ] ) ) {
 		return $all[ $key ];
@@ -120,6 +123,8 @@ function rpsite_page_slugs(): array {
 		'terms',
 		'calendar',
 		'scheduling',
+		'security',
+		'integrations',
 	);
 }
 

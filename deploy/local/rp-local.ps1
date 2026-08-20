@@ -14,7 +14,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover", "setup-ssh", "setup-ssh-key", "agent-setup", "agent-wp")]
+    [ValidateSet("help", "fix-db", "product", "dev", "status", "qa", "setup-test", "sync", "verify", "recover", "setup-ssh", "setup-ssh-key", "agent-setup", "agent-wp", "cloud-tunnel")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -74,6 +74,9 @@ switch ($Command) {
     "agent-wp" {
         Run-Node @("deploy/local/create-wp-agent-user.cjs") + $Rest
     }
+    "cloud-tunnel" {
+        & (Join-Path $PSScriptRoot "cloud-tunnel.ps1") @Rest
+    }
     default {
         Write-Host @"
 Commands (always run from repo via this wrapper):
@@ -95,6 +98,10 @@ Commands (always run from repo via this wrapper):
 
   setup-ssh One-time OpenSSH for Cloud Agent (Admin UAC once)
             .\deploy\local\rp-local.ps1 setup-ssh
+
+  cloud-tunnel  Reverse SSH to Contabo so Cloud Agents reach LocalWP
+            .\deploy\local\rp-local.ps1 cloud-tunnel
+            (keep the window open while the agent works)
 
   status    Show active plugins / detected mode
             .\deploy\local\rp-local.ps1 status --site rankpublish-test

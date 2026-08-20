@@ -4,7 +4,7 @@ setlocal EnableExtensions
 rem RankPublish local tools — Windows CMD wrapper (no PowerShell execution policy required).
 rem Usage:
 rem   deploy\local\rp-local.cmd sync --site rankpublish-test
-rem   deploy\local\rp-local.cmd qa --site rankpublish-test
+rem   deploy\local\rp-local.cmd cloud-tunnel
 
 set "SCRIPT_DIR=%~dp0"
 for %%I in ("%SCRIPT_DIR%..\..") do set "REPO_ROOT=%%~fI"
@@ -70,6 +70,14 @@ if /I "%CMD%"=="agent-wp" (
   node "%REPO_ROOT%\deploy\local\create-wp-agent-user.cjs" %*
   exit /b %ERRORLEVEL%
 )
+if /I "%CMD%"=="cloud-tunnel" (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%cloud-tunnel.ps1" %*
+  exit /b %ERRORLEVEL%
+)
+if /I "%CMD%"=="write-tunnel-config" (
+  node "%REPO_ROOT%\deploy\local\write-tunnel-config.cjs" %*
+  exit /b %ERRORLEVEL%
+)
 
 echo Unknown command: %CMD%
 echo.
@@ -90,14 +98,15 @@ echo   setup-test First-time test site setup
 echo   sync       Sync rankpublish-site plugin to Local site
 echo   verify     Verify local ThinkRank branding (no PHP required)
 echo   recover    Fix HTTP 500 / imagick warnings / show PHP log
-echo   agent-setup  Create rp-cursor Windows user + SSH key (Admin UAC once)
-echo   agent-wp     Create rp-cursor WordPress admin + app password
+echo   agent-setup  Create Windows agent user + SSH key (Admin UAC once)
+echo   agent-wp     Create WordPress admin + app password
 echo   setup-ssh    Alias for agent-setup
+echo   cloud-tunnel Open reverse SSH so Cloud Agents can reach LocalWP
 echo.
 echo Examples:
 echo   .\rp-local.cmd sync --site rankpublish-test
+echo   .\rp-local.cmd cloud-tunnel
 echo   .\rp-local.cmd recover --site rankpublish --all
-echo   .\rp-local.cmd qa --site rankpublish
 echo.
 echo PowerShell note: use .\ prefix, e.g. .\rp-local.cmd sync --site rankpublish-test
 echo.

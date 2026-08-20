@@ -143,7 +143,10 @@ $lines = @(
   "RANKPUBLISH_WIN_SSH_PASS = $agentPass",
   "",
   "Windows user $AgentWinUser is a LOCAL account (not Microsoft email).",
-  "SSH key auth works without your Windows password."
+  "SSH key auth works without your Windows password.",
+  "",
+  "Cloud Agent cannot reach LAN IPs. Keep this running while agents sync:",
+  "  .\\rp-local.cmd cloud-tunnel"
 )
 [System.IO.File]::WriteAllLines($SecretsFile, $lines)
 Log "Secrets: $SecretsFile"
@@ -157,7 +160,8 @@ Write-Host ""
 Write-Host "Next:"
 Write-Host "  1. Copy secrets to Cursor > Cloud Agents > Secrets"
 Write-Host "  2. .\deploy\local\rp-local.cmd agent-wp --site rankpublish"
-Write-Host "  3. .\deploy\local\rp-local.cmd sync --site rankpublish"
+Write-Host "  3. Keep tunnel open for Cloud Agents: .\rp-local.cmd cloud-tunnel"
+Write-Host "  4. Or sync locally: .\rp-local.cmd sync --site rankpublish"
 Write-Host ""
 Start-Process notepad.exe $SecretsFile
 Read-Host "Press Enter to close"

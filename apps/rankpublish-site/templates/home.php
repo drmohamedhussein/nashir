@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require RPSITE_PATH . 'templates/header.php';
 $cloud = rpsite_cloud_url();
 $start = $cloud ? $cloud . '/register' : rpsite_plugin_zip_url();
+$mkt   = RankPublish_Site_Marketing::get();
 $tools = array(
 	array( 'g1', 'gutenberg' ),
 	array( 'g2', 'classic' ),
@@ -95,7 +96,7 @@ $tones = array( 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10' );
 			<h2><?php echo esc_html( rpsite_t( 'products_h' ) ); ?></h2>
 			<p class="lead"><?php echo esc_html( rpsite_t( 'products_b' ) ); ?></p>
 		</div>
-		<div class="os-product-grid">
+		<div class="os-product-grid<?php echo ! empty( $mkt['show_cloud_card'] ) ? ' os-product-grid--3' : ''; ?>">
 			<article class="os-product sky reveal">
 				<div class="os-product-art"><?php echo rpsite_illu( 'cal' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 				<p class="os-kicker"><?php echo esc_html( rpsite_t( 'prod_cal_k' ) ); ?></p>
@@ -106,6 +107,7 @@ $tones = array( 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10' );
 					<li><?php echo esc_html( rpsite_t( 'prod_cal_2' ) ); ?></li>
 					<li><?php echo esc_html( rpsite_t( 'prod_cal_3' ) ); ?></li>
 				</ul>
+				<a class="os-product-link" href="<?php echo esc_url( home_url( '/calendar/' ) ); ?>"><?php echo esc_html( rpsite_t( 'f1k' ) ); ?> →</a>
 			</article>
 			<article class="os-product violet reveal">
 				<div class="os-product-art"><?php echo rpsite_illu( 'seo' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
@@ -117,7 +119,22 @@ $tones = array( 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10' );
 					<li><?php echo esc_html( rpsite_t( 'prod_seo_2' ) ); ?></li>
 					<li><?php echo esc_html( rpsite_t( 'prod_seo_3' ) ); ?></li>
 				</ul>
+				<a class="os-product-link" href="<?php echo esc_url( home_url( '/features/' ) ); ?>"><?php echo esc_html( rpsite_t( 'nav_features' ) ); ?> →</a>
 			</article>
+			<?php if ( ! empty( $mkt['show_cloud_card'] ) ) : ?>
+			<article class="os-product mint reveal">
+				<div class="os-product-art"><?php echo rpsite_illu( 'trial' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+				<p class="os-kicker"><?php echo esc_html( rpsite_t( 'prod_cloud_k' ) ); ?></p>
+				<h3><?php echo esc_html( rpsite_t( 'prod_cloud_t' ) ); ?></h3>
+				<p><?php echo esc_html( rpsite_t( 'prod_cloud_b' ) ); ?></p>
+				<ul>
+					<li><?php echo esc_html( rpsite_t( 'prod_cloud_1' ) ); ?></li>
+					<li><?php echo esc_html( rpsite_t( 'prod_cloud_2' ) ); ?></li>
+					<li><?php echo esc_html( rpsite_t( 'prod_cloud_3' ) ); ?></li>
+				</ul>
+				<a class="os-product-link" href="<?php echo esc_url( $start ); ?>"><?php echo esc_html( rpsite_t( 'cta_workspace' ) ); ?> →</a>
+			</article>
+			<?php endif; ?>
 		</div>
 	</div>
 </section>
@@ -175,6 +192,7 @@ $tones = array( 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10' );
 	</div>
 </section>
 
+<?php if ( ! empty( $mkt['show_tools'] ) ) : ?>
 <section class="section section-alt" id="tools">
 	<div class="wrap">
 		<p class="kicker"><?php echo esc_html( rpsite_t( 'tools_k' ) ); ?></p>
@@ -194,9 +212,11 @@ $tones = array( 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10' );
 		</div>
 	</div>
 </section>
+<?php endif; ?>
 
 <section class="section">
 	<div class="wrap">
+		<?php if ( ! empty( $mkt['show_audience'] ) ) : ?>
 		<p class="kicker"><?php echo esc_html( rpsite_t( 'who_k' ) ); ?></p>
 		<h2><?php echo esc_html( rpsite_t( 'who_h' ) ); ?></h2>
 		<div class="use-grid" style="margin-top:28px">
@@ -208,6 +228,7 @@ $tones = array( 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10' );
 			</article>
 			<?php endforeach; ?>
 		</div>
+		<?php endif; ?>
 		<div class="cta-finale reveal" style="margin-top:56px">
 			<h2><?php echo esc_html( rpsite_t( 'bottom_h' ) ); ?></h2>
 			<p class="muted"><?php echo esc_html( rpsite_t( 'bottom_b' ) ); ?></p>

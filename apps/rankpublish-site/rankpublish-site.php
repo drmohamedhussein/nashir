@@ -3,7 +3,7 @@
  * Plugin Name:       RankPublish Site Core
  * Plugin URI:        https://rankpublish.com
  * Description:       RankPublish site core: marketing UI, branding, upstream merge watch, and (later) product update channel for rankpublish.
- * Version:           1.8.6
+ * Version:           1.9.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            WPDevLtd
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'RPSITE_VERSION', '1.8.6' );
+define( 'RPSITE_VERSION', '1.9.0' );
 define( 'RPSITE_FILE', __FILE__ );
 define( 'RPSITE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'RPSITE_URL', plugin_dir_url( __FILE__ ) );
@@ -31,6 +31,7 @@ require_once RPSITE_PATH . 'includes/helpers.php';
 require_once RPSITE_PATH . 'includes/user-guide.php';
 require_once RPSITE_PATH . 'includes/illustrations.php';
 require_once RPSITE_PATH . 'includes/i18n.php';
+require_once RPSITE_PATH . 'includes/class-marketing.php';
 require_once RPSITE_PATH . 'includes/mocks.php';
 require_once RPSITE_PATH . 'includes/class-plugin.php';
 require_once RPSITE_PATH . 'includes/class-merge-registry.php';
@@ -40,6 +41,7 @@ require_once RPSITE_PATH . 'includes/class-cloud-client.php';
 require_once RPSITE_PATH . 'includes/class-workspace.php';
 require_once RPSITE_PATH . 'includes/class-module-embed.php';
 require_once RPSITE_PATH . 'includes/class-admin.php';
+require_once RPSITE_PATH . 'includes/class-marketing-admin.php';
 require_once RPSITE_PATH . 'includes/class-branding.php';
 require_once RPSITE_PATH . 'includes/class-update-watch.php';
 require_once RPSITE_PATH . 'includes/class-connector-packages.php';
@@ -53,6 +55,7 @@ add_action(
 		( new RankPublish_Site_Branding() )->init();
 		( new RankPublish_Site_Update_Watch() )->init();
 		( new RankPublish_Site_Connector_Packages() )->init();
+		( new RankPublish_Site_Marketing_Admin() )->init();
 		if ( is_admin() ) {
 			( new RankPublish_Site_Module_Embed() )->init();
 			( new RankPublish_Site_Admin() )->init();
